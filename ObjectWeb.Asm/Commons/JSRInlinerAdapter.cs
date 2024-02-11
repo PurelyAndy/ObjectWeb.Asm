@@ -39,19 +39,19 @@ namespace ObjectWeb.Asm.Commons
     ///     @author Niko Matsakis
     /// </summary>
     // DontCheck(AbbreviationAsWordInName): can't be renamed (for backward binary compatibility).
-    public class JsrInlinerAdapter : MethodNode, IOpcodes
+    public class JsrInlinerAdapter : MethodNode
     {
         /// <summary>
         ///     The instructions that belong to the main "subroutine". Bit i is set iff instruction at index i
         ///     belongs to this main "subroutine".
         /// </summary>
-        private readonly BitArray _mainSubroutineInsns = new(64);
+        private readonly BitArray _mainSubroutineInsns = new BitArray(64);
 
         /// <summary>
         ///     The instructions that belong to more that one subroutine. Bit i is set iff instruction at index
         ///     i belongs to more than one subroutine.
         /// </summary>
-        internal readonly BitArray sharedSubroutineInsns = new(64);
+        internal readonly BitArray sharedSubroutineInsns = new BitArray(64);
 
         /// <summary>
         ///     The instructions that belong to each subroutine. For each label which is the target of a JSR
@@ -78,7 +78,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name = "exceptions"> the internal names of the method's exception classes. May be {@literal null}. </param>
         /// <exception cref = "IllegalStateException"> if a subclass calls this constructor. </exception>
         public JsrInlinerAdapter(MethodVisitor methodVisitor, int access, string name, string descriptor,
-            string signature, string[] exceptions) : this(IOpcodes.Asm9, methodVisitor, access, name, descriptor,
+            string signature, string[] exceptions) : this(Opcodes.Asm9, methodVisitor, access, name, descriptor,
             signature, exceptions)
         {
             if (GetType() != typeof(JsrInlinerAdapter))
@@ -90,7 +90,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name = "api">
         ///     the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> Values in <seealso cref = "IOpcodes"/>.
+        ///     ASM}<i>x</i> Values in <seealso cref = "Opcodes"/>.
         /// </param>
         /// <param name = "methodVisitor">
         ///     the method visitor to send the resulting inlined method code to, or
@@ -99,7 +99,7 @@ namespace ObjectWeb.Asm.Commons
         ///     .
         /// </param>
         /// <param name = "access">
-        ///     the method's access flags (see <seealso cref = "IOpcodes"/>). This parameter also indicates if
+        ///     the method's access flags (see <seealso cref = "Opcodes"/>). This parameter also indicates if
         ///     the method is synthetic and/or deprecated.
         /// </param>
         /// <param name = "name"> the method's name. </param>
@@ -116,7 +116,7 @@ namespace ObjectWeb.Asm.Commons
         {
             base.VisitJumpInsn(opcode, label);
             var labelNode = ((JumpInsnNode)Instructions.Last).Label;
-            if (opcode == IOpcodes.Jsr && !_subroutinesInsns.ContainsKey(labelNode))
+            if (opcode == Opcodes.Jsr && !_subroutinesInsns.ContainsKey(labelNode))
                 _subroutinesInsns[labelNode] = new BitArray(64);
         }
 
@@ -142,8 +142,10 @@ namespace ObjectWeb.Asm.Commons
             var visitedInsns = new BitArray(64);
             FindSubroutineInsns(0, _mainSubroutineInsns, visitedInsns);
             // For each subroutine, find the instructions that belong to this subroutine.
-            foreach (var (jsrLabelNode, subroutineInsns) in _subroutinesInsns)
+            foreach (KeyValuePair<LabelNode, BitArray> pair in _subroutinesInsns)
             {
+                LabelNode jsrLabelNode = pair.Key;
+                BitArray subroutineInsns = pair.Value;
                 FindSubroutineInsns(Instructions.IndexOf(jsrLabelNode), subroutineInsns, visitedInsns);
             }
         }
@@ -226,7 +228,7 @@ namespace ObjectWeb.Asm.Commons
                     sharedSubroutineInsns.Set(currentInsnIndex, true);
                 visitedInsns.Set(currentInsnIndex, true);
                 var currentInsnNode = Instructions.Get(currentInsnIndex);
-                if (currentInsnNode.Type == AbstractInsnNode.Jump_Insn && currentInsnNode.Opcode != IOpcodes.Jsr)
+                if (currentInsnNode.Type == AbstractInsnNode.Jump_Insn && currentInsnNode.Opcode != Opcodes.Jsr)
                 {
                     // Don't follow JSR instructions in the control flow graph.
                     var jumpInsnNode = (JumpInsnNode)currentInsnNode;
@@ -250,17 +252,17 @@ namespace ObjectWeb.Asm.Commons
                 // Check if this instruction falls through to the next instruction; if not, return.
                 switch (Instructions.Get(currentInsnIndex).Opcode)
                 {
-                    case IOpcodes.Goto:
-                    case IOpcodes.Ret:
-                    case IOpcodes.Tableswitch:
-                    case IOpcodes.Lookupswitch:
-                    case IOpcodes.Ireturn:
-                    case IOpcodes.Lreturn:
-                    case IOpcodes.Freturn:
-                    case IOpcodes.Dreturn:
-                    case IOpcodes.Areturn:
-                    case IOpcodes.Return:
-                    case IOpcodes.Athrow:
+                    case Opcodes.Goto:
+                    case Opcodes.Ret:
+                    case Opcodes.Tableswitch:
+                    case Opcodes.Lookupswitch:
+                    case Opcodes.Ireturn:
+                    case Opcodes.Lreturn:
+                    case Opcodes.Freturn:
+                    case Opcodes.Dreturn:
+                    case Opcodes.Areturn:
+                    case Opcodes.Return:
+                    case Opcodes.Athrow:
                         // Note: this either returns from this subroutine, or from a parent subroutine.
                         return;
                     default:
@@ -286,7 +288,7 @@ namespace ObjectWeb.Asm.Commons
             var newLocalVariables = new List<LocalVariableNode>();
             while (worklist.Count > 0)
             {
-                var instantiation = worklist.First!.Value;
+                var instantiation = worklist.First.Value;
                 worklist.RemoveFirst();
                 EmitInstantiation(instantiation, worklist, newInstructions, newTryCatchBlocks, newLocalVariables);
             }
@@ -336,7 +338,7 @@ namespace ObjectWeb.Asm.Commons
                     // Don't emit instructions that were already emitted by an ancestor subroutine. Note that it
                     // is still possible for a given instruction to be emitted twice because it may belong to
                     // two subroutines that do not invoke each other.
-                    if (insnNode.Opcode == IOpcodes.Ret)
+                    if (insnNode.Opcode == Opcodes.Ret)
                     {
                         // Translate RET instruction(s) to a jump to the return label for the appropriate
                         // instantiation. The problem is that the subroutine may "fall through" to the ret of a
@@ -352,9 +354,9 @@ namespace ObjectWeb.Asm.Commons
                             // This is only possible if the mainSubroutine owns a RET instruction, which should
                             // never happen for verifiable code.
                             throw new ArgumentException("Instruction #" + i + " is a RET not owned by any subroutine");
-                        newInstructions.Add(new JumpInsnNode(IOpcodes.Goto, retLabel));
+                        newInstructions.Add(new JumpInsnNode(Opcodes.Goto, retLabel));
                     }
-                    else if (insnNode.Opcode == IOpcodes.Jsr)
+                    else if (insnNode.Opcode == Opcodes.Jsr)
                     {
                         var jsrLabelNode = ((JumpInsnNode)insnNode).Label;
                         _subroutinesInsns.TryGetValue(jsrLabelNode, out var subroutineInsns);
@@ -364,8 +366,8 @@ namespace ObjectWeb.Asm.Commons
                         // for what was once the return address value. This hack allows us to avoid doing any sort
                         // of data flow analysis to figure out which instructions manipulate the old return
                         // address value pointer which is now known to be unneeded.
-                        newInstructions.Add(new InsnNode(IOpcodes.Aconst_Null));
-                        newInstructions.Add(new JumpInsnNode(IOpcodes.Goto, clonedJsrLabelNode));
+                        newInstructions.Add(new InsnNode(Opcodes.Aconst_Null));
+                        newInstructions.Add(new JumpInsnNode(Opcodes.Goto, clonedJsrLabelNode));
                         newInstructions.Add(newInstantiation.returnLabel);
                         // Insert this new instantiation into the queue to be emitted later.
                         worklist.AddLast(newInstantiation);

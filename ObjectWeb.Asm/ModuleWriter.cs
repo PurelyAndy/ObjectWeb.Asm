@@ -139,7 +139,7 @@ namespace ObjectWeb.Asm
         /// </summary>
         private int _usesCount;
 
-        public ModuleWriter(SymbolTable symbolTable, int name, int access, int version) : base(IOpcodes.Asm9)
+        public ModuleWriter(SymbolTable symbolTable, int name, int access, int version) : base(Opcodes.Asm9)
         {
             this._symbolTable = symbolTable;
             _moduleNameIndex = name;

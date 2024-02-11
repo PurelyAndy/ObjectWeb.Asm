@@ -69,7 +69,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name = "classVisitor"> the class visitor this remapper must delegate to. </param>
         /// <param name = "remapper"> the remapper to use to remap the types in the visited class. </param>
-        public ClassRemapper(ClassVisitor classVisitor, Remapper remapper) : this(IOpcodes.Asm9, classVisitor, remapper)
+        public ClassRemapper(ClassVisitor classVisitor, Remapper remapper) : this(Opcodes.Asm9, classVisitor, remapper)
         {
         }
 
@@ -78,7 +78,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name = "api">
         ///     the ASM API version supported by this remapper. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref = "IOpcodes"/>.
+        ///     ASM}<i>x</i> values in <seealso cref = "Opcodes"/>.
         /// </param>
         /// <param name = "classVisitor"> the class visitor this remapper must delegate to. </param>
         /// <param name = "remapper"> the remapper to use to remap the types in the visited class. </param>

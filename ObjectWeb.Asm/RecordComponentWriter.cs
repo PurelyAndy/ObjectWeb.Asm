@@ -98,7 +98,7 @@ namespace ObjectWeb.Asm
         /// <param name="descriptor"> the record component descriptor (see <seealso cref="Type" />). </param>
         /// <param name="signature"> the record component signature. May be {@literal null}. </param>
         public RecordComponentWriter(SymbolTable symbolTable, string name, string descriptor, string signature) : base(
-            IOpcodes.Asm9)
+            Opcodes.Asm9)
         {
             this._symbolTable = symbolTable;
             _nameIndex = symbolTable.AddConstantUtf8(name);

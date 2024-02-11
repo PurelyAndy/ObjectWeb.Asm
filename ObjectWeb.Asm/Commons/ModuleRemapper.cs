@@ -45,7 +45,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="moduleVisitor"> the module visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited module. </param>
-        public ModuleRemapper(ModuleVisitor moduleVisitor, Remapper remapper) : this(IOpcodes.Asm9, moduleVisitor,
+        public ModuleRemapper(ModuleVisitor moduleVisitor, Remapper remapper) : this(Opcodes.Asm9, moduleVisitor,
             remapper)
         {
         }
@@ -54,7 +54,7 @@ namespace ObjectWeb.Asm.Commons
         /// Constructs a new <seealso cref="ModuleRemapper"/>.
         /// </summary>
         /// <param name="api"> the ASM API version supported by this remapper. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes"/>. </param>
         /// <param name="moduleVisitor"> the module visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited module. </param>
         public ModuleRemapper(int api, ModuleVisitor moduleVisitor, Remapper remapper) : base(api, moduleVisitor)

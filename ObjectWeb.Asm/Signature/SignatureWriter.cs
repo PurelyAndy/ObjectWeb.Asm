@@ -74,7 +74,7 @@ namespace ObjectWeb.Asm.Signature
 
         /// <summary>
         /// Constructs a new <seealso cref="SignatureWriter"/>. </summary>
-        public SignatureWriter() : base(IOpcodes.Asm9)
+        public SignatureWriter() : base(Opcodes.Asm9)
         {
         }
 

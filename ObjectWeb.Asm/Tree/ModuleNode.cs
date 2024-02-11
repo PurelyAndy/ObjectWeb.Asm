@@ -87,7 +87,7 @@ namespace ObjectWeb.Asm.Tree
         ///     ACC_MANDATED}. </param>
         /// <param name = "version"> the module version, or {@literal null}. </param>
         /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
-        public ModuleNode(string name, int access, string version) : base(IOpcodes.Asm9)
+        public ModuleNode(string name, int access, string version) : base(Opcodes.Asm9)
         {
             if (this.GetType() != typeof(ModuleNode))
             {

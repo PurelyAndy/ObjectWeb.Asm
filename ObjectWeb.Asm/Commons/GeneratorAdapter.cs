@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ObjectWeb.Asm.Util;
 
 // ASM: a very small and fast Java bytecode manipulation framework
 // Copyright (c) 2000-2011 INRIA, France Telecom
@@ -75,92 +76,92 @@ namespace ObjectWeb.Asm.Commons
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Add = IOpcodes.Iadd;
+        public const int Add = Opcodes.Iadd;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Sub = IOpcodes.Isub;
+        public const int Sub = Opcodes.Isub;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Mul = IOpcodes.Imul;
+        public const int Mul = Opcodes.Imul;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Div = IOpcodes.Idiv;
+        public const int Div = Opcodes.Idiv;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Rem = IOpcodes.Irem;
+        public const int Rem = Opcodes.Irem;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Neg = IOpcodes.Ineg;
+        public const int Neg = Opcodes.Ineg;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Shl = IOpcodes.Ishl;
+        public const int Shl = Opcodes.Ishl;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Shr = IOpcodes.Ishr;
+        public const int Shr = Opcodes.Ishr;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Ushr = IOpcodes.Iushr;
+        public const int Ushr = Opcodes.Iushr;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int And = IOpcodes.Iand;
+        public const int And = Opcodes.Iand;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Or = IOpcodes.Ior;
+        public const int Or = Opcodes.Ior;
 
         /// <summary>
         ///     Constant for the <seealso cref="Math" /> method.
         /// </summary>
-        public const int Xor = IOpcodes.Ixor;
+        public const int Xor = Opcodes.Ixor;
 
         /// <summary>
         ///     Constant for the <seealso cref="IfCmp" /> method.
         /// </summary>
-        public const int Eq = IOpcodes.Ifeq;
+        public const int Eq = Opcodes.Ifeq;
 
         /// <summary>
         ///     Constant for the <seealso cref="IfCmp" /> method.
         /// </summary>
-        public const int Ne = IOpcodes.Ifne;
+        public const int Ne = Opcodes.Ifne;
 
         /// <summary>
         ///     Constant for the <seealso cref="IfCmp" /> method.
         /// </summary>
-        public const int Lt = IOpcodes.Iflt;
+        public const int Lt = Opcodes.Iflt;
 
         /// <summary>
         ///     Constant for the <seealso cref="IfCmp" /> method.
         /// </summary>
-        public const int Ge = IOpcodes.Ifge;
+        public const int Ge = Opcodes.Ifge;
 
         /// <summary>
         ///     Constant for the <seealso cref="IfCmp" /> method.
         /// </summary>
-        public const int Gt = IOpcodes.Ifgt;
+        public const int Gt = Opcodes.Ifgt;
 
         /// <summary>
         ///     Constant for the <seealso cref="IfCmp" /> method.
         /// </summary>
-        public const int Le = IOpcodes.Ifle;
+        public const int Le = Opcodes.Ifle;
 
         private static readonly JType BYTE_TYPE = JType.GetObjectType("java/lang/Byte");
 
@@ -207,7 +208,7 @@ namespace ObjectWeb.Asm.Commons
         /// <summary>
         ///     The types of the local variables of the visited method.
         /// </summary>
-        private readonly List<JType> _localTypes = new();
+        private readonly List<JType> _localTypes = new List<JType>();
 
         /// <summary>
         ///     The return type of the visited method.
@@ -220,12 +221,12 @@ namespace ObjectWeb.Asm.Commons
         ///     version.
         /// </summary>
         /// <param name="methodVisitor"> the method visitor to which this adapter delegates calls. </param>
-        /// <param name="access"> the method's access flags (see <seealso cref="IOpcodes" />). </param>
+        /// <param name="access"> the method's access flags (see <seealso cref="Opcodes" />). </param>
         /// <param name="name"> the method's name. </param>
         /// <param name="descriptor"> the method's descriptor (see <seealso cref="Type" />). </param>
         /// <exception cref="IllegalStateException"> if a subclass calls this constructor. </exception>
         public GeneratorAdapter(MethodVisitor methodVisitor, int access, string name, string descriptor) : this(
-            IOpcodes.Asm9, methodVisitor, access, name, descriptor)
+            Opcodes.Asm9, methodVisitor, access, name, descriptor)
         {
             if (GetType() != typeof(GeneratorAdapter)) throw new InvalidOperationException();
         }
@@ -235,10 +236,10 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="api">
         ///     the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> Values in <seealso cref="IOpcodes" />.
+        ///     ASM}<i>x</i> Values in <seealso cref="Opcodes" />.
         /// </param>
         /// <param name="methodVisitor"> the method visitor to which this adapter delegates calls. </param>
-        /// <param name="access"> the method's access flags (see <seealso cref="IOpcodes" />). </param>
+        /// <param name="access"> the method's access flags (see <seealso cref="Opcodes" />). </param>
         /// <param name="name"> the method's name. </param>
         /// <param name="descriptor"> the method's descriptor (see <seealso cref="Type" />). </param>
         public GeneratorAdapter(int api, MethodVisitor methodVisitor, int access, string name, string descriptor) :
@@ -323,11 +324,11 @@ namespace ObjectWeb.Asm.Commons
         public virtual void Push(int value)
         {
             if (value >= -1 && value <= 5)
-                mv.VisitInsn(IOpcodes.Iconst_0 + value);
+                mv.VisitInsn(Opcodes.Iconst_0 + value);
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
-                mv.VisitIntInsn(IOpcodes.Bipush, value);
+                mv.VisitIntInsn(Opcodes.Bipush, value);
             else if (value >= short.MinValue && value <= short.MaxValue)
-                mv.VisitIntInsn(IOpcodes.Sipush, value);
+                mv.VisitIntInsn(Opcodes.Sipush, value);
             else
                 mv.VisitLdcInsn(value);
         }
@@ -339,7 +340,7 @@ namespace ObjectWeb.Asm.Commons
         public virtual void Push(long value)
         {
             if (value == 0L || value == 1L)
-                mv.VisitInsn(IOpcodes.Lconst_0 + (int)value);
+                mv.VisitInsn(Opcodes.Lconst_0 + (int)value);
             else
                 mv.VisitLdcInsn(value);
         }
@@ -350,10 +351,10 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="value"> the value to be pushed on the stack. </param>
         public virtual void Push(float value)
         {
-            var bits = BitConverter.SingleToInt32Bits(value);
+            var bits = Int32AndSingleConverter.Convert(value);
             if (bits == 0L || bits == 0x3F800000 || bits == 0x40000000)
                 // 0..2
-                mv.VisitInsn(IOpcodes.Fconst_0 + (int)value);
+                mv.VisitInsn(Opcodes.Fconst_0 + (int)value);
             else
                 mv.VisitLdcInsn(value);
         }
@@ -367,7 +368,7 @@ namespace ObjectWeb.Asm.Commons
             var bits = BitConverter.DoubleToInt64Bits(value);
             if (bits == 0L || bits == 0x3FF0000000000000L)
                 // +0.0d and 1.0d
-                mv.VisitInsn(IOpcodes.Dconst_0 + (int)value);
+                mv.VisitInsn(Opcodes.Dconst_0 + (int)value);
             else
                 mv.VisitLdcInsn(value);
         }
@@ -379,7 +380,7 @@ namespace ObjectWeb.Asm.Commons
         public virtual void Push(string value)
         {
             if (ReferenceEquals(value, null))
-                mv.VisitInsn(IOpcodes.Aconst_Null);
+                mv.VisitInsn(Opcodes.Aconst_Null);
             else
                 mv.VisitLdcInsn(value);
         }
@@ -391,33 +392,33 @@ namespace ObjectWeb.Asm.Commons
         public virtual void Push(JType value)
         {
             if (value == null)
-                mv.VisitInsn(IOpcodes.Aconst_Null);
+                mv.VisitInsn(Opcodes.Aconst_Null);
             else
                 switch (value.Sort)
                 {
                     case JType.Boolean:
-                        mv.VisitFieldInsn(IOpcodes.Getstatic, "java/lang/Boolean", "TYPE", ClassDescriptor);
+                        mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Boolean", "TYPE", ClassDescriptor);
                         break;
                     case JType.Char:
-                        mv.VisitFieldInsn(IOpcodes.Getstatic, "java/lang/Character", "TYPE", ClassDescriptor);
+                        mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Character", "TYPE", ClassDescriptor);
                         break;
                     case JType.Byte:
-                        mv.VisitFieldInsn(IOpcodes.Getstatic, "java/lang/Byte", "TYPE", ClassDescriptor);
+                        mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Byte", "TYPE", ClassDescriptor);
                         break;
                     case JType.Short:
-                        mv.VisitFieldInsn(IOpcodes.Getstatic, "java/lang/Short", "TYPE", ClassDescriptor);
+                        mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Short", "TYPE", ClassDescriptor);
                         break;
                     case JType.Int:
-                        mv.VisitFieldInsn(IOpcodes.Getstatic, "java/lang/Integer", "TYPE", ClassDescriptor);
+                        mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Integer", "TYPE", ClassDescriptor);
                         break;
                     case JType.Float:
-                        mv.VisitFieldInsn(IOpcodes.Getstatic, "java/lang/Float", "TYPE", ClassDescriptor);
+                        mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Float", "TYPE", ClassDescriptor);
                         break;
                     case JType.Long:
-                        mv.VisitFieldInsn(IOpcodes.Getstatic, "java/lang/Long", "TYPE", ClassDescriptor);
+                        mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Long", "TYPE", ClassDescriptor);
                         break;
                     case JType.Double:
-                        mv.VisitFieldInsn(IOpcodes.Getstatic, "java/lang/Double", "TYPE", ClassDescriptor);
+                        mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Double", "TYPE", ClassDescriptor);
                         break;
                     default:
                         mv.VisitLdcInsn(value);
@@ -432,7 +433,7 @@ namespace ObjectWeb.Asm.Commons
         public virtual void Push(Handle handle)
         {
             if (handle == null)
-                mv.VisitInsn(IOpcodes.Aconst_Null);
+                mv.VisitInsn(Opcodes.Aconst_Null);
             else
                 mv.VisitLdcInsn(handle);
         }
@@ -444,7 +445,7 @@ namespace ObjectWeb.Asm.Commons
         public virtual void Push(ConstantDynamic constantDynamic)
         {
             if (constantDynamic == null)
-                mv.VisitInsn(IOpcodes.Aconst_Null);
+                mv.VisitInsn(Opcodes.Aconst_Null);
             else
                 mv.VisitLdcInsn(constantDynamic);
         }
@@ -460,7 +461,7 @@ namespace ObjectWeb.Asm.Commons
         /// <returns> the index of the given method argument in the frame's local variables array. </returns>
         private int GetArgIndex(int arg)
         {
-            var index = (_access & IOpcodes.Acc_Static) == 0 ? 1 : 0;
+            var index = (_access & Opcodes.Acc_Static) == 0 ? 1 : 0;
             for (var i = 0; i < arg; i++) index += _argumentTypes[i].Size;
             return index;
         }
@@ -472,7 +473,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="index"> an index in the frame's local variables array. </param>
         private void LoadInsn(JType type, int index)
         {
-            mv.VisitVarInsn(type.GetOpcode(IOpcodes.Iload), index);
+            mv.VisitVarInsn(type.GetOpcode(Opcodes.Iload), index);
         }
 
         /// <summary>
@@ -482,7 +483,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="index"> an index in the frame's local variables array. </param>
         private void StoreInsn(JType type, int index)
         {
-            mv.VisitVarInsn(type.GetOpcode(IOpcodes.Istore), index);
+            mv.VisitVarInsn(type.GetOpcode(Opcodes.Istore), index);
         }
 
         /// <summary>
@@ -490,9 +491,9 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void LoadThis()
         {
-            if ((_access & IOpcodes.Acc_Static) != 0)
+            if ((_access & Opcodes.Acc_Static) != 0)
                 throw new InvalidOperationException("no 'this' pointer within static method");
-            mv.VisitVarInsn(IOpcodes.Aload, 0);
+            mv.VisitVarInsn(Opcodes.Aload, 0);
         }
 
         /// <summary>
@@ -637,7 +638,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> the type of the array element to be loaded. </param>
         public virtual void ArrayLoad(JType type)
         {
-            mv.VisitInsn(type.GetOpcode(IOpcodes.Iaload));
+            mv.VisitInsn(type.GetOpcode(Opcodes.Iaload));
         }
 
         /// <summary>
@@ -646,7 +647,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> the type of the array element to be stored. </param>
         public virtual void ArrayStore(JType type)
         {
-            mv.VisitInsn(type.GetOpcode(IOpcodes.Iastore));
+            mv.VisitInsn(type.GetOpcode(Opcodes.Iastore));
         }
 
         // -----------------------------------------------------------------------------------------------
@@ -658,7 +659,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void Pop()
         {
-            mv.VisitInsn(IOpcodes.Pop);
+            mv.VisitInsn(Opcodes.Pop);
         }
 
         /// <summary>
@@ -666,7 +667,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void Pop2()
         {
-            mv.VisitInsn(IOpcodes.Pop2);
+            mv.VisitInsn(Opcodes.Pop2);
         }
 
         /// <summary>
@@ -674,7 +675,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void Dup()
         {
-            mv.VisitInsn(IOpcodes.Dup);
+            mv.VisitInsn(Opcodes.Dup);
         }
 
         /// <summary>
@@ -682,7 +683,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void Dup2()
         {
-            mv.VisitInsn(IOpcodes.Dup2);
+            mv.VisitInsn(Opcodes.Dup2);
         }
 
         /// <summary>
@@ -690,7 +691,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void DupX1()
         {
-            mv.VisitInsn(IOpcodes.Dup_X1);
+            mv.VisitInsn(Opcodes.Dup_X1);
         }
 
         /// <summary>
@@ -698,7 +699,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void DupX2()
         {
-            mv.VisitInsn(IOpcodes.Dup_X2);
+            mv.VisitInsn(Opcodes.Dup_X2);
         }
 
         /// <summary>
@@ -706,7 +707,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void Dup2X1()
         {
-            mv.VisitInsn(IOpcodes.Dup2_X1);
+            mv.VisitInsn(Opcodes.Dup2_X1);
         }
 
         /// <summary>
@@ -714,7 +715,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void Dup2X2()
         {
-            mv.VisitInsn(IOpcodes.Dup2_X2);
+            mv.VisitInsn(Opcodes.Dup2_X2);
         }
 
         /// <summary>
@@ -722,7 +723,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void Swap()
         {
-            mv.VisitInsn(IOpcodes.Swap);
+            mv.VisitInsn(Opcodes.Swap);
         }
 
         /// <summary>
@@ -781,8 +782,8 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void Not()
         {
-            mv.VisitInsn(IOpcodes.Iconst_1);
-            mv.VisitInsn(IOpcodes.Ixor);
+            mv.VisitInsn(Opcodes.Iconst_1);
+            mv.VisitInsn(Opcodes.Ixor);
         }
 
         /// <summary>
@@ -988,24 +989,24 @@ namespace ObjectWeb.Asm.Commons
             switch (type.Sort)
             {
                 case JType.Long:
-                    mv.VisitInsn(IOpcodes.Lcmp);
+                    mv.VisitInsn(Opcodes.Lcmp);
                     break;
                 case JType.Double:
-                    mv.VisitInsn(mode == Ge || mode == Gt ? IOpcodes.Dcmpl : IOpcodes.Dcmpg);
+                    mv.VisitInsn(mode == Ge || mode == Gt ? Opcodes.Dcmpl : Opcodes.Dcmpg);
                     break;
                 case JType.Float:
-                    mv.VisitInsn(mode == Ge || mode == Gt ? IOpcodes.Fcmpl : IOpcodes.Fcmpg);
+                    mv.VisitInsn(mode == Ge || mode == Gt ? Opcodes.Fcmpl : Opcodes.Fcmpg);
                     break;
                 case JType.Array:
                 case JType.Object:
                     if (mode == Eq)
                     {
-                        mv.VisitJumpInsn(IOpcodes.If_Acmpeq, label);
+                        mv.VisitJumpInsn(Opcodes.If_Acmpeq, label);
                         return;
                     }
                     else if (mode == Ne)
                     {
-                        mv.VisitJumpInsn(IOpcodes.If_Acmpne, label);
+                        mv.VisitJumpInsn(Opcodes.If_Acmpne, label);
                         return;
                     }
                     else
@@ -1017,22 +1018,22 @@ namespace ObjectWeb.Asm.Commons
                     switch (mode)
                     {
                         case Eq:
-                            intOp = IOpcodes.If_Icmpeq;
+                            intOp = Opcodes.If_Icmpeq;
                             break;
                         case Ne:
-                            intOp = IOpcodes.If_Icmpne;
+                            intOp = Opcodes.If_Icmpne;
                             break;
                         case Ge:
-                            intOp = IOpcodes.If_Icmpge;
+                            intOp = Opcodes.If_Icmpge;
                             break;
                         case Lt:
-                            intOp = IOpcodes.If_Icmplt;
+                            intOp = Opcodes.If_Icmplt;
                             break;
                         case Le:
-                            intOp = IOpcodes.If_Icmple;
+                            intOp = Opcodes.If_Icmple;
                             break;
                         case Gt:
-                            intOp = IOpcodes.If_Icmpgt;
+                            intOp = Opcodes.If_Icmpgt;
                             break;
                         default:
                             throw new ArgumentException("Bad comparison mode " + mode);
@@ -1073,7 +1074,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="label"> where to jump if the condition is {@literal true}. </param>
         public virtual void IfNull(Label label)
         {
-            mv.VisitJumpInsn(IOpcodes.Ifnull, label);
+            mv.VisitJumpInsn(Opcodes.Ifnull, label);
         }
 
         /// <summary>
@@ -1082,7 +1083,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="label"> where to jump if the condition is {@literal true}. </param>
         public virtual void IfNonNull(Label label)
         {
-            mv.VisitJumpInsn(IOpcodes.Ifnonnull, label);
+            mv.VisitJumpInsn(Opcodes.Ifnonnull, label);
         }
 
         /// <summary>
@@ -1091,7 +1092,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="label"> where to jump if the condition is {@literal true}. </param>
         public virtual void GoTo(Label label)
         {
-            mv.VisitJumpInsn(IOpcodes.Goto, label);
+            mv.VisitJumpInsn(Opcodes.Goto, label);
         }
 
         /// <summary>
@@ -1103,7 +1104,7 @@ namespace ObjectWeb.Asm.Commons
         /// </param>
         public virtual void Ret(int local)
         {
-            mv.VisitVarInsn(IOpcodes.Ret, local);
+            mv.VisitVarInsn(Opcodes.Ret, local);
         }
 
         /// <summary>
@@ -1181,7 +1182,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void ReturnValue()
         {
-            mv.VisitInsn(_returnType.GetOpcode(IOpcodes.Ireturn));
+            mv.VisitInsn(_returnType.GetOpcode(Opcodes.Ireturn));
         }
 
         // -----------------------------------------------------------------------------------------------
@@ -1208,7 +1209,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> the type of the field. </param>
         public virtual void GetStatic(JType owner, string name, JType type)
         {
-            FieldInsn(IOpcodes.Getstatic, owner, name, type);
+            FieldInsn(Opcodes.Getstatic, owner, name, type);
         }
 
         /// <summary>
@@ -1219,7 +1220,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> the type of the field. </param>
         public virtual void PutStatic(JType owner, string name, JType type)
         {
-            FieldInsn(IOpcodes.Putstatic, owner, name, type);
+            FieldInsn(Opcodes.Putstatic, owner, name, type);
         }
 
         /// <summary>
@@ -1230,7 +1231,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> the type of the field. </param>
         public virtual void GetField(JType owner, string name, JType type)
         {
-            FieldInsn(IOpcodes.Getfield, owner, name, type);
+            FieldInsn(Opcodes.Getfield, owner, name, type);
         }
 
         /// <summary>
@@ -1241,7 +1242,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> the type of the field. </param>
         public virtual void PutField(JType owner, string name, JType type)
         {
-            FieldInsn(IOpcodes.Putfield, owner, name, type);
+            FieldInsn(Opcodes.Putfield, owner, name, type);
         }
 
         // -----------------------------------------------------------------------------------------------
@@ -1268,7 +1269,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="method"> the method to be invoked. </param>
         public virtual void InvokeVirtual(JType owner, Method method)
         {
-            InvokeInsn(IOpcodes.Invokevirtual, owner, method, false);
+            InvokeInsn(Opcodes.Invokevirtual, owner, method, false);
         }
 
         /// <summary>
@@ -1278,7 +1279,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="method"> the constructor to be invoked. </param>
         public virtual void InvokeConstructor(JType type, Method method)
         {
-            InvokeInsn(IOpcodes.Invokespecial, type, method, false);
+            InvokeInsn(Opcodes.Invokespecial, type, method, false);
         }
 
         /// <summary>
@@ -1288,7 +1289,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="method"> the method to be invoked. </param>
         public virtual void InvokeStatic(JType owner, Method method)
         {
-            InvokeInsn(IOpcodes.Invokestatic, owner, method, false);
+            InvokeInsn(Opcodes.Invokestatic, owner, method, false);
         }
 
         /// <summary>
@@ -1298,7 +1299,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="method"> the method to be invoked. </param>
         public virtual void InvokeInterface(JType owner, Method method)
         {
-            InvokeInsn(IOpcodes.Invokeinterface, owner, method, true);
+            InvokeInsn(Opcodes.Invokeinterface, owner, method, true);
         }
 
         /// <summary>
@@ -1340,7 +1341,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> the class of the object to be created. </param>
         public virtual void NewInstance(JType type)
         {
-            TypeInsn(IOpcodes.New, type);
+            TypeInsn(Opcodes.New, type);
         }
 
         /// <summary>
@@ -1361,7 +1362,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void ArrayLength()
         {
-            mv.VisitInsn(IOpcodes.Arraylength);
+            mv.VisitInsn(Opcodes.Arraylength);
         }
 
         /// <summary>
@@ -1369,7 +1370,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void ThrowException()
         {
-            mv.VisitInsn(IOpcodes.Athrow);
+            mv.VisitInsn(Opcodes.Athrow);
         }
 
         /// <summary>
@@ -1393,7 +1394,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> a class or interface type. </param>
         public virtual void CheckCast(JType type)
         {
-            if (!type.Equals(OBJECT_TYPE)) TypeInsn(IOpcodes.Checkcast, type);
+            if (!type.Equals(OBJECT_TYPE)) TypeInsn(Opcodes.Checkcast, type);
         }
 
         /// <summary>
@@ -1402,7 +1403,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> a class or interface type. </param>
         public virtual void InstanceOf(JType type)
         {
-            TypeInsn(IOpcodes.Instanceof, type);
+            TypeInsn(Opcodes.Instanceof, type);
         }
 
         /// <summary>
@@ -1410,7 +1411,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void MonitorEnter()
         {
-            mv.VisitInsn(IOpcodes.Monitorenter);
+            mv.VisitInsn(Opcodes.Monitorenter);
         }
 
         /// <summary>
@@ -1418,7 +1419,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void MonitorExit()
         {
-            mv.VisitInsn(IOpcodes.Monitorexit);
+            mv.VisitInsn(Opcodes.Monitorexit);
         }
 
         // -----------------------------------------------------------------------------------------------
@@ -1430,7 +1431,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         public virtual void EndMethod()
         {
-            if ((_access & IOpcodes.Acc_Abstract) == 0) mv.VisitMaxs(0, 0);
+            if ((_access & Opcodes.Acc_Abstract) == 0) mv.VisitMaxs(0, 0);
             mv.VisitEnd();
         }
 

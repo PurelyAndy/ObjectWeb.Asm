@@ -105,8 +105,8 @@ namespace ObjectWeb.Asm
         internal int currentFrameOffset;
 
         /// <summary>
-        /// The type of the current stack map frame. One of <seealso cref="IOpcodes.F_FULL"/>, {@link
-        /// Opcodes#F_APPEND}, <seealso cref="IOpcodes.F_CHOP"/>, <seealso cref="IOpcodes.F_SAME"/> or <seealso cref="IOpcodes.F_SAME1"/>.
+        /// The type of the current stack map frame. One of <seealso cref="Opcodes.F_FULL"/>, {@link
+        /// Opcodes#F_APPEND}, <seealso cref="Opcodes.F_CHOP"/>, <seealso cref="Opcodes.F_SAME"/> or <seealso cref="Opcodes.F_SAME1"/>.
         /// </summary>
         internal int currentFrameType;
 

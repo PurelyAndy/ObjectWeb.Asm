@@ -61,7 +61,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name = "labels"> beginnings of the handler blocks. {@code labels[i]} is the beginning of the
         ///     handler block for the {@code min + i} key. </param>
         public TableSwitchInsnNode(int min, int max, LabelNode dflt, params LabelNode[] labels) : base(
-            IOpcodes.Tableswitch)
+            Opcodes.Tableswitch)
         {
             this.Min = min;
             this.Max = max;

@@ -37,7 +37,7 @@ namespace ObjectWeb.Asm.Tree
     public class FieldNode : FieldVisitor
     {
         /// <summary>
-        /// The field's access flags (see <seealso cref = "IOpcodes"/>). This field also indicates if
+        /// The field's access flags (see <seealso cref = "Opcodes"/>). This field also indicates if
         /// the field is synthetic and/or deprecated.
         /// </summary>
         public int Access { get; set; }
@@ -95,7 +95,7 @@ namespace ObjectWeb.Asm.Tree
         ///     Long}, a <seealso cref = "Double"/> or a <seealso cref = "string "/>. </param>
         /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
         public FieldNode(int access, string name, string descriptor, string signature, object value) : this(
-            IOpcodes.Asm9, access, name, descriptor, signature, value)
+            Opcodes.Asm9, access, name, descriptor, signature, value)
         {
             if (this.GetType() != typeof(FieldNode))
             {
@@ -107,7 +107,7 @@ namespace ObjectWeb.Asm.Tree
         /// Constructs a new <seealso cref = "FieldNode"/>.
         /// </summary>
         /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> Values in <seealso cref = "IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> Values in <seealso cref = "Opcodes"/>. </param>
         /// <param name = "access"> the field's access flags (see <seealso cref = "org.objectweb.asm.Opcodes"/>). This parameter
         ///     also indicates if the field is synthetic and/or deprecated. </param>
         /// <param name = "name"> the field's name. </param>
@@ -182,7 +182,7 @@ namespace ObjectWeb.Asm.Tree
         ///     Opcodes}. </param>
         public virtual void Check(int api)
         {
-            if (api == IOpcodes.Asm4)
+            if (api == Opcodes.Asm4)
             {
                 if (VisibleTypeAnnotations != null && VisibleTypeAnnotations.Count > 0)
                 {

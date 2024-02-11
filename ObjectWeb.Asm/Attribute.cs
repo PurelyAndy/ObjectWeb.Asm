@@ -229,7 +229,7 @@ namespace ObjectWeb.Asm
         {
             var size = 0;
             // Before Java 1.5, synthetic fields are represented with a Synthetic attribute.
-            if ((accessFlags & IOpcodes.Acc_Synthetic) != 0 && symbolTable.MajorVersion < IOpcodes.V1_5)
+            if ((accessFlags & Opcodes.Acc_Synthetic) != 0 && symbolTable.MajorVersion < Opcodes.V1_5)
             {
                 // Synthetic attributes always use 6 bytes.
                 symbolTable.AddConstantUtf8(Constants.Synthetic);
@@ -244,7 +244,7 @@ namespace ObjectWeb.Asm
             }
 
             // ACC_DEPRECATED is ASM specific, the ClassFile format uses a Deprecated attribute instead.
-            if ((accessFlags & IOpcodes.Acc_Deprecated) != 0)
+            if ((accessFlags & Opcodes.Acc_Deprecated) != 0)
             {
                 // Deprecated attributes always use 6 bytes.
                 symbolTable.AddConstantUtf8(Constants.Deprecated);
@@ -315,7 +315,7 @@ namespace ObjectWeb.Asm
             ByteVector output)
         {
             // Before Java 1.5, synthetic fields are represented with a Synthetic attribute.
-            if ((accessFlags & IOpcodes.Acc_Synthetic) != 0 && symbolTable.MajorVersion < IOpcodes.V1_5)
+            if ((accessFlags & Opcodes.Acc_Synthetic) != 0 && symbolTable.MajorVersion < Opcodes.V1_5)
             {
                 output.PutShort(symbolTable.AddConstantUtf8(Constants.Synthetic)).PutInt(0);
             }
@@ -325,7 +325,7 @@ namespace ObjectWeb.Asm
                 output.PutShort(symbolTable.AddConstantUtf8(Constants.Signature)).PutInt(2).PutShort(signatureIndex);
             }
 
-            if ((accessFlags & IOpcodes.Acc_Deprecated) != 0)
+            if ((accessFlags & Opcodes.Acc_Deprecated) != 0)
             {
                 output.PutShort(symbolTable.AddConstantUtf8(Constants.Deprecated)).PutInt(0);
             }

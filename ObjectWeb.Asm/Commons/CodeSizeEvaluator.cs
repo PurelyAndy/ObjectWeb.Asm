@@ -32,7 +32,7 @@ namespace ObjectWeb.Asm.Commons
     ///     A <seealso cref="MethodVisitor" /> that approximates the size of the methods it visits.
     ///     @author Eugene Kuleshov
     /// </summary>
-    public class CodeSizeEvaluator : MethodVisitor, IOpcodes
+    public class CodeSizeEvaluator : MethodVisitor
     {
         /// <summary>
         ///     The maximum size in bytes of the visited method.
@@ -44,7 +44,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         private int _minSize;
 
-        public CodeSizeEvaluator(MethodVisitor methodVisitor) : this(IOpcodes.Asm9, methodVisitor)
+        public CodeSizeEvaluator(MethodVisitor methodVisitor) : this(Opcodes.Asm9, methodVisitor)
         {
         }
 
@@ -65,7 +65,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override void VisitIntInsn(int opcode, int operand)
         {
-            if (opcode == IOpcodes.Sipush)
+            if (opcode == Opcodes.Sipush)
             {
                 _minSize += 3;
                 _maxSize += 3;
@@ -81,7 +81,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override void VisitVarInsn(int opcode, int varIndex)
         {
-            if (varIndex < 4 && opcode != IOpcodes.Ret)
+            if (varIndex < 4 && opcode != Opcodes.Ret)
             {
                 _minSize += 1;
                 _maxSize += 1;
@@ -117,16 +117,16 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
             bool isInterface)
         {
-            if (api < IOpcodes.Asm5 && (opcodeAndSource & IOpcodes.Source_Deprecated) == 0)
+            if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
             {
                 // Redirect the call to the deprecated version of this method.
                 base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
                 return;
             }
 
-            var opcode = opcodeAndSource & ~IOpcodes.Source_Mask;
+            var opcode = opcodeAndSource & ~Opcodes.Source_Mask;
 
-            if (opcode == IOpcodes.Invokeinterface)
+            if (opcode == Opcodes.Invokeinterface)
             {
                 _minSize += 5;
                 _maxSize += 5;
@@ -151,7 +151,7 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitJumpInsn(int opcode, Label label)
         {
             _minSize += 3;
-            if (opcode == IOpcodes.Goto || opcode == IOpcodes.Jsr)
+            if (opcode == Opcodes.Goto || opcode == Opcodes.Jsr)
                 _maxSize += 5;
             else
                 _maxSize += 8;

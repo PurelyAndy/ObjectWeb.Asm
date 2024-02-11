@@ -180,7 +180,7 @@ namespace ObjectWeb.Asm.Commons
             if (value is Handle)
             {
                 var handle = (Handle)value;
-                var isFieldHandle = handle.Tag <= IOpcodes.H_Putstatic;
+                var isFieldHandle = handle.Tag <= Opcodes.H_Putstatic;
                 return new Handle(handle.Tag,
                     MapType(handle.Owner),
                     isFieldHandle

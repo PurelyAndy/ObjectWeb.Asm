@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Version>9.4.0.1</Version>
     <Authors>INRIA, France Telecom;NickAc</Authors>
     <Company />
@@ -10,6 +10,7 @@
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/CursedJvmSharp/ObjectWeb.Asm/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
 </Project>

@@ -49,7 +49,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="recordComponentVisitor"> the record component visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited record component. </param>
         public RecordComponentRemapper(RecordComponentVisitor recordComponentVisitor, Remapper remapper) : this(
-            IOpcodes.Asm9, recordComponentVisitor, remapper)
+            Opcodes.Asm9, recordComponentVisitor, remapper)
         {
         }
 

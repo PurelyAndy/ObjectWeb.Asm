@@ -134,7 +134,7 @@ namespace ObjectWeb.Asm
         /// </summary>
         /// <seealso cref =  # nextListElement
         /// </seealso>
-        internal static readonly Label EmptyList = new();
+        internal static readonly Label EmptyList = new Label();
 
         /// <summary>
         ///     The offset of this label in the bytecode of its method, in bytes. This value is set if and only
@@ -488,7 +488,7 @@ namespace ObjectWeb.Asm
                         // that the 2 bytes offset is unsigned (and can therefore represent values from 0 to
                         // 65535, which is sufficient since the size of a method is limited to 65535 bytes).
                         var opcode = code[sourceInsnBytecodeOffset] & 0xFF;
-                        if (opcode < IOpcodes.Ifnull)
+                        if (opcode < Opcodes.Ifnull)
                             // Change IFEQ ... JSR to ASM_IFEQ ... ASM_JSR.
                             code[sourceInsnBytecodeOffset] = (byte)(opcode + Constants.Asm_Opcode_Delta);
                         else

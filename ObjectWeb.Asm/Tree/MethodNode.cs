@@ -39,7 +39,7 @@ namespace ObjectWeb.Asm.Tree
     public class MethodNode : MethodVisitor
     {
         /// <summary>
-        /// The method's access flags (see <seealso cref = "IOpcodes"/>). This field also indicates if the method is
+        /// The method's access flags (see <seealso cref = "Opcodes"/>). This field also indicates if the method is
         /// synthetic and/or deprecated.
         /// </summary>
         public int Access { get; set; }
@@ -162,7 +162,7 @@ namespace ObjectWeb.Asm.Tree
         /// constructor</i>. Instead, they must use the <seealso cref = "MethodNode(int)"/> version.
         /// </summary>
         /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
-        public MethodNode() : this(IOpcodes.Asm9)
+        public MethodNode() : this(Opcodes.Asm9)
         {
             if (this.GetType() != typeof(MethodNode))
             {
@@ -174,7 +174,7 @@ namespace ObjectWeb.Asm.Tree
         /// Constructs an uninitialized <seealso cref = "MethodNode"/>.
         /// </summary>
         /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref = "IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> values in <seealso cref = "Opcodes"/>. </param>
         public MethodNode(int api) : base(api)
         {
             this.Instructions = new InsnList();
@@ -184,7 +184,7 @@ namespace ObjectWeb.Asm.Tree
         /// Constructs a new <seealso cref = "MethodNode"/>. <i>Subclasses must not use this constructor</i>. Instead,
         /// they must use the <seealso cref = "MethodNode(int, int, String, String, String, string[])"/> version.
         /// </summary>
-        /// <param name = "access"> the method's access flags (see <seealso cref = "IOpcodes"/>). This parameter also indicates if
+        /// <param name = "access"> the method's access flags (see <seealso cref = "Opcodes"/>). This parameter also indicates if
         ///     the method is synthetic and/or deprecated. </param>
         /// <param name = "name"> the method's name. </param>
         /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "Type"/>). </param>
@@ -193,7 +193,7 @@ namespace ObjectWeb.Asm.Tree
         ///     Type#getInternalName()}). May be {@literal null}. </param>
         /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
         public MethodNode(int access, string name, string descriptor, string signature, string[] exceptions) : this(
-            IOpcodes.Asm9, access, name, descriptor, signature, exceptions)
+            Opcodes.Asm9, access, name, descriptor, signature, exceptions)
         {
             if (this.GetType() != typeof(MethodNode))
             {
@@ -205,8 +205,8 @@ namespace ObjectWeb.Asm.Tree
         /// Constructs a new <seealso cref = "MethodNode"/>.
         /// </summary>
         /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref = "IOpcodes"/>. </param>
-        /// <param name = "access"> the method's access flags (see <seealso cref = "IOpcodes"/>). This parameter also indicates if
+        ///     ASM}<i>x</i> values in <seealso cref = "Opcodes"/>. </param>
+        /// <param name = "access"> the method's access flags (see <seealso cref = "Opcodes"/>). This parameter also indicates if
         ///     the method is synthetic and/or deprecated. </param>
         /// <param name = "name"> the method's name. </param>
         /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "Type"/>). </param>
@@ -221,7 +221,7 @@ namespace ObjectWeb.Asm.Tree
             this.Desc = descriptor;
             this.Signature = signature;
             this.Exceptions = Util.AsArrayList(exceptions);
-            if ((access & IOpcodes.Acc_Abstract) == 0)
+            if ((access & Opcodes.Acc_Abstract) == 0)
             {
                 this.LocalVariables = new List<LocalVariableNode>(5);
             }
@@ -380,14 +380,14 @@ namespace ObjectWeb.Asm.Tree
         public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
             bool isInterface)
         {
-            if (api < IOpcodes.Asm5 && (opcodeAndSource & IOpcodes.Source_Deprecated) == 0)
+            if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
             {
                 // Redirect the call to the deprecated version of this method.
                 base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
                 return;
             }
 
-            var opcode = opcodeAndSource & ~IOpcodes.Source_Mask;
+            var opcode = opcodeAndSource & ~Opcodes.Source_Mask;
             Instructions.Add(new MethodInsnNode(opcode, owner, name, descriptor, isInterface));
         }
 
@@ -581,7 +581,7 @@ namespace ObjectWeb.Asm.Tree
         ///     Opcodes}. </param>
         public virtual void Check(int api)
         {
-            if (api == IOpcodes.Asm4)
+            if (api == Opcodes.Asm4)
             {
                 if (Parameters != null && Parameters.Count > 0)
                 {
@@ -633,7 +633,7 @@ namespace ObjectWeb.Asm.Tree
                     if (insn is MethodInsnNode)
                     {
                         var isInterface = ((MethodInsnNode)insn).Itf;
-                        if (isInterface != (insn.opcode == IOpcodes.Invokeinterface))
+                        if (isInterface != (insn.opcode == Opcodes.Invokeinterface))
                         {
                             throw new UnsupportedClassVersionException();
                         }
@@ -659,7 +659,7 @@ namespace ObjectWeb.Asm.Tree
                 }
             }
 
-            if (api < IOpcodes.Asm7)
+            if (api < Opcodes.Asm7)
             {
                 for (var i = Instructions.Count() - 1; i >= 0; --i)
                 {

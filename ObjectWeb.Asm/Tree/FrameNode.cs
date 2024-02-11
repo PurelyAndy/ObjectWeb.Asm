@@ -86,20 +86,20 @@ namespace ObjectWeb.Asm.Tree
             this.FrameType = type;
             switch (type)
             {
-                case IOpcodes.F_New:
-                case IOpcodes.F_Full:
+                case Opcodes.F_New:
+                case Opcodes.F_Full:
                     this.Local = Util.AsArrayList(numLocal, local);
                     this.Stack = Util.AsArrayList(numStack, stack);
                     break;
-                case IOpcodes.F_Append:
+                case Opcodes.F_Append:
                     this.Local = Util.AsArrayList(numLocal, local);
                     break;
-                case IOpcodes.F_Chop:
+                case Opcodes.F_Chop:
                     this.Local = Util.AsArrayList<object>(numLocal);
                     break;
-                case IOpcodes.F_Same:
+                case Opcodes.F_Same:
                     break;
-                case IOpcodes.F_Same1:
+                case Opcodes.F_Same1:
                     this.Stack = Util.AsArrayList(1, stack);
                     break;
                 default:
@@ -113,20 +113,20 @@ namespace ObjectWeb.Asm.Tree
         {
             switch (FrameType)
             {
-                case IOpcodes.F_New:
-                case IOpcodes.F_Full:
+                case Opcodes.F_New:
+                case Opcodes.F_Full:
                     methodVisitor.VisitFrame(FrameType, Local.Count, AsArray(Local), Stack.Count, AsArray(Stack));
                     break;
-                case IOpcodes.F_Append:
+                case Opcodes.F_Append:
                     methodVisitor.VisitFrame(FrameType, Local.Count, AsArray(Local), 0, null);
                     break;
-                case IOpcodes.F_Chop:
+                case Opcodes.F_Chop:
                     methodVisitor.VisitFrame(FrameType, Local.Count, null, 0, null);
                     break;
-                case IOpcodes.F_Same:
+                case Opcodes.F_Same:
                     methodVisitor.VisitFrame(FrameType, 0, null, 0, null);
                     break;
-                case IOpcodes.F_Same1:
+                case Opcodes.F_Same1:
                     methodVisitor.VisitFrame(FrameType, 0, null, 1, AsArray(Stack));
                     break;
                 default:

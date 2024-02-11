@@ -85,7 +85,7 @@ namespace ObjectWeb.Asm
 
         /// <summary>
         /// A frame inserted between already existing frames. This internal stack map frame type (in
-        /// addition to the ones declared in <seealso cref="IOpcodes"/>) can only be used if the frame content can be
+        /// addition to the ones declared in <seealso cref="Opcodes"/>) can only be used if the frame content can be
         /// computed from the previous existing frame and from the instructions between this existing frame
         /// and the inserted one, without any knowledge of the type hierarchy. This kind of frame is only
         /// used when an unconditional jump is inserted in a method while expanding an ASM specific
@@ -145,7 +145,7 @@ namespace ObjectWeb.Asm
         // Constants to convert between normal and wide jump instructions.
 
         // The delta between the GOTO_W and JSR_W opcodes and GOTO and JUMP.
-        internal static readonly int WideJumpOpcodeDelta = Goto_W - IOpcodes.Goto;
+        internal static readonly int WideJumpOpcodeDelta = Goto_W - Opcodes.Goto;
 
         // Constants to convert JVM opcodes to the equivalent ASM specific opcodes, and vice versa.
 
@@ -158,24 +158,24 @@ namespace ObjectWeb.Asm
 
         // ASM specific opcodes, used for long forward jump instructions.
 
-        internal const int Asm_Ifeq = IOpcodes.Ifeq + Asm_Opcode_Delta;
-        internal const int Asm_Ifne = IOpcodes.Ifne + Asm_Opcode_Delta;
-        internal const int Asm_Iflt = IOpcodes.Iflt + Asm_Opcode_Delta;
-        internal const int Asm_Ifge = IOpcodes.Ifge + Asm_Opcode_Delta;
-        internal const int Asm_Ifgt = IOpcodes.Ifgt + Asm_Opcode_Delta;
-        internal const int Asm_Ifle = IOpcodes.Ifle + Asm_Opcode_Delta;
-        internal const int Asm_If_Icmpeq = IOpcodes.If_Icmpeq + Asm_Opcode_Delta;
-        internal const int Asm_If_Icmpne = IOpcodes.If_Icmpne + Asm_Opcode_Delta;
-        internal const int Asm_If_Icmplt = IOpcodes.If_Icmplt + Asm_Opcode_Delta;
-        internal const int Asm_If_Icmpge = IOpcodes.If_Icmpge + Asm_Opcode_Delta;
-        internal const int Asm_If_Icmpgt = IOpcodes.If_Icmpgt + Asm_Opcode_Delta;
-        internal const int Asm_If_Icmple = IOpcodes.If_Icmple + Asm_Opcode_Delta;
-        internal const int Asm_If_Acmpeq = IOpcodes.If_Acmpeq + Asm_Opcode_Delta;
-        internal const int Asm_If_Acmpne = IOpcodes.If_Acmpne + Asm_Opcode_Delta;
-        internal const int Asm_Goto = IOpcodes.Goto + Asm_Opcode_Delta;
-        internal const int Asm_Jsr = IOpcodes.Jsr + Asm_Opcode_Delta;
-        internal const int Asm_Ifnull = IOpcodes.Ifnull + Asm_Ifnull_Opcode_Delta;
-        internal const int Asm_Ifnonnull = IOpcodes.Ifnonnull + Asm_Ifnull_Opcode_Delta;
+        internal const int Asm_Ifeq = Opcodes.Ifeq + Asm_Opcode_Delta;
+        internal const int Asm_Ifne = Opcodes.Ifne + Asm_Opcode_Delta;
+        internal const int Asm_Iflt = Opcodes.Iflt + Asm_Opcode_Delta;
+        internal const int Asm_Ifge = Opcodes.Ifge + Asm_Opcode_Delta;
+        internal const int Asm_Ifgt = Opcodes.Ifgt + Asm_Opcode_Delta;
+        internal const int Asm_Ifle = Opcodes.Ifle + Asm_Opcode_Delta;
+        internal const int Asm_If_Icmpeq = Opcodes.If_Icmpeq + Asm_Opcode_Delta;
+        internal const int Asm_If_Icmpne = Opcodes.If_Icmpne + Asm_Opcode_Delta;
+        internal const int Asm_If_Icmplt = Opcodes.If_Icmplt + Asm_Opcode_Delta;
+        internal const int Asm_If_Icmpge = Opcodes.If_Icmpge + Asm_Opcode_Delta;
+        internal const int Asm_If_Icmpgt = Opcodes.If_Icmpgt + Asm_Opcode_Delta;
+        internal const int Asm_If_Icmple = Opcodes.If_Icmple + Asm_Opcode_Delta;
+        internal const int Asm_If_Acmpeq = Opcodes.If_Acmpeq + Asm_Opcode_Delta;
+        internal const int Asm_If_Acmpne = Opcodes.If_Acmpne + Asm_Opcode_Delta;
+        internal const int Asm_Goto = Opcodes.Goto + Asm_Opcode_Delta;
+        internal const int Asm_Jsr = Opcodes.Jsr + Asm_Opcode_Delta;
+        internal const int Asm_Ifnull = Opcodes.Ifnull + Asm_Ifnull_Opcode_Delta;
+        internal const int Asm_Ifnonnull = Opcodes.Ifnonnull + Asm_Ifnull_Opcode_Delta;
         internal const int Asm_Goto_W = 220;
 
         private Constants()
@@ -206,21 +206,23 @@ namespace ObjectWeb.Asm
                 throw new System.InvalidOperationException("Bytecode not available, can't check class version");
             }
 
-            using var binary = new BinaryReader(classInputStream);
-            binary.ReadInt32();
-            var bytes = binary.ReadBytes(2);
-
-            if (BitConverter.IsLittleEndian)
+            using (var binary = new BinaryReader(classInputStream))
             {
-                bytes = bytes.Reverse().ToArray();
-            }
+                binary.ReadInt32();
+                var bytes = binary.ReadBytes(2);
 
-            int minorVersion = BitConverter.ToInt16(bytes.ToArray());
+                if (BitConverter.IsLittleEndian)
+                {
+                    bytes = bytes.Reverse().ToArray();
+                }
 
-            if (minorVersion != 0xFFFF)
-            {
-                throw new InvalidOperationException(
-                    "ASM9_EXPERIMENTAL can only be used by classes compiled with --enable-preview");
+                short minorVersion = BitConverter.ToInt16(bytes.ToArray(), 0);
+
+                if (minorVersion != -1)
+                {
+                    throw new InvalidOperationException(
+                        "ASM9_EXPERIMENTAL can only be used by classes compiled with --enable-preview");
+                }
             }
         }
     }

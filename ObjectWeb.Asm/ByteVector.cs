@@ -408,7 +408,7 @@ namespace ObjectWeb.Asm
         {
             if (length > data.Length)
             {
-                throw new("AssertionError: Internal error");
+                throw new Exception("AssertionError: Internal error");
             }
 
             var doubleCapacity = 2 * data.Length;

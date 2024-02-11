@@ -51,7 +51,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="signatureVisitor"> the signature visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited signature. </param>
-        public SignatureRemapper(SignatureVisitor signatureVisitor, Remapper remapper) : this(IOpcodes.Asm9,
+        public SignatureRemapper(SignatureVisitor signatureVisitor, Remapper remapper) : this(Opcodes.Asm9,
             signatureVisitor, remapper)
         {
         }
@@ -60,7 +60,7 @@ namespace ObjectWeb.Asm.Commons
         /// Constructs a new <seealso cref="SignatureRemapper"/>.
         /// </summary>
         /// <param name="api"> the ASM API version supported by this remapper. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes"/>. </param>
         /// <param name="signatureVisitor"> the signature visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited signature. </param>
         public SignatureRemapper(int api, SignatureVisitor signatureVisitor, Remapper remapper) : base(api)

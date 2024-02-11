@@ -58,7 +58,7 @@ namespace ObjectWeb.Asm.Tree
         /// </summary>
         /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
         /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
-        public AnnotationNode(string descriptor) : this(IOpcodes.Asm9, descriptor)
+        public AnnotationNode(string descriptor) : this(Opcodes.Asm9, descriptor)
         {
             if (this.GetType() != typeof(AnnotationNode))
             {
@@ -70,7 +70,7 @@ namespace ObjectWeb.Asm.Tree
         /// Constructs a new <seealso cref = "AnnotationNode"/>.
         /// </summary>
         /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref = "IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> values in <seealso cref = "Opcodes"/>. </param>
         /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
         public AnnotationNode(int api, string descriptor) : base(api)
         {
@@ -81,7 +81,7 @@ namespace ObjectWeb.Asm.Tree
         /// Constructs a new <seealso cref = "AnnotationNode"/> to visit an array value.
         /// </summary>
         /// <param name = "values"> where the visited values must be stored. </param>
-        public AnnotationNode(List<object> values) : base(IOpcodes.Asm9)
+        public AnnotationNode(List<object> values) : base(Opcodes.Asm9)
         {
             this.Values = values;
         }

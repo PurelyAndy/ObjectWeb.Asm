@@ -39,7 +39,7 @@ namespace ObjectWeb.Asm.Commons
     ///     @author Eugene Kuleshov
     ///     @author Eric Bruneton
     /// </summary>
-    public abstract class AdviceAdapter : GeneratorAdapter, IOpcodes
+    public abstract class AdviceAdapter : GeneratorAdapter
     {
         /// <summary>
         ///     Prefix of the error message when invalid opcodes are found.
@@ -49,12 +49,12 @@ namespace ObjectWeb.Asm.Commons
         /// <summary>
         ///     The "uninitialized this" value.
         /// </summary>
-        private static readonly object UNINITIALIZED_THIS = new();
+        private static readonly object UNINITIALIZED_THIS = new object();
 
         /// <summary>
         ///     Any value other than "uninitialized this".
         /// </summary>
-        private static readonly object OTHER = new();
+        private static readonly object OTHER = new object();
 
         /// <summary>
         ///     Whether the visited method is a constructor.
@@ -103,10 +103,10 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="api">
         ///     the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> Values in <seealso cref="IOpcodes" />.
+        ///     ASM}<i>x</i> Values in <seealso cref="Opcodes" />.
         /// </param>
         /// <param name="methodVisitor"> the method visitor to which this adapter delegates calls. </param>
-        /// <param name="access"> the method's access flags (see <seealso cref="IOpcodes" />). </param>
+        /// <param name="access"> the method's access flags (see <seealso cref="Opcodes" />). </param>
         /// <param name="name"> the method's name. </param>
         /// <param name="descriptor"> the method's descriptor (see <seealso cref="Type" />). </param>
         public AdviceAdapter(int api, MethodVisitor methodVisitor, int access, string name, string descriptor) : base(
@@ -152,161 +152,161 @@ namespace ObjectWeb.Asm.Commons
                 int stackSize;
                 switch (opcode)
                 {
-                    case IOpcodes.Ireturn:
-                    case IOpcodes.Freturn:
-                    case IOpcodes.Areturn:
-                    case IOpcodes.Lreturn:
-                    case IOpcodes.Dreturn:
+                    case Opcodes.Ireturn:
+                    case Opcodes.Freturn:
+                    case Opcodes.Areturn:
+                    case Opcodes.Lreturn:
+                    case Opcodes.Dreturn:
                         throw new ArgumentException("Invalid return in constructor");
-                    case IOpcodes.Return: // empty stack
+                    case Opcodes.Return: // empty stack
                         OnMethodExit(opcode);
                         EndConstructorBasicBlockWithoutSuccessor();
                         break;
-                    case IOpcodes.Athrow: // 1 before n/a after
+                    case Opcodes.Athrow: // 1 before n/a after
                         PopValue();
                         OnMethodExit(opcode);
                         EndConstructorBasicBlockWithoutSuccessor();
                         break;
-                    case IOpcodes.Nop:
-                    case IOpcodes.Laload: // remove 2 add 2
-                    case IOpcodes.Daload: // remove 2 add 2
-                    case IOpcodes.Lneg:
-                    case IOpcodes.Dneg:
-                    case IOpcodes.Fneg:
-                    case IOpcodes.Ineg:
-                    case IOpcodes.L2D:
-                    case IOpcodes.D2L:
-                    case IOpcodes.F2I:
-                    case IOpcodes.I2B:
-                    case IOpcodes.I2C:
-                    case IOpcodes.I2S:
-                    case IOpcodes.I2F:
-                    case IOpcodes.Arraylength:
+                    case Opcodes.Nop:
+                    case Opcodes.Laload: // remove 2 add 2
+                    case Opcodes.Daload: // remove 2 add 2
+                    case Opcodes.Lneg:
+                    case Opcodes.Dneg:
+                    case Opcodes.Fneg:
+                    case Opcodes.Ineg:
+                    case Opcodes.L2D:
+                    case Opcodes.D2L:
+                    case Opcodes.F2I:
+                    case Opcodes.I2B:
+                    case Opcodes.I2C:
+                    case Opcodes.I2S:
+                    case Opcodes.I2F:
+                    case Opcodes.Arraylength:
                         break;
-                    case IOpcodes.Aconst_Null:
-                    case IOpcodes.Iconst_M1:
-                    case IOpcodes.Iconst_0:
-                    case IOpcodes.Iconst_1:
-                    case IOpcodes.Iconst_2:
-                    case IOpcodes.Iconst_3:
-                    case IOpcodes.Iconst_4:
-                    case IOpcodes.Iconst_5:
-                    case IOpcodes.Fconst_0:
-                    case IOpcodes.Fconst_1:
-                    case IOpcodes.Fconst_2:
-                    case IOpcodes.F2L: // 1 before 2 after
-                    case IOpcodes.F2D:
-                    case IOpcodes.I2L:
-                    case IOpcodes.I2D:
+                    case Opcodes.Aconst_Null:
+                    case Opcodes.Iconst_M1:
+                    case Opcodes.Iconst_0:
+                    case Opcodes.Iconst_1:
+                    case Opcodes.Iconst_2:
+                    case Opcodes.Iconst_3:
+                    case Opcodes.Iconst_4:
+                    case Opcodes.Iconst_5:
+                    case Opcodes.Fconst_0:
+                    case Opcodes.Fconst_1:
+                    case Opcodes.Fconst_2:
+                    case Opcodes.F2L: // 1 before 2 after
+                    case Opcodes.F2D:
+                    case Opcodes.I2L:
+                    case Opcodes.I2D:
                         PushValue(OTHER);
                         break;
-                    case IOpcodes.Lconst_0:
-                    case IOpcodes.Lconst_1:
-                    case IOpcodes.Dconst_0:
-                    case IOpcodes.Dconst_1:
+                    case Opcodes.Lconst_0:
+                    case Opcodes.Lconst_1:
+                    case Opcodes.Dconst_0:
+                    case Opcodes.Dconst_1:
                         PushValue(OTHER);
                         PushValue(OTHER);
                         break;
-                    case IOpcodes.Iaload: // remove 2 add 1
-                    case IOpcodes.Faload: // remove 2 add 1
-                    case IOpcodes.Aaload: // remove 2 add 1
-                    case IOpcodes.Baload: // remove 2 add 1
-                    case IOpcodes.Caload: // remove 2 add 1
-                    case IOpcodes.Saload: // remove 2 add 1
-                    case IOpcodes.Pop:
-                    case IOpcodes.Iadd:
-                    case IOpcodes.Fadd:
-                    case IOpcodes.Isub:
-                    case IOpcodes.Lshl: // 3 before 2 after
-                    case IOpcodes.Lshr: // 3 before 2 after
-                    case IOpcodes.Lushr: // 3 before 2 after
-                    case IOpcodes.L2I: // 2 before 1 after
-                    case IOpcodes.L2F: // 2 before 1 after
-                    case IOpcodes.D2I: // 2 before 1 after
-                    case IOpcodes.D2F: // 2 before 1 after
-                    case IOpcodes.Fsub:
-                    case IOpcodes.Fmul:
-                    case IOpcodes.Fdiv:
-                    case IOpcodes.Frem:
-                    case IOpcodes.Fcmpl: // 2 before 1 after
-                    case IOpcodes.Fcmpg: // 2 before 1 after
-                    case IOpcodes.Imul:
-                    case IOpcodes.Idiv:
-                    case IOpcodes.Irem:
-                    case IOpcodes.Ishl:
-                    case IOpcodes.Ishr:
-                    case IOpcodes.Iushr:
-                    case IOpcodes.Iand:
-                    case IOpcodes.Ior:
-                    case IOpcodes.Ixor:
-                    case IOpcodes.Monitorenter:
-                    case IOpcodes.Monitorexit:
+                    case Opcodes.Iaload: // remove 2 add 1
+                    case Opcodes.Faload: // remove 2 add 1
+                    case Opcodes.Aaload: // remove 2 add 1
+                    case Opcodes.Baload: // remove 2 add 1
+                    case Opcodes.Caload: // remove 2 add 1
+                    case Opcodes.Saload: // remove 2 add 1
+                    case Opcodes.Pop:
+                    case Opcodes.Iadd:
+                    case Opcodes.Fadd:
+                    case Opcodes.Isub:
+                    case Opcodes.Lshl: // 3 before 2 after
+                    case Opcodes.Lshr: // 3 before 2 after
+                    case Opcodes.Lushr: // 3 before 2 after
+                    case Opcodes.L2I: // 2 before 1 after
+                    case Opcodes.L2F: // 2 before 1 after
+                    case Opcodes.D2I: // 2 before 1 after
+                    case Opcodes.D2F: // 2 before 1 after
+                    case Opcodes.Fsub:
+                    case Opcodes.Fmul:
+                    case Opcodes.Fdiv:
+                    case Opcodes.Frem:
+                    case Opcodes.Fcmpl: // 2 before 1 after
+                    case Opcodes.Fcmpg: // 2 before 1 after
+                    case Opcodes.Imul:
+                    case Opcodes.Idiv:
+                    case Opcodes.Irem:
+                    case Opcodes.Ishl:
+                    case Opcodes.Ishr:
+                    case Opcodes.Iushr:
+                    case Opcodes.Iand:
+                    case Opcodes.Ior:
+                    case Opcodes.Ixor:
+                    case Opcodes.Monitorenter:
+                    case Opcodes.Monitorexit:
                         PopValue();
                         break;
-                    case IOpcodes.Pop2:
-                    case IOpcodes.Lsub:
-                    case IOpcodes.Lmul:
-                    case IOpcodes.Ldiv:
-                    case IOpcodes.Lrem:
-                    case IOpcodes.Ladd:
-                    case IOpcodes.Land:
-                    case IOpcodes.Lor:
-                    case IOpcodes.Lxor:
-                    case IOpcodes.Dadd:
-                    case IOpcodes.Dmul:
-                    case IOpcodes.Dsub:
-                    case IOpcodes.Ddiv:
-                    case IOpcodes.Drem:
-                        PopValue();
-                        PopValue();
-                        break;
-                    case IOpcodes.Iastore:
-                    case IOpcodes.Fastore:
-                    case IOpcodes.Aastore:
-                    case IOpcodes.Bastore:
-                    case IOpcodes.Castore:
-                    case IOpcodes.Sastore:
-                    case IOpcodes.Lcmp: // 4 before 1 after
-                    case IOpcodes.Dcmpl:
-                    case IOpcodes.Dcmpg:
-                        PopValue();
+                    case Opcodes.Pop2:
+                    case Opcodes.Lsub:
+                    case Opcodes.Lmul:
+                    case Opcodes.Ldiv:
+                    case Opcodes.Lrem:
+                    case Opcodes.Ladd:
+                    case Opcodes.Land:
+                    case Opcodes.Lor:
+                    case Opcodes.Lxor:
+                    case Opcodes.Dadd:
+                    case Opcodes.Dmul:
+                    case Opcodes.Dsub:
+                    case Opcodes.Ddiv:
+                    case Opcodes.Drem:
                         PopValue();
                         PopValue();
                         break;
-                    case IOpcodes.Lastore:
-                    case IOpcodes.Dastore:
-                        PopValue();
+                    case Opcodes.Iastore:
+                    case Opcodes.Fastore:
+                    case Opcodes.Aastore:
+                    case Opcodes.Bastore:
+                    case Opcodes.Castore:
+                    case Opcodes.Sastore:
+                    case Opcodes.Lcmp: // 4 before 1 after
+                    case Opcodes.Dcmpl:
+                    case Opcodes.Dcmpg:
                         PopValue();
                         PopValue();
                         PopValue();
                         break;
-                    case IOpcodes.Dup:
+                    case Opcodes.Lastore:
+                    case Opcodes.Dastore:
+                        PopValue();
+                        PopValue();
+                        PopValue();
+                        PopValue();
+                        break;
+                    case Opcodes.Dup:
                         PushValue(PeekValue());
                         break;
-                    case IOpcodes.Dup_X1:
+                    case Opcodes.Dup_X1:
                         stackSize = _stackFrame.Count;
                         _stackFrame.Insert(stackSize - 2, _stackFrame[stackSize - 1]);
                         break;
-                    case IOpcodes.Dup_X2:
+                    case Opcodes.Dup_X2:
                         stackSize = _stackFrame.Count;
                         _stackFrame.Insert(stackSize - 3, _stackFrame[stackSize - 1]);
                         break;
-                    case IOpcodes.Dup2:
+                    case Opcodes.Dup2:
                         stackSize = _stackFrame.Count;
                         _stackFrame.Insert(stackSize - 2, _stackFrame[stackSize - 1]);
                         _stackFrame.Insert(stackSize - 2, _stackFrame[stackSize - 1]);
                         break;
-                    case IOpcodes.Dup2_X1:
+                    case Opcodes.Dup2_X1:
                         stackSize = _stackFrame.Count;
                         _stackFrame.Insert(stackSize - 3, _stackFrame[stackSize - 1]);
                         _stackFrame.Insert(stackSize - 3, _stackFrame[stackSize - 1]);
                         break;
-                    case IOpcodes.Dup2_X2:
+                    case Opcodes.Dup2_X2:
                         stackSize = _stackFrame.Count;
                         _stackFrame.Insert(stackSize - 4, _stackFrame[stackSize - 1]);
                         _stackFrame.Insert(stackSize - 4, _stackFrame[stackSize - 1]);
                         break;
-                    case IOpcodes.Swap:
+                    case Opcodes.Swap:
                         stackSize = _stackFrame.Count;
                         _stackFrame.Insert(stackSize - 2, _stackFrame[stackSize - 1]);
                         _stackFrame.RemoveAt(stackSize);
@@ -319,13 +319,13 @@ namespace ObjectWeb.Asm.Commons
             {
                 switch (opcode)
                 {
-                    case IOpcodes.Return:
-                    case IOpcodes.Ireturn:
-                    case IOpcodes.Freturn:
-                    case IOpcodes.Areturn:
-                    case IOpcodes.Lreturn:
-                    case IOpcodes.Dreturn:
-                    case IOpcodes.Athrow:
+                    case Opcodes.Return:
+                    case Opcodes.Ireturn:
+                    case Opcodes.Freturn:
+                    case Opcodes.Areturn:
+                    case Opcodes.Lreturn:
+                    case Opcodes.Dreturn:
+                    case Opcodes.Athrow:
                         OnMethodExit(opcode);
                         break;
                 }
@@ -340,29 +340,29 @@ namespace ObjectWeb.Asm.Commons
             if (_isConstructor && !_superClassConstructorCalled)
                 switch (opcode)
                 {
-                    case IOpcodes.Iload:
-                    case IOpcodes.Fload:
+                    case Opcodes.Iload:
+                    case Opcodes.Fload:
                         PushValue(OTHER);
                         break;
-                    case IOpcodes.Lload:
-                    case IOpcodes.Dload:
+                    case Opcodes.Lload:
+                    case Opcodes.Dload:
                         PushValue(OTHER);
                         PushValue(OTHER);
                         break;
-                    case IOpcodes.Aload:
+                    case Opcodes.Aload:
                         PushValue(varIndex == 0 ? UNINITIALIZED_THIS : OTHER);
                         break;
-                    case IOpcodes.Astore:
-                    case IOpcodes.Istore:
-                    case IOpcodes.Fstore:
+                    case Opcodes.Astore:
+                    case Opcodes.Istore:
+                    case Opcodes.Fstore:
                         PopValue();
                         break;
-                    case IOpcodes.Lstore:
-                    case IOpcodes.Dstore:
+                    case Opcodes.Lstore:
+                    case Opcodes.Dstore:
                         PopValue();
                         PopValue();
                         break;
-                    case IOpcodes.Ret:
+                    case Opcodes.Ret:
                         EndConstructorBasicBlockWithoutSuccessor();
                         break;
                     default:
@@ -379,20 +379,20 @@ namespace ObjectWeb.Asm.Commons
                 var longOrDouble = firstDescriptorChar == 'J' || firstDescriptorChar == 'D';
                 switch (opcode)
                 {
-                    case IOpcodes.Getstatic:
+                    case Opcodes.Getstatic:
                         PushValue(OTHER);
                         if (longOrDouble) PushValue(OTHER);
                         break;
-                    case IOpcodes.Putstatic:
+                    case Opcodes.Putstatic:
                         PopValue();
                         if (longOrDouble) PopValue();
                         break;
-                    case IOpcodes.Putfield:
+                    case Opcodes.Putfield:
                         PopValue();
                         PopValue();
                         if (longOrDouble) PopValue();
                         break;
-                    case IOpcodes.Getfield:
+                    case Opcodes.Getfield:
                         if (longOrDouble) PushValue(OTHER);
                         break;
                     default:
@@ -404,7 +404,7 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitIntInsn(int opcode, int operand)
         {
             base.VisitIntInsn(opcode, operand);
-            if (_isConstructor && !_superClassConstructorCalled && opcode != IOpcodes.Newarray) PushValue(OTHER);
+            if (_isConstructor && !_superClassConstructorCalled && opcode != Opcodes.Newarray) PushValue(OTHER);
         }
 
         public override void VisitLdcInsn(object value)
@@ -432,13 +432,13 @@ namespace ObjectWeb.Asm.Commons
         {
             base.VisitTypeInsn(opcode, type);
             // ANEWARRAY, CHECKCAST or INSTANCEOF don't change stack.
-            if (_isConstructor && !_superClassConstructorCalled && opcode == IOpcodes.New) PushValue(OTHER);
+            if (_isConstructor && !_superClassConstructorCalled && opcode == Opcodes.New) PushValue(OTHER);
         }
 
         public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
             bool isInterface)
         {
-            if (api < IOpcodes.Asm5 && (opcodeAndSource & IOpcodes.Source_Deprecated) == 0)
+            if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
             {
                 // Redirect the call to the deprecated version of this method.
                 base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
@@ -446,7 +446,7 @@ namespace ObjectWeb.Asm.Commons
             }
 
             base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
-            var opcode = opcodeAndSource & ~IOpcodes.Source_Mask;
+            var opcode = opcodeAndSource & ~Opcodes.Source_Mask;
 
             DoVisitMethodInsn(opcode, name, descriptor);
         }
@@ -463,11 +463,11 @@ namespace ObjectWeb.Asm.Commons
 
                 switch (opcode)
                 {
-                    case IOpcodes.Invokeinterface:
-                    case IOpcodes.Invokevirtual:
+                    case Opcodes.Invokeinterface:
+                    case Opcodes.Invokevirtual:
                         PopValue();
                         break;
-                    case IOpcodes.Invokespecial:
+                    case Opcodes.Invokespecial:
                         var value = PopValue();
                         if (value == UNINITIALIZED_THIS && !_superClassConstructorCalled && name.Equals("<init>"))
                         {
@@ -491,7 +491,7 @@ namespace ObjectWeb.Asm.Commons
             params object[] bootstrapMethodArguments)
         {
             base.VisitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
-            DoVisitMethodInsn(IOpcodes.Invokedynamic, name, descriptor);
+            DoVisitMethodInsn(Opcodes.Invokedynamic, name, descriptor);
         }
 
         public override void VisitJumpInsn(int opcode, Label label)
@@ -501,31 +501,31 @@ namespace ObjectWeb.Asm.Commons
             {
                 switch (opcode)
                 {
-                    case IOpcodes.Ifeq:
-                    case IOpcodes.Ifne:
-                    case IOpcodes.Iflt:
-                    case IOpcodes.Ifge:
-                    case IOpcodes.Ifgt:
-                    case IOpcodes.Ifle:
-                    case IOpcodes.Ifnull:
-                    case IOpcodes.Ifnonnull:
+                    case Opcodes.Ifeq:
+                    case Opcodes.Ifne:
+                    case Opcodes.Iflt:
+                    case Opcodes.Ifge:
+                    case Opcodes.Ifgt:
+                    case Opcodes.Ifle:
+                    case Opcodes.Ifnull:
+                    case Opcodes.Ifnonnull:
                         PopValue();
                         break;
-                    case IOpcodes.If_Icmpeq:
-                    case IOpcodes.If_Icmpne:
-                    case IOpcodes.If_Icmplt:
-                    case IOpcodes.If_Icmpge:
-                    case IOpcodes.If_Icmpgt:
-                    case IOpcodes.If_Icmple:
-                    case IOpcodes.If_Acmpeq:
-                    case IOpcodes.If_Acmpne:
+                    case Opcodes.If_Icmpeq:
+                    case Opcodes.If_Icmpne:
+                    case Opcodes.If_Icmplt:
+                    case Opcodes.If_Icmpge:
+                    case Opcodes.If_Icmpgt:
+                    case Opcodes.If_Icmple:
+                    case Opcodes.If_Acmpeq:
+                    case Opcodes.If_Acmpne:
                         PopValue();
                         PopValue();
                         break;
-                    case IOpcodes.Jsr:
+                    case Opcodes.Jsr:
                         PushValue(OTHER);
                         break;
-                    case IOpcodes.Goto:
+                    case Opcodes.Goto:
                         EndConstructorBasicBlockWithoutSuccessor();
                         break;
                 }

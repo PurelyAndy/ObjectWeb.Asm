@@ -42,7 +42,7 @@ namespace ObjectWeb.Asm
     /// @author Eugene Kuleshov
     /// </seealso>
     // DontCheck(InterfaceIsType): can't be fixed (for backward binary compatibility).
-    public interface IOpcodes
+    public class Opcodes
     {
         // ASM API versions.
 

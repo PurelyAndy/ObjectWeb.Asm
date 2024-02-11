@@ -47,7 +47,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="fieldVisitor"> the field visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited field. </param>
-        public FieldRemapper(FieldVisitor fieldVisitor, Remapper remapper) : this(IOpcodes.Asm9, fieldVisitor, remapper)
+        public FieldRemapper(FieldVisitor fieldVisitor, Remapper remapper) : this(Opcodes.Asm9, fieldVisitor, remapper)
         {
         }
 
@@ -56,7 +56,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="api">
         ///     the ASM API version supported by this remapper. Must be one of the {@code
-        ///     ASM}<i>x</i> Values in <seealso cref="IOpcodes" />.
+        ///     ASM}<i>x</i> Values in <seealso cref="Opcodes" />.
         /// </param>
         /// <param name="fieldVisitor"> the field visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited field. </param>

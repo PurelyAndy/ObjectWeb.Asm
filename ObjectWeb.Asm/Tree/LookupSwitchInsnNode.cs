@@ -55,7 +55,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name = "keys"> the values of the keys. </param>
         /// <param name = "labels"> beginnings of the handler blocks. {@code labels[i]} is the beginning of the
         ///     handler block for the {@code keys[i]} key. </param>
-        public LookupSwitchInsnNode(LabelNode dflt, int[] keys, LabelNode[] labels) : base(IOpcodes.Lookupswitch)
+        public LookupSwitchInsnNode(LabelNode dflt, int[] keys, LabelNode[] labels) : base(Opcodes.Lookupswitch)
         {
             this.Dflt = dflt;
             this.Keys = Util.AsArrayList(keys);

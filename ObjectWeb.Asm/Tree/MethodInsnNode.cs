@@ -68,7 +68,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name = "name"> the method's name. </param>
         /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
         public MethodInsnNode(int opcode, string owner, string name, string descriptor) : this(opcode, owner, name,
-            descriptor, opcode == IOpcodes.Invokeinterface)
+            descriptor, opcode == Opcodes.Invokeinterface)
         {
         }
 

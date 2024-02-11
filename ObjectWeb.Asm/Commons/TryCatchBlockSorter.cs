@@ -50,7 +50,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name = "methodVisitor"> the method visitor to which this visitor must delegate method calls. May
         ///     be {@literal null}. </param>
-        /// <param name = "access"> the method's access flags (see <seealso cref = "IOpcodes"/>). This parameter also indicates if
+        /// <param name = "access"> the method's access flags (see <seealso cref = "Opcodes"/>). This parameter also indicates if
         ///     the method is synthetic and/or deprecated. </param>
         /// <param name = "name"> the method's name. </param>
         /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
@@ -59,7 +59,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name = "exceptions"> the internal names of the method's exception classes (see {@link
         ///     org.objectweb.asm.Type#getInternalName()}). May be {@literal null}. </param>
         public TryCatchBlockSorter(MethodVisitor methodVisitor, int access, string name, string descriptor,
-            string signature, string[] exceptions) : this(IOpcodes.Asm9, methodVisitor, access, name, descriptor,
+            string signature, string[] exceptions) : this(Opcodes.Asm9, methodVisitor, access, name, descriptor,
             signature, exceptions)
         {
             if (this.GetType() != typeof(TryCatchBlockSorter))

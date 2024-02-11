@@ -49,7 +49,7 @@ namespace ObjectWeb.Asm.Tree
         /// </summary>
         /// <param name = "descriptor"> an array type descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
         /// <param name = "numDimensions"> the number of dimensions of the array to allocate. </param>
-        public MultiANewArrayInsnNode(string descriptor, int numDimensions) : base(IOpcodes.Multianewarray)
+        public MultiANewArrayInsnNode(string descriptor, int numDimensions) : base(Opcodes.Multianewarray)
         {
             this.Desc = descriptor;
             this.Dims = numDimensions;

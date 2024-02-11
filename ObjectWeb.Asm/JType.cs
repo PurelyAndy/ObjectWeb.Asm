@@ -113,47 +113,47 @@ namespace ObjectWeb.Asm
         /// <summary>
         ///     The {@code void} type.
         /// </summary>
-        public static readonly JType VoidType = new(Void, PrimitiveDescriptors, Void, Void + 1);
+        public static readonly JType VoidType = new JType(Void, PrimitiveDescriptors, Void, Void + 1);
 
         /// <summary>
         ///     The {@code boolean} type.
         /// </summary>
-        public static readonly JType BooleanType = new(Boolean, PrimitiveDescriptors, Boolean, Boolean + 1);
+        public static readonly JType BooleanType = new JType(Boolean, PrimitiveDescriptors, Boolean, Boolean + 1);
 
         /// <summary>
         ///     The {@code char} type.
         /// </summary>
-        public static readonly JType CharType = new(Char, PrimitiveDescriptors, Char, Char + 1);
+        public static readonly JType CharType = new JType(Char, PrimitiveDescriptors, Char, Char + 1);
 
         /// <summary>
         ///     The {@code byte} type.
         /// </summary>
-        public static readonly JType ByteType = new(Byte, PrimitiveDescriptors, Byte, Byte + 1);
+        public static readonly JType ByteType = new JType(Byte, PrimitiveDescriptors, Byte, Byte + 1);
 
         /// <summary>
         ///     The {@code short} type.
         /// </summary>
-        public static readonly JType ShortType = new(Short, PrimitiveDescriptors, Short, Short + 1);
+        public static readonly JType ShortType = new JType(Short, PrimitiveDescriptors, Short, Short + 1);
 
         /// <summary>
         ///     The {@code int} type.
         /// </summary>
-        public static readonly JType IntType = new(Int, PrimitiveDescriptors, Int, Int + 1);
+        public static readonly JType IntType = new JType(Int, PrimitiveDescriptors, Int, Int + 1);
 
         /// <summary>
         ///     The {@code float} type.
         /// </summary>
-        public static readonly JType FloatType = new(Float, PrimitiveDescriptors, Float, Float + 1);
+        public static readonly JType FloatType = new JType(Float, PrimitiveDescriptors, Float, Float + 1);
 
         /// <summary>
         ///     The {@code long} type.
         /// </summary>
-        public static readonly JType LongType = new(Long, PrimitiveDescriptors, Long, Long + 1);
+        public static readonly JType LongType = new JType(Long, PrimitiveDescriptors, Long, Long + 1);
 
         /// <summary>
         ///     The {@code double} type.
         /// </summary>
-        public static readonly JType DoubleType = new(Double, PrimitiveDescriptors, Double, Double + 1);
+        public static readonly JType DoubleType = new JType(Double, PrimitiveDescriptors, Double, Double + 1);
 
         // -----------------------------------------------------------------------------------------------
         // Fields
@@ -838,28 +838,28 @@ namespace ObjectWeb.Asm
         /// </returns>
         public int GetOpcode(int opcode)
         {
-            if (opcode == IOpcodes.Iaload || opcode == IOpcodes.Iastore)
+            if (opcode == Opcodes.Iaload || opcode == Opcodes.Iastore)
                 switch (_sort)
                 {
                     case Boolean:
                     case Byte:
-                        return opcode + (IOpcodes.Baload - IOpcodes.Iaload);
+                        return opcode + (Opcodes.Baload - Opcodes.Iaload);
                     case Char:
-                        return opcode + (IOpcodes.Caload - IOpcodes.Iaload);
+                        return opcode + (Opcodes.Caload - Opcodes.Iaload);
                     case Short:
-                        return opcode + (IOpcodes.Saload - IOpcodes.Iaload);
+                        return opcode + (Opcodes.Saload - Opcodes.Iaload);
                     case Int:
                         return opcode;
                     case Float:
-                        return opcode + (IOpcodes.Faload - IOpcodes.Iaload);
+                        return opcode + (Opcodes.Faload - Opcodes.Iaload);
                     case Long:
-                        return opcode + (IOpcodes.Laload - IOpcodes.Iaload);
+                        return opcode + (Opcodes.Laload - Opcodes.Iaload);
                     case Double:
-                        return opcode + (IOpcodes.Daload - IOpcodes.Iaload);
+                        return opcode + (Opcodes.Daload - Opcodes.Iaload);
                     case Array:
                     case Object:
                     case Internal:
-                        return opcode + (IOpcodes.Aaload - IOpcodes.Iaload);
+                        return opcode + (Opcodes.Aaload - Opcodes.Iaload);
                     case Method:
                     case Void:
                         throw new NotSupportedException();
@@ -870,8 +870,8 @@ namespace ObjectWeb.Asm
             switch (_sort)
             {
                 case Void:
-                    if (opcode != IOpcodes.Ireturn) throw new NotSupportedException();
-                    return IOpcodes.Return;
+                    if (opcode != Opcodes.Ireturn) throw new NotSupportedException();
+                    return Opcodes.Return;
                 case Boolean:
                 case Byte:
                 case Char:
@@ -879,17 +879,17 @@ namespace ObjectWeb.Asm
                 case Int:
                     return opcode;
                 case Float:
-                    return opcode + (IOpcodes.Freturn - IOpcodes.Ireturn);
+                    return opcode + (Opcodes.Freturn - Opcodes.Ireturn);
                 case Long:
-                    return opcode + (IOpcodes.Lreturn - IOpcodes.Ireturn);
+                    return opcode + (Opcodes.Lreturn - Opcodes.Ireturn);
                 case Double:
-                    return opcode + (IOpcodes.Dreturn - IOpcodes.Ireturn);
+                    return opcode + (Opcodes.Dreturn - Opcodes.Ireturn);
                 case Array:
                 case Object:
                 case Internal:
-                    if (opcode != IOpcodes.Iload && opcode != IOpcodes.Istore && opcode != IOpcodes.Ireturn)
+                    if (opcode != Opcodes.Iload && opcode != Opcodes.Istore && opcode != Opcodes.Ireturn)
                         throw new NotSupportedException();
-                    return opcode + (IOpcodes.Areturn - IOpcodes.Ireturn);
+                    return opcode + (Opcodes.Areturn - Opcodes.Ireturn);
                 case Method:
                     throw new NotSupportedException();
                 default:

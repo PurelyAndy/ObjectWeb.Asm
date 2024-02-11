@@ -72,10 +72,10 @@ namespace ObjectWeb.Asm
         /// </param>
         public RecordComponentVisitor(int api, RecordComponentVisitor recordComponentVisitor)
         {
-            if (api != IOpcodes.Asm9 && api != IOpcodes.Asm8 && api != IOpcodes.Asm7 && api != IOpcodes.Asm6 &&
-                api != IOpcodes.Asm5 && api != IOpcodes.Asm4 &&
-                api != IOpcodes.Asm10_Experimental) throw new ArgumentException("Unsupported api " + api);
-            if (api == IOpcodes.Asm10_Experimental) Constants.CheckAsmExperimental(this);
+            if (api != Opcodes.Asm9 && api != Opcodes.Asm8 && api != Opcodes.Asm7 && api != Opcodes.Asm6 &&
+                api != Opcodes.Asm5 && api != Opcodes.Asm4 &&
+                api != Opcodes.Asm10_Experimental) throw new ArgumentException("Unsupported api " + api);
+            if (api == Opcodes.Asm10_Experimental) Constants.CheckAsmExperimental(this);
             this.api = api;
             @delegate = recordComponentVisitor;
         }

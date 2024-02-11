@@ -42,7 +42,7 @@ namespace ObjectWeb.Asm
     {
         /// <summary>
         /// The ASM API version implemented by this visitor. The value of this field must be one of the
-        /// {@code ASM}<i>x</i> Values in <seealso cref="IOpcodes"/>.
+        /// {@code ASM}<i>x</i> Values in <seealso cref="Opcodes"/>.
         /// </summary>
         protected internal readonly int api;
 
@@ -54,7 +54,7 @@ namespace ObjectWeb.Asm
         /// Constructs a new <seealso cref="ClassVisitor"/>.
         /// </summary>
         /// <param name="api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> Values in <seealso cref="IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> Values in <seealso cref="Opcodes"/>. </param>
         public ClassVisitor(int api) : this(api, null)
         {
         }
@@ -63,18 +63,18 @@ namespace ObjectWeb.Asm
         /// Constructs a new <seealso cref="ClassVisitor"/>.
         /// </summary>
         /// <param name="api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> Values in <seealso cref="IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> Values in <seealso cref="Opcodes"/>. </param>
         /// <param name="classVisitor"> the class visitor to which this visitor must delegate method calls. May be
         ///     null. </param>
         public ClassVisitor(int api, ClassVisitor classVisitor)
         {
-            if (api != IOpcodes.Asm9 && api != IOpcodes.Asm8 && api != IOpcodes.Asm7 && api != IOpcodes.Asm6 &&
-                api != IOpcodes.Asm5 && api != IOpcodes.Asm4 && api != IOpcodes.Asm10_Experimental)
+            if (api != Opcodes.Asm9 && api != Opcodes.Asm8 && api != Opcodes.Asm7 && api != Opcodes.Asm6 &&
+                api != Opcodes.Asm5 && api != Opcodes.Asm4 && api != Opcodes.Asm10_Experimental)
             {
                 throw new System.ArgumentException("Unsupported api " + api);
             }
 
-            if (api == IOpcodes.Asm10_Experimental)
+            if (api == Opcodes.Asm10_Experimental)
             {
                 Constants.CheckAsmExperimental(this);
             }
@@ -88,7 +88,7 @@ namespace ObjectWeb.Asm
         /// </summary>
         /// <param name="version"> the class version. The minor version is stored in the 16 most significant bits,
         ///     and the major version in the 16 least significant bits. </param>
-        /// <param name="access"> the class's access flags (see <seealso cref="IOpcodes"/>). This parameter also indicates if
+        /// <param name="access"> the class's access flags (see <seealso cref="Opcodes"/>). This parameter also indicates if
         ///     the class is deprecated <seealso cref="IIOpcodes.Acc_Deprecated/> or a record {@link
         ///     Opcodes#ACC_RECORD}. </param>
         /// <param name="name"> the internal name of the class (see <seealso cref="Type.InternalName"/>). </param>
@@ -102,7 +102,7 @@ namespace ObjectWeb.Asm
         public virtual void Visit(int version, int access, string name, string signature, string superName,
             string[] interfaces)
         {
-            if (api < IOpcodes.Asm8 && (access & IOpcodes.Acc_Record) != 0)
+            if (api < Opcodes.Asm8 && (access & Opcodes.Acc_Record) != 0)
             {
                 throw new System.NotSupportedException("Records requires ASM8");
             }
@@ -139,7 +139,7 @@ namespace ObjectWeb.Asm
         ///     interested in visiting this module. </returns>
         public virtual ModuleVisitor VisitModule(string name, int access, string version)
         {
-            if (api < IOpcodes.Asm6)
+            if (api < Opcodes.Asm6)
             {
                 throw new System.NotSupportedException("Module requires ASM6");
             }
@@ -163,7 +163,7 @@ namespace ObjectWeb.Asm
         /// <param name="nestHost"> the internal name of the host class of the nest. </param>
         public virtual void VisitNestHost(string nestHost)
         {
-            if (api < IOpcodes.Asm7)
+            if (api < Opcodes.Asm7)
             {
                 throw new System.NotSupportedException("NestHost requires ASM7");
             }
@@ -225,7 +225,7 @@ namespace ObjectWeb.Asm
         public virtual AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            if (api < IOpcodes.Asm5)
+            if (api < Opcodes.Asm5)
             {
                 throw new System.NotSupportedException("TypeAnnotation requires ASM5");
             }
@@ -260,7 +260,7 @@ namespace ObjectWeb.Asm
         /// <param name="nestMember"> the internal name of a nest member. </param>
         public virtual void VisitNestMember(string nestMember)
         {
-            if (api < IOpcodes.Asm7)
+            if (api < Opcodes.Asm7)
             {
                 throw new System.NotSupportedException("NestMember requires ASM7");
             }
@@ -278,7 +278,7 @@ namespace ObjectWeb.Asm
         /// <param name="permittedSubclass"> the internal name of a permitted subclass. </param>
         public virtual void VisitPermittedSubclass(string permittedSubclass)
         {
-            if (api < IOpcodes.Asm9)
+            if (api < Opcodes.Asm9)
             {
                 throw new System.NotSupportedException("PermittedSubclasses requires ASM9");
             }
@@ -319,7 +319,7 @@ namespace ObjectWeb.Asm
         ///     if this class visitor is not interested in visiting these annotations and attributes. </returns>
         public virtual RecordComponentVisitor VisitRecordComponent(string name, string descriptor, string signature)
         {
-            if (api < IOpcodes.Asm8)
+            if (api < Opcodes.Asm8)
             {
                 throw new System.NotSupportedException("Record requires ASM8");
             }
@@ -335,7 +335,7 @@ namespace ObjectWeb.Asm
         /// <summary>
         /// Visits a field of the class.
         /// </summary>
-        /// <param name="access"> the field's access flags (see <seealso cref="IOpcodes"/>). This parameter also indicates if
+        /// <param name="access"> the field's access flags (see <seealso cref="Opcodes"/>). This parameter also indicates if
         ///     the field is synthetic and/or deprecated. </param>
         /// <param name="name"> the field's name. </param>
         /// <param name="descriptor"> the field's descriptor (see <seealso cref="Type"/>). </param>
@@ -365,7 +365,7 @@ namespace ObjectWeb.Asm
         /// instance (or {@literal null}) each time it is called, i.e., it should not return a previously
         /// returned visitor.
         /// </summary>
-        /// <param name="access"> the method's access flags (see <seealso cref="IOpcodes"/>). This parameter also indicates if
+        /// <param name="access"> the method's access flags (see <seealso cref="Opcodes"/>). This parameter also indicates if
         ///     the method is synthetic and/or deprecated. </param>
         /// <param name="name"> the method's name. </param>
         /// <param name="descriptor"> the method's descriptor (see <seealso cref="Type"/>). </param>

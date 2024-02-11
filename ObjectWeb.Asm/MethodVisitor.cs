@@ -53,7 +53,7 @@ namespace ObjectWeb.Asm
 
         /// <summary>
         ///     The ASM API version implemented by this visitor. The value of this field must be one of the
-        ///     {@code ASM}<i>x</i> values in <seealso cref="IOpcodes" />.
+        ///     {@code ASM}<i>x</i> values in <seealso cref="Opcodes" />.
         /// </summary>
         protected internal readonly int api;
 
@@ -67,7 +67,7 @@ namespace ObjectWeb.Asm
         /// </summary>
         /// <param name="api">
         ///     the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes" />.
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes" />.
         /// </param>
         public MethodVisitor(int api) : this(api, null)
         {
@@ -78,7 +78,7 @@ namespace ObjectWeb.Asm
         /// </summary>
         /// <param name="api">
         ///     the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes" />.
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes" />.
         /// </param>
         /// <param name="methodVisitor">
         ///     the method visitor to which this visitor must delegate method calls. May
@@ -86,10 +86,10 @@ namespace ObjectWeb.Asm
         /// </param>
         public MethodVisitor(int api, MethodVisitor methodVisitor)
         {
-            if (api != IOpcodes.Asm9 && api != IOpcodes.Asm8 && api != IOpcodes.Asm7 && api != IOpcodes.Asm6 &&
-                api != IOpcodes.Asm5 && api != IOpcodes.Asm4 &&
-                api != IOpcodes.Asm10_Experimental) throw new ArgumentException("Unsupported api " + api);
-            if (api == IOpcodes.Asm10_Experimental) Constants.CheckAsmExperimental(this);
+            if (api != Opcodes.Asm9 && api != Opcodes.Asm8 && api != Opcodes.Asm7 && api != Opcodes.Asm6 &&
+                api != Opcodes.Asm5 && api != Opcodes.Asm4 &&
+                api != Opcodes.Asm10_Experimental) throw new ArgumentException("Unsupported api " + api);
+            if (api == Opcodes.Asm10_Experimental) Constants.CheckAsmExperimental(this);
             this.api = api;
             mv = methodVisitor;
         }
@@ -104,11 +104,11 @@ namespace ObjectWeb.Asm
         /// <param name="name"> parameter name or {@literal null} if none is provided. </param>
         /// <param name="access">
         ///     the parameter's access flags, only {@code ACC_FINAL}, {@code ACC_SYNTHETIC}
-        ///     or/and {@code ACC_MANDATED} are allowed (see <seealso cref="IOpcodes" />).
+        ///     or/and {@code ACC_MANDATED} are allowed (see <seealso cref="Opcodes" />).
         /// </param>
         public virtual void VisitParameter(string name, int access)
         {
-            if (api < IOpcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
+            if (api < Opcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
             if (mv != null) mv.VisitParameter(name, access);
         }
 
@@ -166,7 +166,7 @@ namespace ObjectWeb.Asm
         public virtual AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            if (api < IOpcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
+            if (api < Opcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
             if (mv != null) return mv.VisitTypeAnnotation(typeRef, typePath, descriptor, visible);
             return null;
         }
@@ -443,8 +443,8 @@ namespace ObjectWeb.Asm
         [Obsolete("use <seealso cref=\"visitMethodInsn(int, String, String, String, bool)\"/> instead.")]
         public virtual void VisitMethodInsn(int opcode, string owner, string name, string descriptor)
         {
-            var opcodeAndSource = opcode | (api < IOpcodes.Asm5 ? IOpcodes.Source_Deprecated : 0);
-            VisitMethodInsn(opcodeAndSource, owner, name, descriptor, opcode == IOpcodes.Invokeinterface);
+            var opcodeAndSource = opcode | (api < Opcodes.Asm5 ? Opcodes.Source_Deprecated : 0);
+            VisitMethodInsn(opcodeAndSource, owner, name, descriptor, opcode == Opcodes.Invokeinterface);
         }
 
         /// <summary>
@@ -463,15 +463,15 @@ namespace ObjectWeb.Asm
         /// <param name="isInterface"> if the method's owner class is an interface. </param>
         public virtual void VisitMethodInsn(int opcode, string owner, string name, string descriptor, bool isInterface)
         {
-            if (api < IOpcodes.Asm5 && (opcode & IOpcodes.Source_Deprecated) == 0)
+            if (api < Opcodes.Asm5 && (opcode & Opcodes.Source_Deprecated) == 0)
             {
-                if (isInterface != (opcode == IOpcodes.Invokeinterface))
+                if (isInterface != (opcode == Opcodes.Invokeinterface))
                     throw new NotSupportedException("INVOKESPECIAL/STATIC on interfaces requires ASM5");
                 VisitMethodInsn(opcode, owner, name, descriptor);
                 return;
             }
 
-            if (mv != null) mv.VisitMethodInsn(opcode & ~IOpcodes.Source_Mask, owner, name, descriptor, isInterface);
+            if (mv != null) mv.VisitMethodInsn(opcode & ~Opcodes.Source_Mask, owner, name, descriptor, isInterface);
         }
 
         /// <summary>
@@ -490,7 +490,7 @@ namespace ObjectWeb.Asm
         public virtual void VisitInvokeDynamicInsn(string name, string descriptor, Handle bootstrapMethodHandle,
             params object[] bootstrapMethodArguments)
         {
-            if (api < IOpcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
+            if (api < Opcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
             if (mv != null)
                 mv.VisitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
         }
@@ -572,9 +572,9 @@ namespace ObjectWeb.Asm
         /// </param>
         public virtual void VisitLdcInsn(object value)
         {
-            if (api < IOpcodes.Asm5 && (value is Handle || value is JType && ((JType)value).Sort == JType.Method))
+            if (api < Opcodes.Asm5 && (value is Handle || value is JType && ((JType)value).Sort == JType.Method))
                 throw new NotSupportedException(RequiresAsm5);
-            if (api < IOpcodes.Asm7 && value is ConstantDynamic)
+            if (api < Opcodes.Asm7 && value is ConstantDynamic)
                 throw new NotSupportedException("This feature requires ASM7");
             if (mv != null) mv.VisitLdcInsn(value);
         }
@@ -655,7 +655,7 @@ namespace ObjectWeb.Asm
         public virtual AnnotationVisitor VisitInsnAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            if (api < IOpcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
+            if (api < Opcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
             if (mv != null) return mv.VisitInsnAnnotation(typeRef, typePath, descriptor, visible);
             return null;
         }
@@ -706,7 +706,7 @@ namespace ObjectWeb.Asm
         public virtual AnnotationVisitor VisitTryCatchAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            if (api < IOpcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
+            if (api < Opcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
             if (mv != null) return mv.VisitTryCatchAnnotation(typeRef, typePath, descriptor, visible);
             return null;
         }
@@ -770,7 +770,7 @@ namespace ObjectWeb.Asm
         public virtual AnnotationVisitor VisitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start,
             Label[] end, int[] index, string descriptor, bool visible)
         {
-            if (api < IOpcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
+            if (api < Opcodes.Asm5) throw new NotSupportedException(RequiresAsm5);
             if (mv != null)
                 return mv.VisitLocalVariableAnnotation(typeRef, typePath, start, end, index, descriptor, visible);
             return null;

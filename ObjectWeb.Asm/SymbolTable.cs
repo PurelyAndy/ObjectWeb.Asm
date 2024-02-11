@@ -1,4 +1,5 @@
 ﻿using System;
+using ObjectWeb.Asm.Util;
 
 // ASM: a very small and fast Java bytecode manipulation framework
 // Copyright (c) 2000-2011 INRIA, France Telecom
@@ -621,7 +622,7 @@ namespace ObjectWeb.Asm
         /// <returns> a new or already existing Symbol with the given value. </returns>
         public Symbol AddConstantFloat(float value)
         {
-            return AddConstantIntegerOrFloat(Symbol.Constant_Float_Tag, BitConverter.SingleToInt32Bits(value));
+            return AddConstantIntegerOrFloat(Symbol.Constant_Float_Tag, Int32AndSingleConverter.Convert(value));
         }
 
         /// <summary>
@@ -817,7 +818,7 @@ namespace ObjectWeb.Asm
                 entry = entry.next;
             }
 
-            if (referenceKind <= IOpcodes.H_Putstatic)
+            if (referenceKind <= Opcodes.H_Putstatic)
                 _constantPool.Put112(tag, referenceKind, AddConstantFieldref(owner, name, descriptor).index);
             else
                 _constantPool.Put112(tag, referenceKind,

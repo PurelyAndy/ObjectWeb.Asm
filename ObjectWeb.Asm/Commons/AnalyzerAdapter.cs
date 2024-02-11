@@ -97,7 +97,7 @@ namespace ObjectWeb.Asm.Commons
         ///     MethodVisitor)} version.
         /// </summary>
         /// <param name = "owner"> the owner's class name. </param>
-        /// <param name = "access"> the method's access flags (see <seealso cref = "IOpcodes"/>). </param>
+        /// <param name = "access"> the method's access flags (see <seealso cref = "Opcodes"/>). </param>
         /// <param name = "name"> the method's name. </param>
         /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "Type"/>). </param>
         /// <param name = "methodVisitor">
@@ -106,7 +106,7 @@ namespace ObjectWeb.Asm.Commons
         /// </param>
         /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
         public AnalyzerAdapter(string owner, int access, string name, string descriptor, MethodVisitor methodVisitor) :
-            this(IOpcodes.Asm9, owner, access, name, descriptor, methodVisitor)
+            this(Opcodes.Asm9, owner, access, name, descriptor, methodVisitor)
         {
             if (GetType() != typeof(AnalyzerAdapter))
                 throw new InvalidOperationException();
@@ -117,10 +117,10 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name = "api">
         ///     the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> Values in <seealso cref = "IOpcodes"/>.
+        ///     ASM}<i>x</i> Values in <seealso cref = "Opcodes"/>.
         /// </param>
         /// <param name = "owner"> the owner's class name. </param>
-        /// <param name = "access"> the method's access flags (see <seealso cref = "IOpcodes"/>). </param>
+        /// <param name = "access"> the method's access flags (see <seealso cref = "Opcodes"/>). </param>
         /// <param name = "name"> the method's name. </param>
         /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "Type"/>). </param>
         /// <param name = "methodVisitor">
@@ -134,10 +134,10 @@ namespace ObjectWeb.Asm.Commons
             Locals = new List<object>();
             Stack = new List<object>();
             UninitializedTypes = new Dictionary<object, object>();
-            if ((access & IOpcodes.Acc_Static) == 0)
+            if ((access & Opcodes.Acc_Static) == 0)
             {
                 if ("<init>".Equals(name))
-                    Locals.Add(IOpcodes.uninitializedThis);
+                    Locals.Add(Opcodes.uninitializedThis);
                 else
                     Locals.Add(owner);
             }
@@ -150,18 +150,18 @@ namespace ObjectWeb.Asm.Commons
                     case JType.Byte:
                     case JType.Short:
                     case JType.Int:
-                        Locals.Add(IOpcodes.integer);
+                        Locals.Add(Opcodes.integer);
                         break;
                     case JType.Float:
-                        Locals.Add(IOpcodes.@float);
+                        Locals.Add(Opcodes.@float);
                         break;
                     case JType.Long:
-                        Locals.Add(IOpcodes.@long);
-                        Locals.Add(IOpcodes.top);
+                        Locals.Add(Opcodes.@long);
+                        Locals.Add(Opcodes.top);
                         break;
                     case JType.Double:
-                        Locals.Add(IOpcodes.@double);
-                        Locals.Add(IOpcodes.top);
+                        Locals.Add(Opcodes.@double);
+                        Locals.Add(Opcodes.top);
                         break;
                     case JType.Array:
                         Locals.Add(argumentType.Descriptor);
@@ -178,7 +178,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override void VisitFrame(int type, int numLocal, object[] local, int numStack, object[] stack)
         {
-            if (type != IOpcodes.F_New)
+            if (type != Opcodes.F_New)
                 // Uncompressed frame.
                 throw new ArgumentException(
                     "AnalyzerAdapter only accepts expanded frames (see ClassReader.EXPAND_FRAMES)");
@@ -206,8 +206,8 @@ namespace ObjectWeb.Asm.Commons
             {
                 var frameType = frameTypes[i];
                 result.Add(frameType);
-                if (Equals(frameType, IOpcodes.@long) || Equals(frameType, IOpcodes.@double))
-                    result.Add(IOpcodes.top);
+                if (Equals(frameType, Opcodes.@long) || Equals(frameType, Opcodes.@double))
+                    result.Add(Opcodes.top);
             }
         }
 
@@ -215,7 +215,7 @@ namespace ObjectWeb.Asm.Commons
         {
             base.VisitInsn(opcode);
             Execute(opcode, 0, null);
-            if (opcode >= IOpcodes.Ireturn && opcode <= IOpcodes.Return || opcode == IOpcodes.Athrow)
+            if (opcode >= Opcodes.Ireturn && opcode <= Opcodes.Return || opcode == Opcodes.Athrow)
             {
                 Locals = null;
                 Stack = null;
@@ -231,15 +231,15 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitVarInsn(int opcode, int varIndex)
         {
             base.VisitVarInsn(opcode, varIndex);
-            var isLongOrDouble = opcode == IOpcodes.Lload || opcode == IOpcodes.Dload || opcode == IOpcodes.Lstore ||
-                                 opcode == IOpcodes.Dstore;
+            var isLongOrDouble = opcode == Opcodes.Lload || opcode == Opcodes.Dload || opcode == Opcodes.Lstore ||
+                                 opcode == Opcodes.Dstore;
             _maxLocals = Math.Max(_maxLocals, varIndex + (isLongOrDouble ? 2 : 1));
             Execute(opcode, varIndex, null);
         }
 
         public override void VisitTypeInsn(int opcode, string type)
         {
-            if (opcode == IOpcodes.New)
+            if (opcode == Opcodes.New)
             {
                 if (_labels == null)
                 {
@@ -267,7 +267,7 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
             bool isInterface)
         {
-            if (api < IOpcodes.Asm5 && (opcodeAndSource & IOpcodes.Source_Deprecated) == 0)
+            if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
             {
                 // Redirect the call to the deprecated version of this method.
                 base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
@@ -275,7 +275,7 @@ namespace ObjectWeb.Asm.Commons
             }
 
             base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
-            var opcode = opcodeAndSource & ~IOpcodes.Source_Mask;
+            var opcode = opcodeAndSource & ~Opcodes.Source_Mask;
             if (Locals == null)
             {
                 _labels = null;
@@ -283,13 +283,13 @@ namespace ObjectWeb.Asm.Commons
             }
 
             Pop(descriptor);
-            if (opcode != IOpcodes.Invokestatic)
+            if (opcode != Opcodes.Invokestatic)
             {
                 var value = Pop();
-                if (opcode == IOpcodes.Invokespecial && name.Equals("<init>"))
+                if (opcode == Opcodes.Invokespecial && name.Equals("<init>"))
                 {
                     object initializedValue;
-                    if (Equals(value, IOpcodes.uninitializedThis))
+                    if (Equals(value, Opcodes.uninitializedThis))
                         initializedValue = this._owner;
                     else
                     {
@@ -328,7 +328,7 @@ namespace ObjectWeb.Asm.Commons
         {
             base.VisitJumpInsn(opcode, label);
             Execute(opcode, 0, null);
-            if (opcode == IOpcodes.Goto)
+            if (opcode == Opcodes.Goto)
             {
                 Locals = null;
                 Stack = null;
@@ -354,21 +354,21 @@ namespace ObjectWeb.Asm.Commons
 
             if (value is int)
             {
-                Push(IOpcodes.integer);
+                Push(Opcodes.integer);
             }
             else if (value is long)
             {
-                Push(IOpcodes.@long);
-                Push(IOpcodes.top);
+                Push(Opcodes.@long);
+                Push(Opcodes.top);
             }
             else if (value is float)
             {
-                Push(IOpcodes.@float);
+                Push(Opcodes.@float);
             }
             else if (value is double)
             {
-                Push(IOpcodes.@double);
-                Push(IOpcodes.top);
+                Push(Opcodes.@double);
+                Push(Opcodes.top);
             }
             else if (value is string)
             {
@@ -404,13 +404,13 @@ namespace ObjectWeb.Asm.Commons
         {
             base.VisitIincInsn(varIndex, increment);
             _maxLocals = Math.Max(_maxLocals, varIndex + 1);
-            Execute(IOpcodes.Iinc, varIndex, null);
+            Execute(Opcodes.Iinc, varIndex, null);
         }
 
         public override void VisitTableSwitchInsn(int min, int max, Label dflt, params Label[] labels)
         {
             base.VisitTableSwitchInsn(min, max, dflt, labels);
-            Execute(IOpcodes.Tableswitch, 0, null);
+            Execute(Opcodes.Tableswitch, 0, null);
             Locals = null;
             Stack = null;
         }
@@ -418,7 +418,7 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels)
         {
             base.VisitLookupSwitchInsn(dflt, keys, labels);
-            Execute(IOpcodes.Lookupswitch, 0, null);
+            Execute(Opcodes.Lookupswitch, 0, null);
             Locals = null;
             Stack = null;
         }
@@ -426,7 +426,7 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitMultiANewArrayInsn(string descriptor, int numDimensions)
         {
             base.VisitMultiANewArrayInsn(descriptor, numDimensions);
-            Execute(IOpcodes.Multianewarray, numDimensions, descriptor);
+            Execute(Opcodes.Multianewarray, numDimensions, descriptor);
         }
 
         public override void VisitLocalVariable(string name, string descriptor, string signature, Label start,
@@ -452,14 +452,14 @@ namespace ObjectWeb.Asm.Commons
         private object Get(int local)
         {
             _maxLocals = Math.Max(_maxLocals, local + 1);
-            return local < Locals.Count ? Locals[local] : IOpcodes.top;
+            return local < Locals.Count ? Locals[local] : Opcodes.top;
         }
 
         private void Set(int local, object type)
         {
             _maxLocals = Math.Max(_maxLocals, local + 1);
             while (local >= Locals.Count)
-                Locals.Add(IOpcodes.top);
+                Locals.Add(Opcodes.top);
             Locals[local] = type;
         }
 
@@ -483,18 +483,18 @@ namespace ObjectWeb.Asm.Commons
                 case 'B':
                 case 'S':
                 case 'I':
-                    Push(IOpcodes.integer);
+                    Push(Opcodes.integer);
                     return;
                 case 'F':
-                    Push(IOpcodes.@float);
+                    Push(Opcodes.@float);
                     return;
                 case 'J':
-                    Push(IOpcodes.@long);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@long);
+                    Push(Opcodes.top);
                     return;
                 case 'D':
-                    Push(IOpcodes.@double);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@double);
+                    Push(Opcodes.top);
                     return;
                 case '[':
                     Push(descriptor);
@@ -546,7 +546,7 @@ namespace ObjectWeb.Asm.Commons
 
         private void Execute(int opcode, int intArg, string stringArg)
         {
-            if (opcode == IOpcodes.Jsr || opcode == IOpcodes.Ret)
+            if (opcode == Opcodes.Jsr || opcode == Opcodes.Ret)
                 throw new ArgumentException("JSR/RET are not supported");
             if (Locals == null)
             {
@@ -560,162 +560,162 @@ namespace ObjectWeb.Asm.Commons
             object t4;
             switch (opcode)
             {
-                case IOpcodes.Nop:
-                case IOpcodes.Ineg:
-                case IOpcodes.Lneg:
-                case IOpcodes.Fneg:
-                case IOpcodes.Dneg:
-                case IOpcodes.I2B:
-                case IOpcodes.I2C:
-                case IOpcodes.I2S:
-                case IOpcodes.Goto:
-                case IOpcodes.Return:
+                case Opcodes.Nop:
+                case Opcodes.Ineg:
+                case Opcodes.Lneg:
+                case Opcodes.Fneg:
+                case Opcodes.Dneg:
+                case Opcodes.I2B:
+                case Opcodes.I2C:
+                case Opcodes.I2S:
+                case Opcodes.Goto:
+                case Opcodes.Return:
                     break;
-                case IOpcodes.Aconst_Null:
-                    Push(IOpcodes.@null);
+                case Opcodes.Aconst_Null:
+                    Push(Opcodes.@null);
                     break;
-                case IOpcodes.Iconst_M1:
-                case IOpcodes.Iconst_0:
-                case IOpcodes.Iconst_1:
-                case IOpcodes.Iconst_2:
-                case IOpcodes.Iconst_3:
-                case IOpcodes.Iconst_4:
-                case IOpcodes.Iconst_5:
-                case IOpcodes.Bipush:
-                case IOpcodes.Sipush:
-                    Push(IOpcodes.integer);
+                case Opcodes.Iconst_M1:
+                case Opcodes.Iconst_0:
+                case Opcodes.Iconst_1:
+                case Opcodes.Iconst_2:
+                case Opcodes.Iconst_3:
+                case Opcodes.Iconst_4:
+                case Opcodes.Iconst_5:
+                case Opcodes.Bipush:
+                case Opcodes.Sipush:
+                    Push(Opcodes.integer);
                     break;
-                case IOpcodes.Lconst_0:
-                case IOpcodes.Lconst_1:
-                    Push(IOpcodes.@long);
-                    Push(IOpcodes.top);
+                case Opcodes.Lconst_0:
+                case Opcodes.Lconst_1:
+                    Push(Opcodes.@long);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.Fconst_0:
-                case IOpcodes.Fconst_1:
-                case IOpcodes.Fconst_2:
-                    Push(IOpcodes.@float);
+                case Opcodes.Fconst_0:
+                case Opcodes.Fconst_1:
+                case Opcodes.Fconst_2:
+                    Push(Opcodes.@float);
                     break;
-                case IOpcodes.Dconst_0:
-                case IOpcodes.Dconst_1:
-                    Push(IOpcodes.@double);
-                    Push(IOpcodes.top);
+                case Opcodes.Dconst_0:
+                case Opcodes.Dconst_1:
+                    Push(Opcodes.@double);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.Iload:
-                case IOpcodes.Fload:
-                case IOpcodes.Aload:
+                case Opcodes.Iload:
+                case Opcodes.Fload:
+                case Opcodes.Aload:
                     Push(Get(intArg));
                     break;
-                case IOpcodes.Lload:
-                case IOpcodes.Dload:
+                case Opcodes.Lload:
+                case Opcodes.Dload:
                     Push(Get(intArg));
-                    Push(IOpcodes.top);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.Laload:
-                case IOpcodes.D2L:
+                case Opcodes.Laload:
+                case Opcodes.D2L:
                     Pop(2);
-                    Push(IOpcodes.@long);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@long);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.Daload:
-                case IOpcodes.L2D:
+                case Opcodes.Daload:
+                case Opcodes.L2D:
                     Pop(2);
-                    Push(IOpcodes.@double);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@double);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.Aaload:
+                case Opcodes.Aaload:
                     Pop(1);
                     value1 = Pop();
                     if (value1 is string)
                         PushDescriptor(((string)value1).Substring(1));
-                    else if (Equals(value1, IOpcodes.@null))
+                    else if (Equals(value1, Opcodes.@null))
                         Push(value1);
                     else
                         Push("java/lang/Object");
                     break;
-                case IOpcodes.Istore:
-                case IOpcodes.Fstore:
-                case IOpcodes.Astore:
+                case Opcodes.Istore:
+                case Opcodes.Fstore:
+                case Opcodes.Astore:
                     value1 = Pop();
                     Set(intArg, value1);
                     if (intArg > 0)
                     {
                         value2 = Get(intArg - 1);
-                        if (Equals(value2, IOpcodes.@long) || Equals(value2, IOpcodes.@double))
-                            Set(intArg - 1, IOpcodes.top);
+                        if (Equals(value2, Opcodes.@long) || Equals(value2, Opcodes.@double))
+                            Set(intArg - 1, Opcodes.top);
                     }
 
                     break;
-                case IOpcodes.Lstore:
-                case IOpcodes.Dstore:
+                case Opcodes.Lstore:
+                case Opcodes.Dstore:
                     Pop(1);
                     value1 = Pop();
                     Set(intArg, value1);
-                    Set(intArg + 1, IOpcodes.top);
+                    Set(intArg + 1, Opcodes.top);
                     if (intArg > 0)
                     {
                         value2 = Get(intArg - 1);
-                        if (Equals(value2, IOpcodes.@long) || Equals(value2, IOpcodes.@double))
-                            Set(intArg - 1, IOpcodes.top);
+                        if (Equals(value2, Opcodes.@long) || Equals(value2, Opcodes.@double))
+                            Set(intArg - 1, Opcodes.top);
                     }
 
                     break;
-                case IOpcodes.Iastore:
-                case IOpcodes.Bastore:
-                case IOpcodes.Castore:
-                case IOpcodes.Sastore:
-                case IOpcodes.Fastore:
-                case IOpcodes.Aastore:
+                case Opcodes.Iastore:
+                case Opcodes.Bastore:
+                case Opcodes.Castore:
+                case Opcodes.Sastore:
+                case Opcodes.Fastore:
+                case Opcodes.Aastore:
                     Pop(3);
                     break;
-                case IOpcodes.Lastore:
-                case IOpcodes.Dastore:
+                case Opcodes.Lastore:
+                case Opcodes.Dastore:
                     Pop(4);
                     break;
-                case IOpcodes.Pop:
-                case IOpcodes.Ifeq:
-                case IOpcodes.Ifne:
-                case IOpcodes.Iflt:
-                case IOpcodes.Ifge:
-                case IOpcodes.Ifgt:
-                case IOpcodes.Ifle:
-                case IOpcodes.Ireturn:
-                case IOpcodes.Freturn:
-                case IOpcodes.Areturn:
-                case IOpcodes.Tableswitch:
-                case IOpcodes.Lookupswitch:
-                case IOpcodes.Athrow:
-                case IOpcodes.Monitorenter:
-                case IOpcodes.Monitorexit:
-                case IOpcodes.Ifnull:
-                case IOpcodes.Ifnonnull:
+                case Opcodes.Pop:
+                case Opcodes.Ifeq:
+                case Opcodes.Ifne:
+                case Opcodes.Iflt:
+                case Opcodes.Ifge:
+                case Opcodes.Ifgt:
+                case Opcodes.Ifle:
+                case Opcodes.Ireturn:
+                case Opcodes.Freturn:
+                case Opcodes.Areturn:
+                case Opcodes.Tableswitch:
+                case Opcodes.Lookupswitch:
+                case Opcodes.Athrow:
+                case Opcodes.Monitorenter:
+                case Opcodes.Monitorexit:
+                case Opcodes.Ifnull:
+                case Opcodes.Ifnonnull:
                     Pop(1);
                     break;
-                case IOpcodes.Pop2:
-                case IOpcodes.If_Icmpeq:
-                case IOpcodes.If_Icmpne:
-                case IOpcodes.If_Icmplt:
-                case IOpcodes.If_Icmpge:
-                case IOpcodes.If_Icmpgt:
-                case IOpcodes.If_Icmple:
-                case IOpcodes.If_Acmpeq:
-                case IOpcodes.If_Acmpne:
-                case IOpcodes.Lreturn:
-                case IOpcodes.Dreturn:
+                case Opcodes.Pop2:
+                case Opcodes.If_Icmpeq:
+                case Opcodes.If_Icmpne:
+                case Opcodes.If_Icmplt:
+                case Opcodes.If_Icmpge:
+                case Opcodes.If_Icmpgt:
+                case Opcodes.If_Icmple:
+                case Opcodes.If_Acmpeq:
+                case Opcodes.If_Acmpne:
+                case Opcodes.Lreturn:
+                case Opcodes.Dreturn:
                     Pop(2);
                     break;
-                case IOpcodes.Dup:
+                case Opcodes.Dup:
                     value1 = Pop();
                     Push(value1);
                     Push(value1);
                     break;
-                case IOpcodes.Dup_X1:
+                case Opcodes.Dup_X1:
                     value1 = Pop();
                     value2 = Pop();
                     Push(value1);
                     Push(value2);
                     Push(value1);
                     break;
-                case IOpcodes.Dup_X2:
+                case Opcodes.Dup_X2:
                     value1 = Pop();
                     value2 = Pop();
                     value3 = Pop();
@@ -724,7 +724,7 @@ namespace ObjectWeb.Asm.Commons
                     Push(value2);
                     Push(value1);
                     break;
-                case IOpcodes.Dup2:
+                case Opcodes.Dup2:
                     value1 = Pop();
                     value2 = Pop();
                     Push(value2);
@@ -732,7 +732,7 @@ namespace ObjectWeb.Asm.Commons
                     Push(value2);
                     Push(value1);
                     break;
-                case IOpcodes.Dup2_X1:
+                case Opcodes.Dup2_X1:
                     value1 = Pop();
                     value2 = Pop();
                     value3 = Pop();
@@ -742,7 +742,7 @@ namespace ObjectWeb.Asm.Commons
                     Push(value2);
                     Push(value1);
                     break;
-                case IOpcodes.Dup2_X2:
+                case Opcodes.Dup2_X2:
                     value1 = Pop();
                     value2 = Pop();
                     value3 = Pop();
@@ -754,147 +754,147 @@ namespace ObjectWeb.Asm.Commons
                     Push(value2);
                     Push(value1);
                     break;
-                case IOpcodes.Swap:
+                case Opcodes.Swap:
                     value1 = Pop();
                     value2 = Pop();
                     Push(value1);
                     Push(value2);
                     break;
-                case IOpcodes.Iaload:
-                case IOpcodes.Baload:
-                case IOpcodes.Caload:
-                case IOpcodes.Saload:
-                case IOpcodes.Iadd:
-                case IOpcodes.Isub:
-                case IOpcodes.Imul:
-                case IOpcodes.Idiv:
-                case IOpcodes.Irem:
-                case IOpcodes.Iand:
-                case IOpcodes.Ior:
-                case IOpcodes.Ixor:
-                case IOpcodes.Ishl:
-                case IOpcodes.Ishr:
-                case IOpcodes.Iushr:
-                case IOpcodes.L2I:
-                case IOpcodes.D2I:
-                case IOpcodes.Fcmpl:
-                case IOpcodes.Fcmpg:
+                case Opcodes.Iaload:
+                case Opcodes.Baload:
+                case Opcodes.Caload:
+                case Opcodes.Saload:
+                case Opcodes.Iadd:
+                case Opcodes.Isub:
+                case Opcodes.Imul:
+                case Opcodes.Idiv:
+                case Opcodes.Irem:
+                case Opcodes.Iand:
+                case Opcodes.Ior:
+                case Opcodes.Ixor:
+                case Opcodes.Ishl:
+                case Opcodes.Ishr:
+                case Opcodes.Iushr:
+                case Opcodes.L2I:
+                case Opcodes.D2I:
+                case Opcodes.Fcmpl:
+                case Opcodes.Fcmpg:
                     Pop(2);
-                    Push(IOpcodes.integer);
+                    Push(Opcodes.integer);
                     break;
-                case IOpcodes.Ladd:
-                case IOpcodes.Lsub:
-                case IOpcodes.Lmul:
-                case IOpcodes.Ldiv:
-                case IOpcodes.Lrem:
-                case IOpcodes.Land:
-                case IOpcodes.Lor:
-                case IOpcodes.Lxor:
+                case Opcodes.Ladd:
+                case Opcodes.Lsub:
+                case Opcodes.Lmul:
+                case Opcodes.Ldiv:
+                case Opcodes.Lrem:
+                case Opcodes.Land:
+                case Opcodes.Lor:
+                case Opcodes.Lxor:
                     Pop(4);
-                    Push(IOpcodes.@long);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@long);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.Faload:
-                case IOpcodes.Fadd:
-                case IOpcodes.Fsub:
-                case IOpcodes.Fmul:
-                case IOpcodes.Fdiv:
-                case IOpcodes.Frem:
-                case IOpcodes.L2F:
-                case IOpcodes.D2F:
+                case Opcodes.Faload:
+                case Opcodes.Fadd:
+                case Opcodes.Fsub:
+                case Opcodes.Fmul:
+                case Opcodes.Fdiv:
+                case Opcodes.Frem:
+                case Opcodes.L2F:
+                case Opcodes.D2F:
                     Pop(2);
-                    Push(IOpcodes.@float);
+                    Push(Opcodes.@float);
                     break;
-                case IOpcodes.Dadd:
-                case IOpcodes.Dsub:
-                case IOpcodes.Dmul:
-                case IOpcodes.Ddiv:
-                case IOpcodes.Drem:
+                case Opcodes.Dadd:
+                case Opcodes.Dsub:
+                case Opcodes.Dmul:
+                case Opcodes.Ddiv:
+                case Opcodes.Drem:
                     Pop(4);
-                    Push(IOpcodes.@double);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@double);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.Lshl:
-                case IOpcodes.Lshr:
-                case IOpcodes.Lushr:
+                case Opcodes.Lshl:
+                case Opcodes.Lshr:
+                case Opcodes.Lushr:
                     Pop(3);
-                    Push(IOpcodes.@long);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@long);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.Iinc:
-                    Set(intArg, IOpcodes.integer);
+                case Opcodes.Iinc:
+                    Set(intArg, Opcodes.integer);
                     break;
-                case IOpcodes.I2L:
-                case IOpcodes.F2L:
+                case Opcodes.I2L:
+                case Opcodes.F2L:
                     Pop(1);
-                    Push(IOpcodes.@long);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@long);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.I2F:
+                case Opcodes.I2F:
                     Pop(1);
-                    Push(IOpcodes.@float);
+                    Push(Opcodes.@float);
                     break;
-                case IOpcodes.I2D:
-                case IOpcodes.F2D:
+                case Opcodes.I2D:
+                case Opcodes.F2D:
                     Pop(1);
-                    Push(IOpcodes.@double);
-                    Push(IOpcodes.top);
+                    Push(Opcodes.@double);
+                    Push(Opcodes.top);
                     break;
-                case IOpcodes.F2I:
-                case IOpcodes.Arraylength:
-                case IOpcodes.Instanceof:
+                case Opcodes.F2I:
+                case Opcodes.Arraylength:
+                case Opcodes.Instanceof:
                     Pop(1);
-                    Push(IOpcodes.integer);
+                    Push(Opcodes.integer);
                     break;
-                case IOpcodes.Lcmp:
-                case IOpcodes.Dcmpl:
-                case IOpcodes.Dcmpg:
+                case Opcodes.Lcmp:
+                case Opcodes.Dcmpl:
+                case Opcodes.Dcmpg:
                     Pop(4);
-                    Push(IOpcodes.integer);
+                    Push(Opcodes.integer);
                     break;
-                case IOpcodes.Getstatic:
+                case Opcodes.Getstatic:
                     PushDescriptor(stringArg);
                     break;
-                case IOpcodes.Putstatic:
+                case Opcodes.Putstatic:
                     Pop(stringArg);
                     break;
-                case IOpcodes.Getfield:
+                case Opcodes.Getfield:
                     Pop(1);
                     PushDescriptor(stringArg);
                     break;
-                case IOpcodes.Putfield:
+                case Opcodes.Putfield:
                     Pop(stringArg);
                     Pop();
                     break;
-                case IOpcodes.New:
+                case Opcodes.New:
                     Push(_labels[0]);
                     break;
-                case IOpcodes.Newarray:
+                case Opcodes.Newarray:
                     Pop();
                     switch (intArg)
                     {
-                        case IOpcodes.Boolean:
+                        case Opcodes.Boolean:
                             PushDescriptor("[Z");
                             break;
-                        case IOpcodes.Char:
+                        case Opcodes.Char:
                             PushDescriptor("[C");
                             break;
-                        case IOpcodes.Byte:
+                        case Opcodes.Byte:
                             PushDescriptor("[B");
                             break;
-                        case IOpcodes.Short:
+                        case Opcodes.Short:
                             PushDescriptor("[S");
                             break;
-                        case IOpcodes.Int:
+                        case Opcodes.Int:
                             PushDescriptor("[I");
                             break;
-                        case IOpcodes.Float:
+                        case Opcodes.Float:
                             PushDescriptor("[F");
                             break;
-                        case IOpcodes.Double:
+                        case Opcodes.Double:
                             PushDescriptor("[D");
                             break;
-                        case IOpcodes.Long:
+                        case Opcodes.Long:
                             PushDescriptor("[J");
                             break;
                         default:
@@ -902,15 +902,15 @@ namespace ObjectWeb.Asm.Commons
                     }
 
                     break;
-                case IOpcodes.Anewarray:
+                case Opcodes.Anewarray:
                     Pop();
                     PushDescriptor("[" + JType.GetObjectType(stringArg));
                     break;
-                case IOpcodes.Checkcast:
+                case Opcodes.Checkcast:
                     Pop();
                     PushDescriptor(JType.GetObjectType(stringArg).Descriptor);
                     break;
-                case IOpcodes.Multianewarray:
+                case Opcodes.Multianewarray:
                     Pop(intArg);
                     PushDescriptor(stringArg);
                     break;

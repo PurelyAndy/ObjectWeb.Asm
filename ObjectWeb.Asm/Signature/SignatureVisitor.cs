@@ -63,7 +63,7 @@ namespace ObjectWeb.Asm.Signature
 
         /// <summary>
         /// The ASM API version implemented by this visitor. The value of this field must be one of the
-        /// {@code ASM}<i>x</i> values in <seealso cref="IOpcodes"/>.
+        /// {@code ASM}<i>x</i> values in <seealso cref="Opcodes"/>.
         /// </summary>
         protected internal readonly int api;
 
@@ -71,11 +71,11 @@ namespace ObjectWeb.Asm.Signature
         /// Constructs a new <seealso cref="SignatureVisitor"/>.
         /// </summary>
         /// <param name="api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes"/>. </param>
         public SignatureVisitor(int api)
         {
-            if (api != IOpcodes.Asm9 && api != IOpcodes.Asm8 && api != IOpcodes.Asm7 && api != IOpcodes.Asm6 &&
-                api != IOpcodes.Asm5 && api != IOpcodes.Asm4 && api != IOpcodes.Asm10_Experimental)
+            if (api != Opcodes.Asm9 && api != Opcodes.Asm8 && api != Opcodes.Asm7 && api != Opcodes.Asm6 &&
+                api != Opcodes.Asm5 && api != Opcodes.Asm4 && api != Opcodes.Asm10_Experimental)
             {
                 throw new System.ArgumentException("Unsupported api " + api);
             }

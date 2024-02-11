@@ -60,7 +60,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="prefix"> the prefix to use to rename the existing &lt;clinit&gt; methods. </param>
         /// <param name="classVisitor"> the class visitor to which this visitor must delegate method calls. May be
         ///     null. </param>
-        public StaticInitMerger(string prefix, ClassVisitor classVisitor) : this(IOpcodes.Asm9, prefix, classVisitor)
+        public StaticInitMerger(string prefix, ClassVisitor classVisitor) : this(Opcodes.Asm9, prefix, classVisitor)
         {
         }
 
@@ -68,7 +68,7 @@ namespace ObjectWeb.Asm.Commons
         /// Constructs a new <seealso cref="StaticInitMerger"/>.
         /// </summary>
         /// <param name="api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes"/>. </param>
         /// <param name="prefix"> the prefix to use to rename the existing &lt;clinit&gt; methods. </param>
         /// <param name="classVisitor"> the class visitor to which this visitor must delegate method calls. May be
         ///     null. </param>
@@ -90,7 +90,7 @@ namespace ObjectWeb.Asm.Commons
             MethodVisitor methodVisitor;
             if ("<clinit>".Equals(name))
             {
-                var newAccess = IOpcodes.Acc_Private + IOpcodes.Acc_Static;
+                var newAccess = Opcodes.Acc_Private + Opcodes.Acc_Static;
                 var newName = _renamedClinitMethodPrefix + _numClinitMethods++;
                 methodVisitor = base.VisitMethod(newAccess, newName, descriptor, signature, exceptions);
 
@@ -99,7 +99,7 @@ namespace ObjectWeb.Asm.Commons
                     _mergedClinitVisitor = base.VisitMethod(newAccess, name, descriptor, null, null);
                 }
 
-                _mergedClinitVisitor.VisitMethodInsn(IOpcodes.Invokestatic, _owner, newName, descriptor, false);
+                _mergedClinitVisitor.VisitMethodInsn(Opcodes.Invokestatic, _owner, newName, descriptor, false);
             }
             else
             {
@@ -113,7 +113,7 @@ namespace ObjectWeb.Asm.Commons
         {
             if (_mergedClinitVisitor != null)
             {
-                _mergedClinitVisitor.VisitInsn(IOpcodes.Return);
+                _mergedClinitVisitor.VisitInsn(Opcodes.Return);
                 _mergedClinitVisitor.VisitMaxs(0, 0);
             }
 

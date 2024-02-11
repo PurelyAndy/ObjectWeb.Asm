@@ -76,7 +76,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name = "descriptor"> the record component descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
         /// <param name = "signature"> the record component signature. </param>
         /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
-        public RecordComponentNode(string name, string descriptor, string signature) : this(IOpcodes.Asm9, name,
+        public RecordComponentNode(string name, string descriptor, string signature) : this(Opcodes.Asm9, name,
             descriptor, signature)
         {
             if (this.GetType() != typeof(RecordComponentNode))
@@ -154,7 +154,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name = "api"> an ASM API version. Must be one of <seealso cref = "IIOpcodes.Asm8 / > or <seealso cref = "IIOpcodes.Asm9 / > . </param>
         public virtual void Check(int api)
         {
-            if (api < IOpcodes.Asm8)
+            if (api < Opcodes.Asm8)
             {
                 throw new UnsupportedClassVersionException();
             }

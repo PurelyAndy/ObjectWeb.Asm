@@ -78,7 +78,7 @@ namespace ObjectWeb.Asm
         ///     boolean)}. 
         [Obsolete("this constructor has been superseded by {@link #Handle(int, String, String, String,")]
         public Handle(int tag, string owner, string name, string descriptor) : this(tag, owner, name, descriptor,
-            tag == IOpcodes.H_Invokeinterface)
+            tag == Opcodes.H_Invokeinterface)
         {
         }
 

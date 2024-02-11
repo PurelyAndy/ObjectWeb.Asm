@@ -110,7 +110,7 @@ namespace ObjectWeb.Asm
         ///     Runtime[In]Visible[Type]Annotations attribute to which this annotation belongs, or
         ///     {@literal null} in other cases (e.g. nested or array annotations). </param>
         public AnnotationWriter(SymbolTable symbolTable, bool useNamedValues, ByteVector annotation,
-            AnnotationWriter previousAnnotation) : base(IOpcodes.Asm9)
+            AnnotationWriter previousAnnotation) : base(Opcodes.Asm9)
         {
             this._symbolTable = symbolTable;
             this._useNamedValues = useNamedValues;

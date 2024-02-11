@@ -153,7 +153,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="classVisitor"> a <seealso cref="ClassVisitor"/> to which this visitor will delegate calls. </param>
         /// <exception cref="IllegalStateException"> If a subclass calls this constructor. </exception>
-        public SerialVersionUidAdder(ClassVisitor classVisitor) : this(IOpcodes.Asm9, classVisitor)
+        public SerialVersionUidAdder(ClassVisitor classVisitor) : this(Opcodes.Asm9, classVisitor)
         {
             if (this.GetType() != typeof(SerialVersionUidAdder))
             {
@@ -165,7 +165,7 @@ namespace ObjectWeb.Asm.Commons
         /// Constructs a new <seealso cref="SerialVersionUidAdder"/>.
         /// </summary>
         /// <param name="api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes"/>. </param>
         /// <param name="classVisitor"> a <seealso cref="ClassVisitor"/> to which this visitor will delegate calls. </param>
         public SerialVersionUidAdder(int api, ClassVisitor classVisitor) : base(api, classVisitor)
         {
@@ -180,7 +180,7 @@ namespace ObjectWeb.Asm.Commons
         {
             // Get the class name, access flags, and interfaces information (step 1, 2 and 3) for SVUID
             // computation.
-            _computeSvuid = (access & IOpcodes.Acc_Enum) == 0;
+            _computeSvuid = (access & Opcodes.Acc_Enum) == 0;
 
             if (_computeSvuid)
             {
@@ -210,11 +210,11 @@ namespace ObjectWeb.Asm.Commons
                 // Collect the non private constructors and methods. Only the ACC_PUBLIC, ACC_PRIVATE,
                 // ACC_PROTECTED, ACC_STATIC, ACC_FINAL, ACC_SYNCHRONIZED, ACC_NATIVE, ACC_ABSTRACT and
                 // ACC_STRICT flags are used.
-                var mods = access & (IOpcodes.Acc_Public | IOpcodes.Acc_Private | IOpcodes.Acc_Protected |
-                                     IOpcodes.Acc_Static | IOpcodes.Acc_Final | IOpcodes.Acc_Synchronized |
-                                     IOpcodes.Acc_Native | IOpcodes.Acc_Abstract | IOpcodes.Acc_Strict);
+                var mods = access & (Opcodes.Acc_Public | Opcodes.Acc_Private | Opcodes.Acc_Protected |
+                                     Opcodes.Acc_Static | Opcodes.Acc_Final | Opcodes.Acc_Synchronized |
+                                     Opcodes.Acc_Native | Opcodes.Acc_Abstract | Opcodes.Acc_Strict);
 
-                if ((access & IOpcodes.Acc_Private) == 0)
+                if ((access & Opcodes.Acc_Private) == 0)
                 {
                     if ("<init>".Equals(name))
                     {
@@ -246,12 +246,12 @@ namespace ObjectWeb.Asm.Commons
                 // Collect the non private fields. Only the ACC_PUBLIC, ACC_PRIVATE, ACC_PROTECTED,
                 // ACC_STATIC, ACC_FINAL, ACC_VOLATILE, and ACC_TRANSIENT flags are used when computing
                 // serialVersionUID values.
-                if ((access & IOpcodes.Acc_Private) == 0 ||
-                    (access & (IOpcodes.Acc_Static | IOpcodes.Acc_Transient)) == 0)
+                if ((access & Opcodes.Acc_Private) == 0 ||
+                    (access & (Opcodes.Acc_Static | Opcodes.Acc_Transient)) == 0)
                 {
-                    var mods = access & (IOpcodes.Acc_Public | IOpcodes.Acc_Private | IOpcodes.Acc_Protected |
-                                         IOpcodes.Acc_Static | IOpcodes.Acc_Final | IOpcodes.Acc_Volatile |
-                                         IOpcodes.Acc_Transient);
+                    var mods = access & (Opcodes.Acc_Public | Opcodes.Acc_Private | Opcodes.Acc_Protected |
+                                         Opcodes.Acc_Static | Opcodes.Acc_Final | Opcodes.Acc_Volatile |
+                                         Opcodes.Acc_Transient);
                     _svuidFields.Add(new Item(name, mods, desc));
                 }
             }
@@ -314,7 +314,7 @@ namespace ObjectWeb.Asm.Commons
         // DontCheck(AbbreviationAsWordInName): can't be renamed (for backward binary compatibility).
         public virtual void AddSvuid(long svuid)
         {
-            var fieldVisitor = base.VisitField(IOpcodes.Acc_Final + IOpcodes.Acc_Static, "serialVersionUID", "J", null,
+            var fieldVisitor = base.VisitField(Opcodes.Acc_Final + Opcodes.Acc_Static, "serialVersionUID", "J", null,
                 svuid);
             if (fieldVisitor != null)
             {
@@ -332,73 +332,74 @@ namespace ObjectWeb.Asm.Commons
         {
             long svuid = 0;
 
-            using var stream = new MemoryStream();
-
-            // 1. The class name written using UTF encoding.
-            stream.WriteUtf(_name.Replace('/', '.'));
-
-            // 2. The class modifiers written as a 32-bit integer.
-            var mods = _access;
-            if ((mods & IOpcodes.Acc_Interface) != 0)
+            using (var stream = new MemoryStream())
             {
-                mods = _svuidMethods.Count == 0 ? (mods & ~IOpcodes.Acc_Abstract) : (mods | IOpcodes.Acc_Abstract);
+                // 1. The class name written using UTF encoding.
+                stream.WriteUtf(_name.Replace('/', '.'));
+
+                // 2. The class modifiers written as a 32-bit integer.
+                var mods = _access;
+                if ((mods & Opcodes.Acc_Interface) != 0)
+                {
+                    mods = _svuidMethods.Count == 0 ? (mods & ~Opcodes.Acc_Abstract) : (mods | Opcodes.Acc_Abstract);
+                }
+
+                stream.WriteInt(mods & (Opcodes.Acc_Public | Opcodes.Acc_Final | Opcodes.Acc_Interface |
+                                        Opcodes.Acc_Abstract));
+
+                // 3. The name of each interface sorted by name written using UTF encoding.
+                Array.Sort(_interfaces);
+                foreach (var interfaceName in _interfaces)
+                {
+                    stream.WriteUtf(interfaceName.Replace('/', '.'));
+                }
+
+                // 4. For each field of the class sorted by field name (except private static and private
+                // transient fields):
+                //   1. The name of the field in UTF encoding.
+                //   2. The modifiers of the field written as a 32-bit integer.
+                //   3. The descriptor of the field in UTF encoding.
+                // Note that field signatures are not dot separated. Method and constructor signatures are dot
+                // separated. Go figure...
+                WriteItems(_svuidFields, stream, false);
+
+                // 5. If a class initializer exists, write out the following:
+                //   1. The name of the method, <clinit>, in UTF encoding.
+                //   2. The modifier of the method, ACC_STATIC, written as a 32-bit integer.
+                //   3. The descriptor of the method, ()V, in UTF encoding.
+                if (_hasStaticInitializer)
+                {
+                    stream.WriteUtf(Clinit);
+                    stream.WriteInt(Opcodes.Acc_Static);
+                    stream.WriteUtf("()V");
+                }
+
+                // 6. For each non-private constructor sorted by method name and signature:
+                //   1. The name of the method, <init>, in UTF encoding.
+                //   2. The modifiers of the method written as a 32-bit integer.
+                //   3. The descriptor of the method in UTF encoding.
+                WriteItems(_svuidConstructors, stream, true);
+
+                // 7. For each non-private method sorted by method name and signature:
+                //   1. The name of the method in UTF encoding.
+                //   2. The modifiers of the method written as a 32-bit integer.
+                //   3. The descriptor of the method in UTF encoding.
+                WriteItems(_svuidMethods, stream, true);
+
+                // 8. The SHA-1 algorithm is executed on the stream of bytes produced by DataOutputStream and
+                // produces five 32-bit values sha[0..4].
+                var hashBytes = ComputeShAdigest(stream.ToArray());
+
+                // 9. The hash value is assembled from the first and second 32-bit values of the SHA-1 message
+                // digest. If the result of the message digest, the five 32-bit words H0 H1 H2 H3 H4, is in an
+                // array of five int values named sha, the hash value would be computed as follows:
+                for (var i = Math.Min(hashBytes.Length, 8) - 1; i >= 0; i--)
+                {
+                    svuid = (svuid << 8) | (uint)(hashBytes[i] & 0xFF);
+                }
+
+                return svuid;
             }
-
-            stream.WriteInt(mods & (IOpcodes.Acc_Public | IOpcodes.Acc_Final | IOpcodes.Acc_Interface |
-                                    IOpcodes.Acc_Abstract));
-
-            // 3. The name of each interface sorted by name written using UTF encoding.
-            Array.Sort(_interfaces);
-            foreach (var interfaceName in _interfaces)
-            {
-                stream.WriteUtf(interfaceName.Replace('/', '.'));
-            }
-
-            // 4. For each field of the class sorted by field name (except private static and private
-            // transient fields):
-            //   1. The name of the field in UTF encoding.
-            //   2. The modifiers of the field written as a 32-bit integer.
-            //   3. The descriptor of the field in UTF encoding.
-            // Note that field signatures are not dot separated. Method and constructor signatures are dot
-            // separated. Go figure...
-            WriteItems(_svuidFields, stream, false);
-
-            // 5. If a class initializer exists, write out the following:
-            //   1. The name of the method, <clinit>, in UTF encoding.
-            //   2. The modifier of the method, ACC_STATIC, written as a 32-bit integer.
-            //   3. The descriptor of the method, ()V, in UTF encoding.
-            if (_hasStaticInitializer)
-            {
-                stream.WriteUtf(Clinit);
-                stream.WriteInt(IOpcodes.Acc_Static);
-                stream.WriteUtf("()V");
-            }
-
-            // 6. For each non-private constructor sorted by method name and signature:
-            //   1. The name of the method, <init>, in UTF encoding.
-            //   2. The modifiers of the method written as a 32-bit integer.
-            //   3. The descriptor of the method in UTF encoding.
-            WriteItems(_svuidConstructors, stream, true);
-
-            // 7. For each non-private method sorted by method name and signature:
-            //   1. The name of the method in UTF encoding.
-            //   2. The modifiers of the method written as a 32-bit integer.
-            //   3. The descriptor of the method in UTF encoding.
-            WriteItems(_svuidMethods, stream, true);
-
-            // 8. The SHA-1 algorithm is executed on the stream of bytes produced by DataOutputStream and
-            // produces five 32-bit values sha[0..4].
-            var hashBytes = ComputeShAdigest(stream.ToArray());
-
-            // 9. The hash value is assembled from the first and second 32-bit values of the SHA-1 message
-            // digest. If the result of the message digest, the five 32-bit words H0 H1 H2 H3 H4, is in an
-            // array of five int values named sha, the hash value would be computed as follows:
-            for (var i = Math.Min(hashBytes.Length, 8) - 1; i >= 0; i--)
-            {
-                svuid = (svuid << 8) | (uint)(hashBytes[i] & 0xFF);
-            }
-
-            return svuid;
         }
 
         private SHA1 _sha1 = SHA1.Create();
@@ -497,18 +498,12 @@ namespace ObjectWeb.Asm.Commons
             for (var i = 0; i < strlen; i++)
             {
                 c = str[i];
-                switch (c)
-                {
-                    case >= 0x0001 and <= 0x007F:
-                        utflen++;
-                        break;
-                    case > 0x07FF:
-                        utflen += 3;
-                        break;
-                    default:
-                        utflen += 2;
-                        break;
-                }
+                if (c >= 0x0001 && c <= 0x007F)
+                    utflen++;
+                else if (c > 0x07FF)
+                    utflen += 3;
+                else
+                    utflen += 2;
             }
 
             if (utflen > 65535) throw new Exception("UTFDataFormat: encoded string too long: " + utflen + " bytes");
@@ -527,20 +522,20 @@ namespace ObjectWeb.Asm.Commons
             for (; i1 < strlen; i1++)
             {
                 c = str[i1];
-                switch (c)
+                if (c >= 0x0001 && c <= 0x007F)
                 {
-                    case >= 0x0001 and <= 0x007F:
-                        bytearr[count++] = unchecked((byte)c);
-                        break;
-                    case > 0x07FF:
-                        bytearr[count++] = unchecked((byte)(0xE0 | ((c >> 12) & 0x0F)));
-                        bytearr[count++] = unchecked((byte)(0x80 | ((c >> 6) & 0x3F)));
-                        bytearr[count++] = unchecked((byte)(0x80 | ((c >> 0) & 0x3F)));
-                        break;
-                    default:
-                        bytearr[count++] = unchecked((byte)(0xC0 | ((c >> 6) & 0x1F)));
-                        bytearr[count++] = unchecked((byte)(0x80 | ((c >> 0) & 0x3F)));
-                        break;
+                    bytearr[count++] = unchecked((byte)c);
+                }
+                else if (c > 0x07FF)
+                {
+                    bytearr[count++] = unchecked((byte)(0xE0 | ((c >> 12) & 0x0F)));
+                    bytearr[count++] = unchecked((byte)(0x80 | ((c >> 6) & 0x3F)));
+                    bytearr[count++] = unchecked((byte)(0x80 | ((c >> 0) & 0x3F)));
+                }
+                else
+                {
+                    bytearr[count++] = unchecked((byte)(0xC0 | ((c >> 6) & 0x1F)));
+                    bytearr[count++] = unchecked((byte)(0x80 | ((c >> 0) & 0x3F)));
                 }
             }
 

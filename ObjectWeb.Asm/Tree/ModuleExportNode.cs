@@ -41,7 +41,7 @@ namespace ObjectWeb.Asm.Tree
         public string Packaze { get; set; }
 
         /// <summary>
-        /// The access flags (see <seealso cref = "IOpcodes"/>). Valid values are {@code
+        /// The access flags (see <seealso cref = "Opcodes"/>). Valid values are {@code
         /// ACC_SYNTHETIC} and {@code ACC_MANDATED}.
         /// </summary>
         public int Access { get; set; }

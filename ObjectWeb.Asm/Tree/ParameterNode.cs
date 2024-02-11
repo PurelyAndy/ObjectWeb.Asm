@@ -40,7 +40,7 @@ namespace ObjectWeb.Asm.Tree
         public string Name { get; set; }
 
         /// <summary>
-        /// The parameter's access flags (see <seealso cref = "IOpcodes"/>). Valid values are {@code
+        /// The parameter's access flags (see <seealso cref = "Opcodes"/>). Valid values are {@code
         /// ACC_FINAL}, {@code ACC_SYNTHETIC} and {@code ACC_MANDATED}.
         /// </summary>
         public int Access { get; set; }
@@ -49,7 +49,7 @@ namespace ObjectWeb.Asm.Tree
         /// Constructs a new <seealso cref = "ParameterNode"/>.
         /// </summary>
         /// <param name = "access"> The parameter's access flags. Valid values are {@code ACC_FINAL}, {@code
-        ///     ACC_SYNTHETIC} or/and {@code ACC_MANDATED} (see <seealso cref = "IOpcodes"/>). </param>
+        ///     ACC_SYNTHETIC} or/and {@code ACC_MANDATED} (see <seealso cref = "Opcodes"/>). </param>
         /// <param name = "name"> the parameter's name. </param>
         public ParameterNode(string name, int access)
         {

@@ -115,13 +115,13 @@ namespace ObjectWeb.Asm
         /// Constructs a new <seealso cref="FieldWriter"/>.
         /// </summary>
         /// <param name="symbolTable"> where the constants used in this FieldWriter must be stored. </param>
-        /// <param name="access"> the field's access flags (see <seealso cref="IOpcodes"/>). </param>
+        /// <param name="access"> the field's access flags (see <seealso cref="Opcodes"/>). </param>
         /// <param name="name"> the field's name. </param>
         /// <param name="descriptor"> the field's descriptor (see <seealso cref="Type"/>). </param>
         /// <param name="signature"> the field's signature. May be {@literal null}. </param>
         /// <param name="constantValue"> the field's constant value. May be {@literal null}. </param>
         public FieldWriter(SymbolTable symbolTable, int access, string name, string descriptor, string signature,
-            object constantValue) : base(IOpcodes.Asm9)
+            object constantValue) : base(Opcodes.Asm9)
         {
             this._symbolTable = symbolTable;
             this._accessFlags = access;
@@ -223,9 +223,9 @@ namespace ObjectWeb.Asm
         /// <param name="output"> where the field_info structure must be put. </param>
         public void PutFieldInfo(ByteVector output)
         {
-            var useSyntheticAttribute = _symbolTable.MajorVersion < IOpcodes.V1_5;
+            var useSyntheticAttribute = _symbolTable.MajorVersion < Opcodes.V1_5;
             // Put the access_flags, name_index and descriptor_index fields.
-            var mask = useSyntheticAttribute ? IOpcodes.Acc_Synthetic : 0;
+            var mask = useSyntheticAttribute ? Opcodes.Acc_Synthetic : 0;
             output.PutShort(_accessFlags & ~mask).PutShort(_nameIndex).PutShort(_descriptorIndex);
             // Compute and put the attributes_count field.
             // For ease of reference, we use here the same attribute order as in Section 4.7 of the JVMS.
@@ -235,7 +235,7 @@ namespace ObjectWeb.Asm
                 ++attributesCount;
             }
 
-            if ((_accessFlags & IOpcodes.Acc_Synthetic) != 0 && useSyntheticAttribute)
+            if ((_accessFlags & Opcodes.Acc_Synthetic) != 0 && useSyntheticAttribute)
             {
                 ++attributesCount;
             }
@@ -245,7 +245,7 @@ namespace ObjectWeb.Asm
                 ++attributesCount;
             }
 
-            if ((_accessFlags & IOpcodes.Acc_Deprecated) != 0)
+            if ((_accessFlags & Opcodes.Acc_Deprecated) != 0)
             {
                 ++attributesCount;
             }

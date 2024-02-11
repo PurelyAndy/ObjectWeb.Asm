@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using ObjectWeb.Asm.Util;
 
 // ASM: a very small and fast Java bytecode manipulation framework
 // Copyright (c) 2000-2011 INRIA, France Telecom
@@ -190,7 +191,7 @@ namespace ObjectWeb.Asm
             this.b = classFileBuffer;
             // Check the class' major_version. This field is after the magic and minor_version fields, which
             // use 4 and 2 bytes respectively.
-            if (checkClassVersion && ReadShort(classFileOffset + 6) > IOpcodes.V20)
+            if (checkClassVersion && ReadShort(classFileOffset + 6) > Opcodes.V20)
             {
                 throw new System.ArgumentException("Unsupported class file major version " +
                                                    ReadShort(classFileOffset + 6));
@@ -321,10 +322,10 @@ namespace ObjectWeb.Asm
                     outputStream.Flush();
                     if (readCount == 1)
                     {
-                        return Unsafe.As<byte[]>(data);
+                        return data;
                     }
 
-                    return Unsafe.As<byte[]>(outputStream.ToArray());
+                    return outputStream.ToArray();
                 }
             }
             finally
@@ -358,7 +359,7 @@ namespace ObjectWeb.Asm
         // -----------------------------------------------------------------------------------------------
 
         /// <summary>
-        /// Returns the class's access flags (see <seealso cref="IOpcodes"/>). This value may not reflect Deprecated
+        /// Returns the class's access flags (see <seealso cref="Opcodes"/>). This value may not reflect Deprecated
         /// and Synthetic flags when bytecode is before 1.5 and those flags are represented by attributes.
         /// </summary>
         /// <returns> the class access flags. </returns>
@@ -547,11 +548,11 @@ namespace ObjectWeb.Asm
                 }
                 else if (Constants.Deprecated.Equals(attributeName))
                 {
-                    accessFlags |= IOpcodes.Acc_Deprecated;
+                    accessFlags |= Opcodes.Acc_Deprecated;
                 }
                 else if (Constants.Synthetic.Equals(attributeName))
                 {
-                    accessFlags |= IOpcodes.Acc_Synthetic;
+                    accessFlags |= Opcodes.Acc_Synthetic;
                 }
                 else if (Constants.Source_Debug_Extension.Equals(attributeName))
                 {
@@ -573,7 +574,7 @@ namespace ObjectWeb.Asm
                 else if (Constants.Record.Equals(attributeName))
                 {
                     recordOffset = currentAttributeOffset;
-                    accessFlags |= IOpcodes.Acc_Record;
+                    accessFlags |= Opcodes.Acc_Record;
                 }
                 else if (Constants.Module.Equals(attributeName))
                 {
@@ -1156,11 +1157,11 @@ namespace ObjectWeb.Asm
                 }
                 else if (Constants.Deprecated.Equals(attributeName))
                 {
-                    accessFlags |= IOpcodes.Acc_Deprecated;
+                    accessFlags |= Opcodes.Acc_Deprecated;
                 }
                 else if (Constants.Synthetic.Equals(attributeName))
                 {
-                    accessFlags |= IOpcodes.Acc_Synthetic;
+                    accessFlags |= Opcodes.Acc_Synthetic;
                 }
                 else if (Constants.Runtime_Visible_Annotations.Equals(attributeName))
                 {
@@ -1369,7 +1370,7 @@ namespace ObjectWeb.Asm
                 }
                 else if (Constants.Deprecated.Equals(attributeName))
                 {
-                    context.currentMethodAccessFlags |= IOpcodes.Acc_Deprecated;
+                    context.currentMethodAccessFlags |= Opcodes.Acc_Deprecated;
                 }
                 else if (Constants.Runtime_Visible_Annotations.Equals(attributeName))
                 {
@@ -1386,7 +1387,7 @@ namespace ObjectWeb.Asm
                 else if (Constants.Synthetic.Equals(attributeName))
                 {
                     synthetic = true;
-                    context.currentMethodAccessFlags |= IOpcodes.Acc_Synthetic;
+                    context.currentMethodAccessFlags |= Opcodes.Acc_Synthetic;
                 }
                 else if (Constants.Runtime_Invisible_Annotations.Equals(attributeName))
                 {
@@ -1436,7 +1437,7 @@ namespace ObjectWeb.Asm
             {
                 var methodWriter = (MethodWriter)methodVisitor;
                 if (methodWriter.CanCopyMethodAttributes(this, synthetic,
-                        (context.currentMethodAccessFlags & IOpcodes.Acc_Deprecated) != 0,
+                        (context.currentMethodAccessFlags & Opcodes.Acc_Deprecated) != 0,
                         ReadUnsignedShort(methodInfoOffset + 4), signatureIndex, exceptionsOffset))
                 {
                     methodWriter.SetMethodAttributesSource(methodInfoOffset, currentOffset - methodInfoOffset);
@@ -1614,113 +1615,113 @@ namespace ObjectWeb.Asm
                 var opcode = classBuffer[currentOffset] & 0xFF;
                 switch (opcode)
                 {
-                    case IOpcodes.Nop:
-                    case IOpcodes.Aconst_Null:
-                    case IOpcodes.Iconst_M1:
-                    case IOpcodes.Iconst_0:
-                    case IOpcodes.Iconst_1:
-                    case IOpcodes.Iconst_2:
-                    case IOpcodes.Iconst_3:
-                    case IOpcodes.Iconst_4:
-                    case IOpcodes.Iconst_5:
-                    case IOpcodes.Lconst_0:
-                    case IOpcodes.Lconst_1:
-                    case IOpcodes.Fconst_0:
-                    case IOpcodes.Fconst_1:
-                    case IOpcodes.Fconst_2:
-                    case IOpcodes.Dconst_0:
-                    case IOpcodes.Dconst_1:
-                    case IOpcodes.Iaload:
-                    case IOpcodes.Laload:
-                    case IOpcodes.Faload:
-                    case IOpcodes.Daload:
-                    case IOpcodes.Aaload:
-                    case IOpcodes.Baload:
-                    case IOpcodes.Caload:
-                    case IOpcodes.Saload:
-                    case IOpcodes.Iastore:
-                    case IOpcodes.Lastore:
-                    case IOpcodes.Fastore:
-                    case IOpcodes.Dastore:
-                    case IOpcodes.Aastore:
-                    case IOpcodes.Bastore:
-                    case IOpcodes.Castore:
-                    case IOpcodes.Sastore:
-                    case IOpcodes.Pop:
-                    case IOpcodes.Pop2:
-                    case IOpcodes.Dup:
-                    case IOpcodes.Dup_X1:
-                    case IOpcodes.Dup_X2:
-                    case IOpcodes.Dup2:
-                    case IOpcodes.Dup2_X1:
-                    case IOpcodes.Dup2_X2:
-                    case IOpcodes.Swap:
-                    case IOpcodes.Iadd:
-                    case IOpcodes.Ladd:
-                    case IOpcodes.Fadd:
-                    case IOpcodes.Dadd:
-                    case IOpcodes.Isub:
-                    case IOpcodes.Lsub:
-                    case IOpcodes.Fsub:
-                    case IOpcodes.Dsub:
-                    case IOpcodes.Imul:
-                    case IOpcodes.Lmul:
-                    case IOpcodes.Fmul:
-                    case IOpcodes.Dmul:
-                    case IOpcodes.Idiv:
-                    case IOpcodes.Ldiv:
-                    case IOpcodes.Fdiv:
-                    case IOpcodes.Ddiv:
-                    case IOpcodes.Irem:
-                    case IOpcodes.Lrem:
-                    case IOpcodes.Frem:
-                    case IOpcodes.Drem:
-                    case IOpcodes.Ineg:
-                    case IOpcodes.Lneg:
-                    case IOpcodes.Fneg:
-                    case IOpcodes.Dneg:
-                    case IOpcodes.Ishl:
-                    case IOpcodes.Lshl:
-                    case IOpcodes.Ishr:
-                    case IOpcodes.Lshr:
-                    case IOpcodes.Iushr:
-                    case IOpcodes.Lushr:
-                    case IOpcodes.Iand:
-                    case IOpcodes.Land:
-                    case IOpcodes.Ior:
-                    case IOpcodes.Lor:
-                    case IOpcodes.Ixor:
-                    case IOpcodes.Lxor:
-                    case IOpcodes.I2L:
-                    case IOpcodes.I2F:
-                    case IOpcodes.I2D:
-                    case IOpcodes.L2I:
-                    case IOpcodes.L2F:
-                    case IOpcodes.L2D:
-                    case IOpcodes.F2I:
-                    case IOpcodes.F2L:
-                    case IOpcodes.F2D:
-                    case IOpcodes.D2I:
-                    case IOpcodes.D2L:
-                    case IOpcodes.D2F:
-                    case IOpcodes.I2B:
-                    case IOpcodes.I2C:
-                    case IOpcodes.I2S:
-                    case IOpcodes.Lcmp:
-                    case IOpcodes.Fcmpl:
-                    case IOpcodes.Fcmpg:
-                    case IOpcodes.Dcmpl:
-                    case IOpcodes.Dcmpg:
-                    case IOpcodes.Ireturn:
-                    case IOpcodes.Lreturn:
-                    case IOpcodes.Freturn:
-                    case IOpcodes.Dreturn:
-                    case IOpcodes.Areturn:
-                    case IOpcodes.Return:
-                    case IOpcodes.Arraylength:
-                    case IOpcodes.Athrow:
-                    case IOpcodes.Monitorenter:
-                    case IOpcodes.Monitorexit:
+                    case Opcodes.Nop:
+                    case Opcodes.Aconst_Null:
+                    case Opcodes.Iconst_M1:
+                    case Opcodes.Iconst_0:
+                    case Opcodes.Iconst_1:
+                    case Opcodes.Iconst_2:
+                    case Opcodes.Iconst_3:
+                    case Opcodes.Iconst_4:
+                    case Opcodes.Iconst_5:
+                    case Opcodes.Lconst_0:
+                    case Opcodes.Lconst_1:
+                    case Opcodes.Fconst_0:
+                    case Opcodes.Fconst_1:
+                    case Opcodes.Fconst_2:
+                    case Opcodes.Dconst_0:
+                    case Opcodes.Dconst_1:
+                    case Opcodes.Iaload:
+                    case Opcodes.Laload:
+                    case Opcodes.Faload:
+                    case Opcodes.Daload:
+                    case Opcodes.Aaload:
+                    case Opcodes.Baload:
+                    case Opcodes.Caload:
+                    case Opcodes.Saload:
+                    case Opcodes.Iastore:
+                    case Opcodes.Lastore:
+                    case Opcodes.Fastore:
+                    case Opcodes.Dastore:
+                    case Opcodes.Aastore:
+                    case Opcodes.Bastore:
+                    case Opcodes.Castore:
+                    case Opcodes.Sastore:
+                    case Opcodes.Pop:
+                    case Opcodes.Pop2:
+                    case Opcodes.Dup:
+                    case Opcodes.Dup_X1:
+                    case Opcodes.Dup_X2:
+                    case Opcodes.Dup2:
+                    case Opcodes.Dup2_X1:
+                    case Opcodes.Dup2_X2:
+                    case Opcodes.Swap:
+                    case Opcodes.Iadd:
+                    case Opcodes.Ladd:
+                    case Opcodes.Fadd:
+                    case Opcodes.Dadd:
+                    case Opcodes.Isub:
+                    case Opcodes.Lsub:
+                    case Opcodes.Fsub:
+                    case Opcodes.Dsub:
+                    case Opcodes.Imul:
+                    case Opcodes.Lmul:
+                    case Opcodes.Fmul:
+                    case Opcodes.Dmul:
+                    case Opcodes.Idiv:
+                    case Opcodes.Ldiv:
+                    case Opcodes.Fdiv:
+                    case Opcodes.Ddiv:
+                    case Opcodes.Irem:
+                    case Opcodes.Lrem:
+                    case Opcodes.Frem:
+                    case Opcodes.Drem:
+                    case Opcodes.Ineg:
+                    case Opcodes.Lneg:
+                    case Opcodes.Fneg:
+                    case Opcodes.Dneg:
+                    case Opcodes.Ishl:
+                    case Opcodes.Lshl:
+                    case Opcodes.Ishr:
+                    case Opcodes.Lshr:
+                    case Opcodes.Iushr:
+                    case Opcodes.Lushr:
+                    case Opcodes.Iand:
+                    case Opcodes.Land:
+                    case Opcodes.Ior:
+                    case Opcodes.Lor:
+                    case Opcodes.Ixor:
+                    case Opcodes.Lxor:
+                    case Opcodes.I2L:
+                    case Opcodes.I2F:
+                    case Opcodes.I2D:
+                    case Opcodes.L2I:
+                    case Opcodes.L2F:
+                    case Opcodes.L2D:
+                    case Opcodes.F2I:
+                    case Opcodes.F2L:
+                    case Opcodes.F2D:
+                    case Opcodes.D2I:
+                    case Opcodes.D2L:
+                    case Opcodes.D2F:
+                    case Opcodes.I2B:
+                    case Opcodes.I2C:
+                    case Opcodes.I2S:
+                    case Opcodes.Lcmp:
+                    case Opcodes.Fcmpl:
+                    case Opcodes.Fcmpg:
+                    case Opcodes.Dcmpl:
+                    case Opcodes.Dcmpg:
+                    case Opcodes.Ireturn:
+                    case Opcodes.Lreturn:
+                    case Opcodes.Freturn:
+                    case Opcodes.Dreturn:
+                    case Opcodes.Areturn:
+                    case Opcodes.Return:
+                    case Opcodes.Arraylength:
+                    case Opcodes.Athrow:
+                    case Opcodes.Monitorenter:
+                    case Opcodes.Monitorexit:
                     case Constants.Iload_0:
                     case Constants.Iload_1:
                     case Constants.Iload_2:
@@ -1763,24 +1764,24 @@ namespace ObjectWeb.Asm
                     case Constants.Astore_3:
                         currentOffset += 1;
                         break;
-                    case IOpcodes.Ifeq:
-                    case IOpcodes.Ifne:
-                    case IOpcodes.Iflt:
-                    case IOpcodes.Ifge:
-                    case IOpcodes.Ifgt:
-                    case IOpcodes.Ifle:
-                    case IOpcodes.If_Icmpeq:
-                    case IOpcodes.If_Icmpne:
-                    case IOpcodes.If_Icmplt:
-                    case IOpcodes.If_Icmpge:
-                    case IOpcodes.If_Icmpgt:
-                    case IOpcodes.If_Icmple:
-                    case IOpcodes.If_Acmpeq:
-                    case IOpcodes.If_Acmpne:
-                    case IOpcodes.Goto:
-                    case IOpcodes.Jsr:
-                    case IOpcodes.Ifnull:
-                    case IOpcodes.Ifnonnull:
+                    case Opcodes.Ifeq:
+                    case Opcodes.Ifne:
+                    case Opcodes.Iflt:
+                    case Opcodes.Ifge:
+                    case Opcodes.Ifgt:
+                    case Opcodes.Ifle:
+                    case Opcodes.If_Icmpeq:
+                    case Opcodes.If_Icmpne:
+                    case Opcodes.If_Icmplt:
+                    case Opcodes.If_Icmpge:
+                    case Opcodes.If_Icmpgt:
+                    case Opcodes.If_Icmple:
+                    case Opcodes.If_Acmpeq:
+                    case Opcodes.If_Acmpne:
+                    case Opcodes.Goto:
+                    case Opcodes.Jsr:
+                    case Opcodes.Ifnull:
+                    case Opcodes.Ifnonnull:
                         CreateLabel(bytecodeOffset + ReadShort(currentOffset + 1), labels);
                         currentOffset += 3;
                         break;
@@ -1814,20 +1815,20 @@ namespace ObjectWeb.Asm
                     case Constants.Wide:
                         switch (classBuffer[currentOffset + 1] & 0xFF)
                         {
-                            case IOpcodes.Iload:
-                            case IOpcodes.Fload:
-                            case IOpcodes.Aload:
-                            case IOpcodes.Lload:
-                            case IOpcodes.Dload:
-                            case IOpcodes.Istore:
-                            case IOpcodes.Fstore:
-                            case IOpcodes.Astore:
-                            case IOpcodes.Lstore:
-                            case IOpcodes.Dstore:
-                            case IOpcodes.Ret:
+                            case Opcodes.Iload:
+                            case Opcodes.Fload:
+                            case Opcodes.Aload:
+                            case Opcodes.Lload:
+                            case Opcodes.Dload:
+                            case Opcodes.Istore:
+                            case Opcodes.Fstore:
+                            case Opcodes.Astore:
+                            case Opcodes.Lstore:
+                            case Opcodes.Dstore:
+                            case Opcodes.Ret:
                                 currentOffset += 4;
                                 break;
-                            case IOpcodes.Iinc:
+                            case Opcodes.Iinc:
                                 currentOffset += 6;
                                 break;
                             default:
@@ -1835,7 +1836,7 @@ namespace ObjectWeb.Asm
                         }
 
                         break;
-                    case IOpcodes.Tableswitch:
+                    case Opcodes.Tableswitch:
                         // Skip 0 to 3 padding bytes.
                         currentOffset += 4 - (bytecodeOffset & 3);
                         // Read the default label and the number of table entries.
@@ -1850,7 +1851,7 @@ namespace ObjectWeb.Asm
                         }
 
                         break;
-                    case IOpcodes.Lookupswitch:
+                    case Opcodes.Lookupswitch:
                         // Skip 0 to 3 padding bytes.
                         currentOffset += 4 - (bytecodeOffset & 3);
                         // Read the default label and the number of switch cases.
@@ -1865,44 +1866,44 @@ namespace ObjectWeb.Asm
                         }
 
                         break;
-                    case IOpcodes.Iload:
-                    case IOpcodes.Lload:
-                    case IOpcodes.Fload:
-                    case IOpcodes.Dload:
-                    case IOpcodes.Aload:
-                    case IOpcodes.Istore:
-                    case IOpcodes.Lstore:
-                    case IOpcodes.Fstore:
-                    case IOpcodes.Dstore:
-                    case IOpcodes.Astore:
-                    case IOpcodes.Ret:
-                    case IOpcodes.Bipush:
-                    case IOpcodes.Newarray:
-                    case IOpcodes.Ldc:
+                    case Opcodes.Iload:
+                    case Opcodes.Lload:
+                    case Opcodes.Fload:
+                    case Opcodes.Dload:
+                    case Opcodes.Aload:
+                    case Opcodes.Istore:
+                    case Opcodes.Lstore:
+                    case Opcodes.Fstore:
+                    case Opcodes.Dstore:
+                    case Opcodes.Astore:
+                    case Opcodes.Ret:
+                    case Opcodes.Bipush:
+                    case Opcodes.Newarray:
+                    case Opcodes.Ldc:
                         currentOffset += 2;
                         break;
-                    case IOpcodes.Sipush:
+                    case Opcodes.Sipush:
                     case Constants.Ldc_W:
                     case Constants.Ldc2_W:
-                    case IOpcodes.Getstatic:
-                    case IOpcodes.Putstatic:
-                    case IOpcodes.Getfield:
-                    case IOpcodes.Putfield:
-                    case IOpcodes.Invokevirtual:
-                    case IOpcodes.Invokespecial:
-                    case IOpcodes.Invokestatic:
-                    case IOpcodes.New:
-                    case IOpcodes.Anewarray:
-                    case IOpcodes.Checkcast:
-                    case IOpcodes.Instanceof:
-                    case IOpcodes.Iinc:
+                    case Opcodes.Getstatic:
+                    case Opcodes.Putstatic:
+                    case Opcodes.Getfield:
+                    case Opcodes.Putfield:
+                    case Opcodes.Invokevirtual:
+                    case Opcodes.Invokespecial:
+                    case Opcodes.Invokestatic:
+                    case Opcodes.New:
+                    case Opcodes.Anewarray:
+                    case Opcodes.Checkcast:
+                    case Opcodes.Instanceof:
+                    case Opcodes.Iinc:
                         currentOffset += 3;
                         break;
-                    case IOpcodes.Invokeinterface:
-                    case IOpcodes.Invokedynamic:
+                    case Opcodes.Invokeinterface:
+                    case Opcodes.Invokedynamic:
                         currentOffset += 5;
                         break;
-                    case IOpcodes.Multianewarray:
+                    case Opcodes.Multianewarray:
                         currentOffset += 4;
                         break;
                     default:
@@ -2090,7 +2091,7 @@ namespace ObjectWeb.Asm
                     {
                         var potentialBytecodeOffset = ReadUnsignedShort(offset + 1);
                         if (potentialBytecodeOffset >= 0 && potentialBytecodeOffset < codeLength &&
-                            (classBuffer[bytecodeStartOffset + potentialBytecodeOffset] & 0xFF) == IOpcodes.New)
+                            (classBuffer[bytecodeStartOffset + potentialBytecodeOffset] & 0xFF) == Opcodes.New)
                         {
                             CreateLabel(potentialBytecodeOffset, labels);
                         }
@@ -2106,7 +2107,7 @@ namespace ObjectWeb.Asm
                 // For this, MethodWriter needs to know maxLocals before the first instruction is visited. To
                 // ensure this, we visit the implicit first frame here (passing only maxLocals - the rest is
                 // computed in MethodWriter).
-                methodVisitor.VisitFrame(IOpcodes.F_New, maxLocals, null, 0, null);
+                methodVisitor.VisitFrame(Opcodes.F_New, maxLocals, null, 0, null);
             }
 
             // Visit the bytecode instructions. First, introduce state variables for the incremental parsing
@@ -2156,7 +2157,7 @@ namespace ObjectWeb.Asm
                     {
                         if (!compressedFrames || expandFrames)
                         {
-                            methodVisitor.VisitFrame(IOpcodes.F_New, context.currentFrameLocalCount,
+                            methodVisitor.VisitFrame(Opcodes.F_New, context.currentFrameLocalCount,
                                 context.currentFrameLocalTypes, context.currentFrameStackCount,
                                 context.currentFrameStackTypes);
                         }
@@ -2199,113 +2200,113 @@ namespace ObjectWeb.Asm
                 var opcode = classBuffer[currentOffset] & 0xFF;
                 switch (opcode)
                 {
-                    case IOpcodes.Nop:
-                    case IOpcodes.Aconst_Null:
-                    case IOpcodes.Iconst_M1:
-                    case IOpcodes.Iconst_0:
-                    case IOpcodes.Iconst_1:
-                    case IOpcodes.Iconst_2:
-                    case IOpcodes.Iconst_3:
-                    case IOpcodes.Iconst_4:
-                    case IOpcodes.Iconst_5:
-                    case IOpcodes.Lconst_0:
-                    case IOpcodes.Lconst_1:
-                    case IOpcodes.Fconst_0:
-                    case IOpcodes.Fconst_1:
-                    case IOpcodes.Fconst_2:
-                    case IOpcodes.Dconst_0:
-                    case IOpcodes.Dconst_1:
-                    case IOpcodes.Iaload:
-                    case IOpcodes.Laload:
-                    case IOpcodes.Faload:
-                    case IOpcodes.Daload:
-                    case IOpcodes.Aaload:
-                    case IOpcodes.Baload:
-                    case IOpcodes.Caload:
-                    case IOpcodes.Saload:
-                    case IOpcodes.Iastore:
-                    case IOpcodes.Lastore:
-                    case IOpcodes.Fastore:
-                    case IOpcodes.Dastore:
-                    case IOpcodes.Aastore:
-                    case IOpcodes.Bastore:
-                    case IOpcodes.Castore:
-                    case IOpcodes.Sastore:
-                    case IOpcodes.Pop:
-                    case IOpcodes.Pop2:
-                    case IOpcodes.Dup:
-                    case IOpcodes.Dup_X1:
-                    case IOpcodes.Dup_X2:
-                    case IOpcodes.Dup2:
-                    case IOpcodes.Dup2_X1:
-                    case IOpcodes.Dup2_X2:
-                    case IOpcodes.Swap:
-                    case IOpcodes.Iadd:
-                    case IOpcodes.Ladd:
-                    case IOpcodes.Fadd:
-                    case IOpcodes.Dadd:
-                    case IOpcodes.Isub:
-                    case IOpcodes.Lsub:
-                    case IOpcodes.Fsub:
-                    case IOpcodes.Dsub:
-                    case IOpcodes.Imul:
-                    case IOpcodes.Lmul:
-                    case IOpcodes.Fmul:
-                    case IOpcodes.Dmul:
-                    case IOpcodes.Idiv:
-                    case IOpcodes.Ldiv:
-                    case IOpcodes.Fdiv:
-                    case IOpcodes.Ddiv:
-                    case IOpcodes.Irem:
-                    case IOpcodes.Lrem:
-                    case IOpcodes.Frem:
-                    case IOpcodes.Drem:
-                    case IOpcodes.Ineg:
-                    case IOpcodes.Lneg:
-                    case IOpcodes.Fneg:
-                    case IOpcodes.Dneg:
-                    case IOpcodes.Ishl:
-                    case IOpcodes.Lshl:
-                    case IOpcodes.Ishr:
-                    case IOpcodes.Lshr:
-                    case IOpcodes.Iushr:
-                    case IOpcodes.Lushr:
-                    case IOpcodes.Iand:
-                    case IOpcodes.Land:
-                    case IOpcodes.Ior:
-                    case IOpcodes.Lor:
-                    case IOpcodes.Ixor:
-                    case IOpcodes.Lxor:
-                    case IOpcodes.I2L:
-                    case IOpcodes.I2F:
-                    case IOpcodes.I2D:
-                    case IOpcodes.L2I:
-                    case IOpcodes.L2F:
-                    case IOpcodes.L2D:
-                    case IOpcodes.F2I:
-                    case IOpcodes.F2L:
-                    case IOpcodes.F2D:
-                    case IOpcodes.D2I:
-                    case IOpcodes.D2L:
-                    case IOpcodes.D2F:
-                    case IOpcodes.I2B:
-                    case IOpcodes.I2C:
-                    case IOpcodes.I2S:
-                    case IOpcodes.Lcmp:
-                    case IOpcodes.Fcmpl:
-                    case IOpcodes.Fcmpg:
-                    case IOpcodes.Dcmpl:
-                    case IOpcodes.Dcmpg:
-                    case IOpcodes.Ireturn:
-                    case IOpcodes.Lreturn:
-                    case IOpcodes.Freturn:
-                    case IOpcodes.Dreturn:
-                    case IOpcodes.Areturn:
-                    case IOpcodes.Return:
-                    case IOpcodes.Arraylength:
-                    case IOpcodes.Athrow:
-                    case IOpcodes.Monitorenter:
-                    case IOpcodes.Monitorexit:
+                    case Opcodes.Nop:
+                    case Opcodes.Aconst_Null:
+                    case Opcodes.Iconst_M1:
+                    case Opcodes.Iconst_0:
+                    case Opcodes.Iconst_1:
+                    case Opcodes.Iconst_2:
+                    case Opcodes.Iconst_3:
+                    case Opcodes.Iconst_4:
+                    case Opcodes.Iconst_5:
+                    case Opcodes.Lconst_0:
+                    case Opcodes.Lconst_1:
+                    case Opcodes.Fconst_0:
+                    case Opcodes.Fconst_1:
+                    case Opcodes.Fconst_2:
+                    case Opcodes.Dconst_0:
+                    case Opcodes.Dconst_1:
+                    case Opcodes.Iaload:
+                    case Opcodes.Laload:
+                    case Opcodes.Faload:
+                    case Opcodes.Daload:
+                    case Opcodes.Aaload:
+                    case Opcodes.Baload:
+                    case Opcodes.Caload:
+                    case Opcodes.Saload:
+                    case Opcodes.Iastore:
+                    case Opcodes.Lastore:
+                    case Opcodes.Fastore:
+                    case Opcodes.Dastore:
+                    case Opcodes.Aastore:
+                    case Opcodes.Bastore:
+                    case Opcodes.Castore:
+                    case Opcodes.Sastore:
+                    case Opcodes.Pop:
+                    case Opcodes.Pop2:
+                    case Opcodes.Dup:
+                    case Opcodes.Dup_X1:
+                    case Opcodes.Dup_X2:
+                    case Opcodes.Dup2:
+                    case Opcodes.Dup2_X1:
+                    case Opcodes.Dup2_X2:
+                    case Opcodes.Swap:
+                    case Opcodes.Iadd:
+                    case Opcodes.Ladd:
+                    case Opcodes.Fadd:
+                    case Opcodes.Dadd:
+                    case Opcodes.Isub:
+                    case Opcodes.Lsub:
+                    case Opcodes.Fsub:
+                    case Opcodes.Dsub:
+                    case Opcodes.Imul:
+                    case Opcodes.Lmul:
+                    case Opcodes.Fmul:
+                    case Opcodes.Dmul:
+                    case Opcodes.Idiv:
+                    case Opcodes.Ldiv:
+                    case Opcodes.Fdiv:
+                    case Opcodes.Ddiv:
+                    case Opcodes.Irem:
+                    case Opcodes.Lrem:
+                    case Opcodes.Frem:
+                    case Opcodes.Drem:
+                    case Opcodes.Ineg:
+                    case Opcodes.Lneg:
+                    case Opcodes.Fneg:
+                    case Opcodes.Dneg:
+                    case Opcodes.Ishl:
+                    case Opcodes.Lshl:
+                    case Opcodes.Ishr:
+                    case Opcodes.Lshr:
+                    case Opcodes.Iushr:
+                    case Opcodes.Lushr:
+                    case Opcodes.Iand:
+                    case Opcodes.Land:
+                    case Opcodes.Ior:
+                    case Opcodes.Lor:
+                    case Opcodes.Ixor:
+                    case Opcodes.Lxor:
+                    case Opcodes.I2L:
+                    case Opcodes.I2F:
+                    case Opcodes.I2D:
+                    case Opcodes.L2I:
+                    case Opcodes.L2F:
+                    case Opcodes.L2D:
+                    case Opcodes.F2I:
+                    case Opcodes.F2L:
+                    case Opcodes.F2D:
+                    case Opcodes.D2I:
+                    case Opcodes.D2L:
+                    case Opcodes.D2F:
+                    case Opcodes.I2B:
+                    case Opcodes.I2C:
+                    case Opcodes.I2S:
+                    case Opcodes.Lcmp:
+                    case Opcodes.Fcmpl:
+                    case Opcodes.Fcmpg:
+                    case Opcodes.Dcmpl:
+                    case Opcodes.Dcmpg:
+                    case Opcodes.Ireturn:
+                    case Opcodes.Lreturn:
+                    case Opcodes.Freturn:
+                    case Opcodes.Dreturn:
+                    case Opcodes.Areturn:
+                    case Opcodes.Return:
+                    case Opcodes.Arraylength:
+                    case Opcodes.Athrow:
+                    case Opcodes.Monitorenter:
+                    case Opcodes.Monitorexit:
                         methodVisitor.VisitInsn(opcode);
                         currentOffset += 1;
                         break;
@@ -2330,7 +2331,7 @@ namespace ObjectWeb.Asm
                     case Constants.Aload_2:
                     case Constants.Aload_3:
                         opcode -= Constants.Iload_0;
-                        methodVisitor.VisitVarInsn(IOpcodes.Iload + (opcode >> 2), opcode & 0x3);
+                        methodVisitor.VisitVarInsn(Opcodes.Iload + (opcode >> 2), opcode & 0x3);
                         currentOffset += 1;
                         break;
                     case Constants.Istore_0:
@@ -2354,27 +2355,27 @@ namespace ObjectWeb.Asm
                     case Constants.Astore_2:
                     case Constants.Astore_3:
                         opcode -= Constants.Istore_0;
-                        methodVisitor.VisitVarInsn(IOpcodes.Istore + (opcode >> 2), opcode & 0x3);
+                        methodVisitor.VisitVarInsn(Opcodes.Istore + (opcode >> 2), opcode & 0x3);
                         currentOffset += 1;
                         break;
-                    case IOpcodes.Ifeq:
-                    case IOpcodes.Ifne:
-                    case IOpcodes.Iflt:
-                    case IOpcodes.Ifge:
-                    case IOpcodes.Ifgt:
-                    case IOpcodes.Ifle:
-                    case IOpcodes.If_Icmpeq:
-                    case IOpcodes.If_Icmpne:
-                    case IOpcodes.If_Icmplt:
-                    case IOpcodes.If_Icmpge:
-                    case IOpcodes.If_Icmpgt:
-                    case IOpcodes.If_Icmple:
-                    case IOpcodes.If_Acmpeq:
-                    case IOpcodes.If_Acmpne:
-                    case IOpcodes.Goto:
-                    case IOpcodes.Jsr:
-                    case IOpcodes.Ifnull:
-                    case IOpcodes.Ifnonnull:
+                    case Opcodes.Ifeq:
+                    case Opcodes.Ifne:
+                    case Opcodes.Iflt:
+                    case Opcodes.Ifge:
+                    case Opcodes.Ifgt:
+                    case Opcodes.Ifle:
+                    case Opcodes.If_Icmpeq:
+                    case Opcodes.If_Icmpne:
+                    case Opcodes.If_Icmplt:
+                    case Opcodes.If_Icmpge:
+                    case Opcodes.If_Icmpgt:
+                    case Opcodes.If_Icmple:
+                    case Opcodes.If_Acmpeq:
+                    case Opcodes.If_Acmpne:
+                    case Opcodes.Goto:
+                    case Opcodes.Jsr:
+                    case Opcodes.Ifnull:
+                    case Opcodes.Ifnonnull:
                         methodVisitor.VisitJumpInsn(opcode,
                             labels[currentBytecodeOffset + ReadShort(currentOffset + 1)]);
                         currentOffset += 3;
@@ -2414,7 +2415,7 @@ namespace ObjectWeb.Asm
                             ? opcode - Constants.Asm_Opcode_Delta
                             : opcode - Constants.Asm_Ifnull_Opcode_Delta;
                         var target = labels[currentBytecodeOffset + ReadUnsignedShort(currentOffset + 1)];
-                        if (opcode == IOpcodes.Goto || opcode == IOpcodes.Jsr)
+                        if (opcode == Opcodes.Goto || opcode == Opcodes.Jsr)
                         {
                             // Replace GOTO with GOTO_W and JSR with JSR_W.
                             methodVisitor.VisitJumpInsn(opcode + Constants.WideJumpOpcodeDelta, target);
@@ -2424,7 +2425,7 @@ namespace ObjectWeb.Asm
                             // Compute the "opposite" of opcode. This can be done by flipping the least
                             // significant bit for IFNULL and IFNONNULL, and similarly for IFEQ ... IF_ACMPEQ
                             // (with a pre and post offset by 1).
-                            opcode = opcode < IOpcodes.Goto ? ((opcode + 1) ^ 1) - 1 : opcode ^ 1;
+                            opcode = opcode < Opcodes.Goto ? ((opcode + 1) ^ 1) - 1 : opcode ^ 1;
                             var endif = CreateLabel(currentBytecodeOffset + 3, labels);
                             methodVisitor.VisitJumpInsn(opcode, endif);
                             methodVisitor.VisitJumpInsn(Constants.Goto_W, target);
@@ -2448,7 +2449,7 @@ namespace ObjectWeb.Asm
                         break;
                     case Constants.Wide:
                         opcode = classBuffer[currentOffset + 1] & 0xFF;
-                        if (opcode == IOpcodes.Iinc)
+                        if (opcode == Opcodes.Iinc)
                         {
                             methodVisitor.VisitIincInsn(ReadUnsignedShort(currentOffset + 2),
                                 ReadShort(currentOffset + 4));
@@ -2461,7 +2462,7 @@ namespace ObjectWeb.Asm
                         }
 
                         break;
-                    case IOpcodes.Tableswitch:
+                    case Opcodes.Tableswitch:
                     {
                         // Skip 0 to 3 padding bytes.
                         currentOffset += 4 - (currentBytecodeOffset & 3);
@@ -2480,7 +2481,7 @@ namespace ObjectWeb.Asm
                         methodVisitor.VisitTableSwitchInsn(low, high, defaultLabel, table);
                         break;
                     }
-                    case IOpcodes.Lookupswitch:
+                    case Opcodes.Lookupswitch:
                     {
                         // Skip 0 to 3 padding bytes.
                         currentOffset += 4 - (currentBytecodeOffset & 3);
@@ -2500,30 +2501,30 @@ namespace ObjectWeb.Asm
                         methodVisitor.VisitLookupSwitchInsn(defaultLabel, keys, Values);
                         break;
                     }
-                    case IOpcodes.Iload:
-                    case IOpcodes.Lload:
-                    case IOpcodes.Fload:
-                    case IOpcodes.Dload:
-                    case IOpcodes.Aload:
-                    case IOpcodes.Istore:
-                    case IOpcodes.Lstore:
-                    case IOpcodes.Fstore:
-                    case IOpcodes.Dstore:
-                    case IOpcodes.Astore:
-                    case IOpcodes.Ret:
+                    case Opcodes.Iload:
+                    case Opcodes.Lload:
+                    case Opcodes.Fload:
+                    case Opcodes.Dload:
+                    case Opcodes.Aload:
+                    case Opcodes.Istore:
+                    case Opcodes.Lstore:
+                    case Opcodes.Fstore:
+                    case Opcodes.Dstore:
+                    case Opcodes.Astore:
+                    case Opcodes.Ret:
                         methodVisitor.VisitVarInsn(opcode, classBuffer[currentOffset + 1] & 0xFF);
                         currentOffset += 2;
                         break;
-                    case IOpcodes.Bipush:
-                    case IOpcodes.Newarray:
+                    case Opcodes.Bipush:
+                    case Opcodes.Newarray:
                         methodVisitor.VisitIntInsn(opcode, classBuffer[currentOffset + 1]);
                         currentOffset += 2;
                         break;
-                    case IOpcodes.Sipush:
+                    case Opcodes.Sipush:
                         methodVisitor.VisitIntInsn(opcode, ReadShort(currentOffset + 1));
                         currentOffset += 3;
                         break;
-                    case IOpcodes.Ldc:
+                    case Opcodes.Ldc:
                         methodVisitor.VisitLdcInsn(ReadConst(classBuffer[currentOffset + 1] & 0xFF, charBuffer));
                         currentOffset += 2;
                         break;
@@ -2532,21 +2533,21 @@ namespace ObjectWeb.Asm
                         methodVisitor.VisitLdcInsn(ReadConst(ReadUnsignedShort(currentOffset + 1), charBuffer));
                         currentOffset += 3;
                         break;
-                    case IOpcodes.Getstatic:
-                    case IOpcodes.Putstatic:
-                    case IOpcodes.Getfield:
-                    case IOpcodes.Putfield:
-                    case IOpcodes.Invokevirtual:
-                    case IOpcodes.Invokespecial:
-                    case IOpcodes.Invokestatic:
-                    case IOpcodes.Invokeinterface:
+                    case Opcodes.Getstatic:
+                    case Opcodes.Putstatic:
+                    case Opcodes.Getfield:
+                    case Opcodes.Putfield:
+                    case Opcodes.Invokevirtual:
+                    case Opcodes.Invokespecial:
+                    case Opcodes.Invokestatic:
+                    case Opcodes.Invokeinterface:
                     {
                         var cpInfoOffset = _cpInfoOffsets[ReadUnsignedShort(currentOffset + 1)];
                         var nameAndTypeCpInfoOffset = _cpInfoOffsets[ReadUnsignedShort(cpInfoOffset + 2)];
                         var owner = ReadClass(cpInfoOffset, charBuffer);
                         var name = ReadUtf8(nameAndTypeCpInfoOffset, charBuffer);
                         var descriptor = ReadUtf8(nameAndTypeCpInfoOffset + 2, charBuffer);
-                        if (opcode < IOpcodes.Invokevirtual)
+                        if (opcode < Opcodes.Invokevirtual)
                         {
                             methodVisitor.VisitFieldInsn(opcode, owner, name, descriptor);
                         }
@@ -2556,7 +2557,7 @@ namespace ObjectWeb.Asm
                             methodVisitor.VisitMethodInsn(opcode, owner, name, descriptor, isInterface);
                         }
 
-                        if (opcode == IOpcodes.Invokeinterface)
+                        if (opcode == Opcodes.Invokeinterface)
                         {
                             currentOffset += 5;
                         }
@@ -2567,7 +2568,7 @@ namespace ObjectWeb.Asm
 
                         break;
                     }
-                    case IOpcodes.Invokedynamic:
+                    case Opcodes.Invokedynamic:
                     {
                         var cpInfoOffset = _cpInfoOffsets[ReadUnsignedShort(currentOffset + 1)];
                         var nameAndTypeCpInfoOffset = _cpInfoOffsets[ReadUnsignedShort(cpInfoOffset + 2)];
@@ -2588,25 +2589,25 @@ namespace ObjectWeb.Asm
                         currentOffset += 5;
                         break;
                     }
-                    case IOpcodes.New:
-                    case IOpcodes.Anewarray:
-                    case IOpcodes.Checkcast:
-                    case IOpcodes.Instanceof:
+                    case Opcodes.New:
+                    case Opcodes.Anewarray:
+                    case Opcodes.Checkcast:
+                    case Opcodes.Instanceof:
                         methodVisitor.VisitTypeInsn(opcode, ReadClass(currentOffset + 1, charBuffer));
                         currentOffset += 3;
                         break;
-                    case IOpcodes.Iinc:
+                    case Opcodes.Iinc:
                         methodVisitor.VisitIincInsn(classBuffer[currentOffset + 1] & 0xFF,
                             classBuffer[currentOffset + 2]);
                         currentOffset += 3;
                         break;
-                    case IOpcodes.Multianewarray:
+                    case Opcodes.Multianewarray:
                         methodVisitor.VisitMultiANewArrayInsn(ReadClass(currentOffset + 1, charBuffer),
                             classBuffer[currentOffset + 3] & 0xFF);
                         currentOffset += 4;
                         break;
                     default:
-                        throw new("AssertionError");
+                        throw new Exception("AssertionError");
                 }
 
                 // Visit the runtime visible instruction annotations, if any.
@@ -3277,7 +3278,7 @@ namespace ObjectWeb.Asm
                             for (var i = 0; i < numValues; i++)
                             {
                                 floatValues[i] =
-                                    BitConverter.Int32BitsToSingle(
+                                    Int32AndSingleConverter.Convert(
                                         ReadInt(_cpInfoOffsets[ReadUnsignedShort(currentOffset + 1)]));
                                 currentOffset += 3;
                             }
@@ -3324,11 +3325,11 @@ namespace ObjectWeb.Asm
             var methodDescriptor = context.currentMethodDescriptor;
             var locals = context.currentFrameLocalTypes;
             var numLocal = 0;
-            if ((context.currentMethodAccessFlags & IOpcodes.Acc_Static) == 0)
+            if ((context.currentMethodAccessFlags & Opcodes.Acc_Static) == 0)
             {
                 if ("<init>".Equals(context.currentMethodName))
                 {
-                    locals[numLocal++] = IOpcodes.uninitializedThis;
+                    locals[numLocal++] = Opcodes.uninitializedThis;
                 }
                 else
                 {
@@ -3349,16 +3350,16 @@ namespace ObjectWeb.Asm
                     case 'B':
                     case 'S':
                     case 'I':
-                        locals[numLocal++] = IOpcodes.integer;
+                        locals[numLocal++] = Opcodes.integer;
                         break;
                     case 'F':
-                        locals[numLocal++] = IOpcodes.@float;
+                        locals[numLocal++] = Opcodes.@float;
                         break;
                     case 'J':
-                        locals[numLocal++] = IOpcodes.@long;
+                        locals[numLocal++] = Opcodes.@long;
                         break;
                     case 'D':
-                        locals[numLocal++] = IOpcodes.@double;
+                        locals[numLocal++] = Opcodes.@double;
                         break;
                     case '[':
                         while (methodDescriptor[currentMethodDescritorOffset] == '[')
@@ -3429,7 +3430,7 @@ namespace ObjectWeb.Asm
             if (frameType < Frame.Same_Locals_1_Stack_Item_Frame)
             {
                 offsetDelta = frameType;
-                context.currentFrameType = IOpcodes.F_Same;
+                context.currentFrameType = Opcodes.F_Same;
                 context.currentFrameStackCount = 0;
             }
             else if (frameType < Frame.Reserved)
@@ -3437,7 +3438,7 @@ namespace ObjectWeb.Asm
                 offsetDelta = frameType - Frame.Same_Locals_1_Stack_Item_Frame;
                 currentOffset = ReadVerificationTypeInfo(currentOffset, context.currentFrameStackTypes, 0, charBuffer,
                     labels);
-                context.currentFrameType = IOpcodes.F_Same1;
+                context.currentFrameType = Opcodes.F_Same1;
                 context.currentFrameStackCount = 1;
             }
             else if (frameType >= Frame.Same_Locals_1_Stack_Item_Frame_Extended)
@@ -3448,19 +3449,19 @@ namespace ObjectWeb.Asm
                 {
                     currentOffset = ReadVerificationTypeInfo(currentOffset, context.currentFrameStackTypes, 0,
                         charBuffer, labels);
-                    context.currentFrameType = IOpcodes.F_Same1;
+                    context.currentFrameType = Opcodes.F_Same1;
                     context.currentFrameStackCount = 1;
                 }
                 else if (frameType >= Frame.Chop_Frame && frameType < Frame.Same_Frame_Extended)
                 {
-                    context.currentFrameType = IOpcodes.F_Chop;
+                    context.currentFrameType = Opcodes.F_Chop;
                     context.currentFrameLocalCountDelta = Frame.Same_Frame_Extended - frameType;
                     context.currentFrameLocalCount -= context.currentFrameLocalCountDelta;
                     context.currentFrameStackCount = 0;
                 }
                 else if (frameType == Frame.Same_Frame_Extended)
                 {
-                    context.currentFrameType = IOpcodes.F_Same;
+                    context.currentFrameType = Opcodes.F_Same;
                     context.currentFrameStackCount = 0;
                 }
                 else if (frameType < Frame.Full_Frame)
@@ -3472,7 +3473,7 @@ namespace ObjectWeb.Asm
                             charBuffer, labels);
                     }
 
-                    context.currentFrameType = IOpcodes.F_Append;
+                    context.currentFrameType = Opcodes.F_Append;
                     context.currentFrameLocalCountDelta = frameType - Frame.Same_Frame_Extended;
                     context.currentFrameLocalCount += context.currentFrameLocalCountDelta;
                     context.currentFrameStackCount = 0;
@@ -3481,7 +3482,7 @@ namespace ObjectWeb.Asm
                 {
                     var numberOfLocals = ReadUnsignedShort(currentOffset);
                     currentOffset += 2;
-                    context.currentFrameType = IOpcodes.F_Full;
+                    context.currentFrameType = Opcodes.F_Full;
                     context.currentFrameLocalCountDelta = numberOfLocals;
                     context.currentFrameLocalCount = numberOfLocals;
                     for (var local = 0; local < numberOfLocals; ++local)
@@ -3531,25 +3532,25 @@ namespace ObjectWeb.Asm
             switch (tag)
             {
                 case Frame.Item_Top:
-                    frame[index] = IOpcodes.top;
+                    frame[index] = Opcodes.top;
                     break;
                 case Frame.Item_Integer:
-                    frame[index] = IOpcodes.integer;
+                    frame[index] = Opcodes.integer;
                     break;
                 case Frame.Item_Float:
-                    frame[index] = IOpcodes.@float;
+                    frame[index] = Opcodes.@float;
                     break;
                 case Frame.Item_Double:
-                    frame[index] = IOpcodes.@double;
+                    frame[index] = Opcodes.@double;
                     break;
                 case Frame.Item_Long:
-                    frame[index] = IOpcodes.@long;
+                    frame[index] = Opcodes.@long;
                     break;
                 case Frame.Item_Null:
-                    frame[index] = IOpcodes.@null;
+                    frame[index] = Opcodes.@null;
                     break;
                 case Frame.Item_Uninitialized_This:
-                    frame[index] = IOpcodes.uninitializedThis;
+                    frame[index] = Opcodes.uninitializedThis;
                     break;
                 case Frame.Item_Object:
                     frame[index] = ReadClass(currentOffset, charBuffer);
@@ -3988,7 +3989,7 @@ namespace ObjectWeb.Asm
                 case Symbol.Constant_Integer_Tag:
                     return ReadInt(cpInfoOffset);
                 case Symbol.Constant_Float_Tag:
-                    return BitConverter.Int32BitsToSingle(ReadInt(cpInfoOffset));
+                    return Int32AndSingleConverter.Convert(ReadInt(cpInfoOffset));
                 case Symbol.Constant_Long_Tag:
                     return ReadLong(cpInfoOffset);
                 case Symbol.Constant_Double_Tag:

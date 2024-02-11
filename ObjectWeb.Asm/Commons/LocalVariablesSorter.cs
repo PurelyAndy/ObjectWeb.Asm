@@ -78,7 +78,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="descriptor"> the method's descriptor (see <seealso cref="Type" />). </param>
         /// <param name="methodVisitor"> the method visitor to which this adapter delegates calls. </param>
         /// <exception cref="IllegalStateException"> if a subclass calls this constructor. </exception>
-        public LocalVariablesSorter(int access, string descriptor, MethodVisitor methodVisitor) : this(IOpcodes.Asm9,
+        public LocalVariablesSorter(int access, string descriptor, MethodVisitor methodVisitor) : this(Opcodes.Asm9,
             access, descriptor, methodVisitor)
         {
             if (GetType() != typeof(LocalVariablesSorter)) throw new InvalidOperationException();
@@ -89,7 +89,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="api">
         ///     the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes" />.
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes" />.
         /// </param>
         /// <param name="access"> access flags of the adapted method. </param>
         /// <param name="descriptor"> the method's descriptor (see <seealso cref="Type" />). </param>
@@ -97,7 +97,7 @@ namespace ObjectWeb.Asm.Commons
         public LocalVariablesSorter(int api, int access, string descriptor, MethodVisitor methodVisitor) : base(api,
             methodVisitor)
         {
-            nextLocal = (IOpcodes.Acc_Static & access) == 0 ? 1 : 0;
+            nextLocal = (Opcodes.Acc_Static & access) == 0 ? 1 : 0;
             foreach (var argumentType in JType.GetArgumentTypes(descriptor)) nextLocal += argumentType.Size;
             firstLocal = nextLocal;
         }
@@ -107,25 +107,25 @@ namespace ObjectWeb.Asm.Commons
             JType varType;
             switch (opcode)
             {
-                case IOpcodes.Lload:
-                case IOpcodes.Lstore:
+                case Opcodes.Lload:
+                case Opcodes.Lstore:
                     varType = JType.LongType;
                     break;
-                case IOpcodes.Dload:
-                case IOpcodes.Dstore:
+                case Opcodes.Dload:
+                case Opcodes.Dstore:
                     varType = JType.DoubleType;
                     break;
-                case IOpcodes.Fload:
-                case IOpcodes.Fstore:
+                case Opcodes.Fload:
+                case Opcodes.Fstore:
                     varType = JType.FloatType;
                     break;
-                case IOpcodes.Iload:
-                case IOpcodes.Istore:
+                case Opcodes.Iload:
+                case Opcodes.Istore:
                     varType = JType.IntType;
                     break;
-                case IOpcodes.Aload:
-                case IOpcodes.Astore:
-                case IOpcodes.Ret:
+                case Opcodes.Aload:
+                case Opcodes.Astore:
+                case Opcodes.Ret:
                     varType = OBJECT_TYPE;
                     break;
                 default:
@@ -163,7 +163,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override void VisitFrame(int type, int numLocal, object[] local, int numStack, object[] stack)
         {
-            if (type != IOpcodes.F_New)
+            if (type != Opcodes.F_New)
                 // Uncompressed frame.
                 throw new ArgumentException(
                     "LocalVariablesSorter only accepts expanded frames (see ClassReader.EXPAND_FRAMES)");
@@ -180,22 +180,22 @@ namespace ObjectWeb.Asm.Commons
             for (var i = 0; i < numLocal; ++i)
             {
                 var localType = local[i];
-                if (!Equals(localType, IOpcodes.top))
+                if (!Equals(localType, Opcodes.top))
                 {
                     var varType = OBJECT_TYPE;
-                    if (Equals(localType, IOpcodes.integer))
+                    if (Equals(localType, Opcodes.integer))
                         varType = JType.IntType;
-                    else if (Equals(localType, IOpcodes.@float))
+                    else if (Equals(localType, Opcodes.@float))
                         varType = JType.FloatType;
-                    else if (Equals(localType, IOpcodes.@long))
+                    else if (Equals(localType, Opcodes.@long))
                         varType = JType.LongType;
-                    else if (Equals(localType, IOpcodes.@double))
+                    else if (Equals(localType, Opcodes.@double))
                         varType = JType.DoubleType;
                     else if (localType is string) varType = JType.GetObjectType((string)localType);
                     SetFrameLocal(Remap(oldVar, varType), localType);
                 }
 
-                oldVar += Equals(localType, IOpcodes.@long) || Equals(localType, IOpcodes.@double) ? 2 : 1;
+                oldVar += Equals(localType, Opcodes.@long) || Equals(localType, Opcodes.@double) ? 2 : 1;
             }
 
             // Remove TOP after long and double types as well as trailing TOPs.
@@ -205,15 +205,15 @@ namespace ObjectWeb.Asm.Commons
             while (oldVar < _remappedLocalTypes.Length)
             {
                 var localType = _remappedLocalTypes[oldVar];
-                oldVar += Equals(localType, IOpcodes.@long) || Equals(localType, IOpcodes.@double) ? 2 : 1;
-                if (localType != null && localType != (object)IOpcodes.top)
+                oldVar += Equals(localType, Opcodes.@long) || Equals(localType, Opcodes.@double) ? 2 : 1;
+                if (localType != null && localType != (object)Opcodes.top)
                 {
                     _remappedLocalTypes[newVar++] = localType;
                     remappedNumLocal = newVar;
                 }
                 else
                 {
-                    _remappedLocalTypes[newVar++] = IOpcodes.top;
+                    _remappedLocalTypes[newVar++] = Opcodes.top;
                 }
             }
 
@@ -241,16 +241,16 @@ namespace ObjectWeb.Asm.Commons
                 case JType.Byte:
                 case JType.Short:
                 case JType.Int:
-                    localType = IOpcodes.integer;
+                    localType = Opcodes.integer;
                     break;
                 case JType.Float:
-                    localType = IOpcodes.@float;
+                    localType = Opcodes.@float;
                     break;
                 case JType.Long:
-                    localType = IOpcodes.@long;
+                    localType = Opcodes.@long;
                     break;
                 case JType.Double:
-                    localType = IOpcodes.@double;
+                    localType = Opcodes.@double;
                     break;
                 case JType.Array:
                     localType = type.Descriptor;

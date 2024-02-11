@@ -46,7 +46,7 @@ namespace ObjectWeb.Asm
         /// #visitMethod} method will be ignored, and computed automatically from the signature and the
         /// bytecode of each method.
         /// 
-        /// <para><b>Note:</b> for classes whose version is <seealso cref="IOpcodes.V1_7"/> of more, this option requires
+        /// <para><b>Note:</b> for classes whose version is <seealso cref="Opcodes.V1_7"/> of more, this option requires
         /// valid stack map frames. The maximum stack size is then computed from these frames, and from the
         /// bytecode instructions in between. If stack map frames are not present or must be recomputed,
         /// used <seealso cref="Compute_Frames"/> instead.
@@ -273,7 +273,7 @@ namespace ObjectWeb.Asm
         ///     zero or more of <seealso cref="Compute_Maxs"/> and <seealso cref="Compute_Frames"/>. <i>These option flags do
         ///     not affect methods that are copied as is in the new class. This means that neither the
         ///     maximum stack size nor the stack frames will be computed for these methods</i>. </param>
-        public ClassWriter(ClassReader classReader, int flags) : base(IOpcodes.Asm9)
+        public ClassWriter(ClassReader classReader, int flags) : base(Opcodes.Asm9)
         {
             this.flags = flags;
             _symbolTable = classReader == null ? new SymbolTable(this) : new SymbolTable(this, classReader);
@@ -335,7 +335,7 @@ namespace ObjectWeb.Asm
                 }
             }
 
-            if (_compute == MethodWriter.Compute_Max_Stack_And_Local && (version & 0xFFFF) >= IOpcodes.V1_7)
+            if (_compute == MethodWriter.Compute_Max_Stack_And_Local && (version & 0xFFFF) >= Opcodes.V1_7)
             {
                 _compute = MethodWriter.Compute_Max_Stack_And_Local_From_Frames;
             }
@@ -568,7 +568,7 @@ namespace ObjectWeb.Asm
                 _symbolTable.AddConstantUtf8(Constants.Enclosing_Method);
             }
 
-            if ((_accessFlags & IOpcodes.Acc_Synthetic) != 0 && (_version & 0xFFFF) < IOpcodes.V1_5)
+            if ((_accessFlags & Opcodes.Acc_Synthetic) != 0 && (_version & 0xFFFF) < Opcodes.V1_5)
             {
                 ++attributesCount;
                 size += 6;
@@ -596,7 +596,7 @@ namespace ObjectWeb.Asm
                 _symbolTable.AddConstantUtf8(Constants.Source_Debug_Extension);
             }
 
-            if ((_accessFlags & IOpcodes.Acc_Deprecated) != 0)
+            if ((_accessFlags & Opcodes.Acc_Deprecated) != 0)
             {
                 ++attributesCount;
                 size += 6;
@@ -664,7 +664,7 @@ namespace ObjectWeb.Asm
 
             var recordComponentCount = 0;
             var recordSize = 0;
-            if ((_accessFlags & IOpcodes.Acc_Record) != 0 || _firstRecordComponent != null)
+            if ((_accessFlags & Opcodes.Acc_Record) != 0 || _firstRecordComponent != null)
             {
                 var recordComponentWriter = _firstRecordComponent;
                 while (recordComponentWriter != null)
@@ -699,7 +699,7 @@ namespace ObjectWeb.Asm
             var result = new ByteVector(size);
             result.PutInt(unchecked((int)0xCAFEBABE)).PutInt(_version);
             _symbolTable.PutConstantPool(result);
-            var mask = (_version & 0xFFFF) < IOpcodes.V1_5 ? IOpcodes.Acc_Synthetic : 0;
+            var mask = (_version & 0xFFFF) < Opcodes.V1_5 ? Opcodes.Acc_Synthetic : 0;
             result.PutShort(_accessFlags & ~mask).PutShort(_thisClass).PutShort(_superClass);
             result.PutShort(_interfaceCount);
             for (var i = 0; i < _interfaceCount; ++i)
@@ -741,7 +741,7 @@ namespace ObjectWeb.Asm
                     .PutShort(_enclosingClassIndex).PutShort(_enclosingMethodIndex);
             }
 
-            if ((_accessFlags & IOpcodes.Acc_Synthetic) != 0 && (_version & 0xFFFF) < IOpcodes.V1_5)
+            if ((_accessFlags & Opcodes.Acc_Synthetic) != 0 && (_version & 0xFFFF) < Opcodes.V1_5)
             {
                 result.PutShort(_symbolTable.AddConstantUtf8(Constants.Synthetic)).PutInt(0);
             }
@@ -764,7 +764,7 @@ namespace ObjectWeb.Asm
                     .PutByteArray(_debugExtension.data, 0, length);
             }
 
-            if ((_accessFlags & IOpcodes.Acc_Deprecated) != 0)
+            if ((_accessFlags & Opcodes.Acc_Deprecated) != 0)
             {
                 result.PutShort(_symbolTable.AddConstantUtf8(Constants.Deprecated)).PutInt(0);
             }
@@ -798,7 +798,7 @@ namespace ObjectWeb.Asm
                     .PutByteArray(_permittedSubclasses.data, 0, _permittedSubclasses.length);
             }
 
-            if ((_accessFlags & IOpcodes.Acc_Record) != 0 || _firstRecordComponent != null)
+            if ((_accessFlags & Opcodes.Acc_Record) != 0 || _firstRecordComponent != null)
             {
                 result.PutShort(_symbolTable.AddConstantUtf8(Constants.Record)).PutInt(recordSize + 2)
                     .PutShort(recordComponentCount);
@@ -992,7 +992,7 @@ namespace ObjectWeb.Asm
         [Obsolete("this method is superseded by {@link #newHandle(int, String, String, String,")]
         public virtual int NewHandle(int tag, string owner, string name, string descriptor)
         {
-            return NewHandle(tag, owner, name, descriptor, tag == IOpcodes.H_Invokeinterface);
+            return NewHandle(tag, owner, name, descriptor, tag == Opcodes.H_Invokeinterface);
         }
 
         /// <summary>

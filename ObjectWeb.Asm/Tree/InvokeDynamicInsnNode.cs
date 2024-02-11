@@ -63,7 +63,7 @@ namespace ObjectWeb.Asm.Tree
         ///     org.objectweb.asm.Type} or <seealso cref = "Handle"/> value. This method is allowed to modify the
         ///     content of the array so a caller should expect that this array may change. </param>
         public InvokeDynamicInsnNode(string name, string descriptor, Handle bootstrapMethodHandle,
-            params object[] bootstrapMethodArguments) : base(IOpcodes.Invokedynamic)
+            params object[] bootstrapMethodArguments) : base(Opcodes.Invokedynamic)
         {
             // NOPMD(ArrayIsStoredDirectly): public field.
             this.Name = name;

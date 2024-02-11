@@ -43,7 +43,7 @@ namespace ObjectWeb.Asm.Tree
         public int Version { get; set; }
 
         /// <summary>
-        /// The class's access flags (see <seealso cref = "IOpcodes"/>). This field also indicates if
+        /// The class's access flags (see <seealso cref = "Opcodes"/>). This field also indicates if
         /// the class is deprecated <seealso cref = "IIOpcodes.Acc_Deprecated / > or  a  record <seealso cref = "IIOpcodes.Acc_Record / > .
         /// </summary>
         public int Access { get; set; }
@@ -151,7 +151,7 @@ namespace ObjectWeb.Asm.Tree
         /// they must use the <seealso cref = "ClassNode(int)"/> version.
         /// </summary>
         /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
-        public ClassNode() : this(IOpcodes.Asm9)
+        public ClassNode() : this(Opcodes.Asm9)
         {
             if (this.GetType() != typeof(ClassNode))
             {
@@ -163,7 +163,7 @@ namespace ObjectWeb.Asm.Tree
         /// Constructs a new <seealso cref = "ClassNode"/>.
         /// </summary>
         /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref = "IOpcodes"/>. </param>
+        ///     ASM}<i>x</i> values in <seealso cref = "Opcodes"/>. </param>
         public ClassNode(int api) : base(api)
         {
             this.Interfaces = new List<string>();
@@ -302,27 +302,27 @@ namespace ObjectWeb.Asm.Tree
         ///     Opcodes}. </param>
         public virtual void Check(int api)
         {
-            if (api < IOpcodes.Asm9 && PermittedSubclasses != null)
+            if (api < Opcodes.Asm9 && PermittedSubclasses != null)
             {
                 throw new UnsupportedClassVersionException();
             }
 
-            if (api < IOpcodes.Asm8 && ((Access & IOpcodes.Acc_Record) != 0 || RecordComponents != null))
+            if (api < Opcodes.Asm8 && ((Access & Opcodes.Acc_Record) != 0 || RecordComponents != null))
             {
                 throw new UnsupportedClassVersionException();
             }
 
-            if (api < IOpcodes.Asm7 && (!string.ReferenceEquals(NestHostClass, null) || NestMembers != null))
+            if (api < Opcodes.Asm7 && (!string.ReferenceEquals(NestHostClass, null) || NestMembers != null))
             {
                 throw new UnsupportedClassVersionException();
             }
 
-            if (api < IOpcodes.Asm6 && Module != null)
+            if (api < Opcodes.Asm6 && Module != null)
             {
                 throw new UnsupportedClassVersionException();
             }
 
-            if (api < IOpcodes.Asm5)
+            if (api < Opcodes.Asm5)
             {
                 if (VisibleTypeAnnotations != null && VisibleTypeAnnotations.Count > 0)
                 {

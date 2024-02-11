@@ -47,7 +47,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="methodVisitor"> the method visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited method. </param>
-        public MethodRemapper(MethodVisitor methodVisitor, Remapper remapper) : this(IOpcodes.Asm9, methodVisitor,
+        public MethodRemapper(MethodVisitor methodVisitor, Remapper remapper) : this(Opcodes.Asm9, methodVisitor,
             remapper)
         {
         }
@@ -57,7 +57,7 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         /// <param name="api">
         ///     the ASM API version supported by this remapper. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="IOpcodes" />.
+        ///     ASM}<i>x</i> values in <seealso cref="Opcodes" />.
         /// </param>
         /// <param name="methodVisitor"> the method visitor this remapper must delegate to. </param>
         /// <param name="remapper"> the remapper to use to remap the types in the visited method. </param>
@@ -131,7 +131,7 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
             bool isInterface)
         {
-            if (api < IOpcodes.Asm5 && (opcodeAndSource & IOpcodes.Source_Deprecated) == 0)
+            if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
             {
                 // Redirect the call to the deprecated version of this method.
                 base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);

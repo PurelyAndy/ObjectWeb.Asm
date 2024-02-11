@@ -54,7 +54,7 @@ namespace ObjectWeb.Asm.Tree
         ///     49, a <seealso cref = "Type"/> of METHOD sort for MethodType, a <seealso cref = "Handle"/> for MethodHandle
         ///     constants, for classes whose version is 51 or a <seealso cref = "ConstantDynamic"/> for a constant
         ///     dynamic for classes whose version is 55. </param>
-        public LdcInsnNode(object value) : base(IOpcodes.Ldc)
+        public LdcInsnNode(object value) : base(Opcodes.Ldc)
         {
             this.Cst = value;
         }
