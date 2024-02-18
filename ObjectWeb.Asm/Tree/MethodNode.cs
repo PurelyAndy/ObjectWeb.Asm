@@ -267,7 +267,7 @@ namespace ObjectWeb.Asm.Tree
 
         public override AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
         {
-            var annotation = new AnnotationNode(descriptor);
+            AnnotationNode annotation = new AnnotationNode(descriptor);
             if (visible)
             {
                 VisibleAnnotations = Util.Add(VisibleAnnotations, annotation);
@@ -283,7 +283,7 @@ namespace ObjectWeb.Asm.Tree
         public override AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            var typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
+            TypeAnnotationNode typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
             if (visible)
             {
                 VisibleTypeAnnotations = Util.Add(VisibleTypeAnnotations, typeAnnotation);
@@ -310,12 +310,12 @@ namespace ObjectWeb.Asm.Tree
 
         public override AnnotationVisitor VisitParameterAnnotation(int parameter, string descriptor, bool visible)
         {
-            var annotation = new AnnotationNode(descriptor);
+            AnnotationNode annotation = new AnnotationNode(descriptor);
             if (visible)
             {
                 if (VisibleParameterAnnotations == null)
                 {
-                    var @params = JType.GetArgumentTypes(Desc).Length;
+                    int @params = JType.GetArgumentTypes(Desc).Length;
                     VisibleParameterAnnotations = new List<AnnotationNode>[@params];
                 }
 
@@ -325,7 +325,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 if (InvisibleParameterAnnotations == null)
                 {
-                    var @params = JType.GetArgumentTypes(Desc).Length;
+                    int @params = JType.GetArgumentTypes(Desc).Length;
                     InvisibleParameterAnnotations = new List<AnnotationNode>[@params];
                 }
 
@@ -387,7 +387,7 @@ namespace ObjectWeb.Asm.Tree
                 return;
             }
 
-            var opcode = opcodeAndSource & ~Opcodes.Source_Mask;
+            int opcode = opcodeAndSource & ~Opcodes.Source_Mask;
             Instructions.Add(new MethodInsnNode(opcode, owner, name, descriptor, isInterface));
         }
 
@@ -437,14 +437,14 @@ namespace ObjectWeb.Asm.Tree
             bool visible)
         {
             // Find the last real instruction, i.e. the instruction targeted by this annotation.
-            var currentInsn = Instructions.Last;
+            AbstractInsnNode currentInsn = Instructions.Last;
             while (currentInsn.Opcode == -1)
             {
                 currentInsn = currentInsn.Previous;
             }
 
             // Add the annotation to this instruction.
-            var typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
+            TypeAnnotationNode typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
             if (visible)
             {
                 currentInsn.VisibleTypeAnnotations = Util.Add(currentInsn.VisibleTypeAnnotations, typeAnnotation);
@@ -459,7 +459,7 @@ namespace ObjectWeb.Asm.Tree
 
         public override void VisitTryCatchBlock(Label start, Label end, Label handler, string type)
         {
-            var tryCatchBlock =
+            TryCatchBlockNode tryCatchBlock =
                 new TryCatchBlockNode(GetLabelNode(start), GetLabelNode(end), GetLabelNode(handler), type);
             TryCatchBlocks = Util.Add(TryCatchBlocks, tryCatchBlock);
         }
@@ -467,8 +467,8 @@ namespace ObjectWeb.Asm.Tree
         public override AnnotationVisitor VisitTryCatchAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            var tryCatchBlock = TryCatchBlocks[(typeRef & 0x00FFFF00) >> 8];
-            var typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
+            TryCatchBlockNode tryCatchBlock = TryCatchBlocks[(typeRef & 0x00FFFF00) >> 8];
+            TypeAnnotationNode typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
             if (visible)
             {
                 tryCatchBlock.VisibleTypeAnnotations = Util.Add(tryCatchBlock.VisibleTypeAnnotations, typeAnnotation);
@@ -485,7 +485,7 @@ namespace ObjectWeb.Asm.Tree
         public override void VisitLocalVariable(string name, string descriptor, string signature, Label start,
             Label end, int index)
         {
-            var localVariable = new LocalVariableNode(name, descriptor, signature, GetLabelNode(start),
+            LocalVariableNode localVariable = new LocalVariableNode(name, descriptor, signature, GetLabelNode(start),
                 GetLabelNode(end), index);
             LocalVariables = Util.Add(LocalVariables, localVariable);
         }
@@ -493,7 +493,7 @@ namespace ObjectWeb.Asm.Tree
         public override AnnotationVisitor VisitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start,
             Label[] end, int[] index, string descriptor, bool visible)
         {
-            var localVariableAnnotation = new LocalVariableAnnotationNode(typeRef, typePath, GetLabelNodes(start),
+            LocalVariableAnnotationNode localVariableAnnotation = new LocalVariableAnnotationNode(typeRef, typePath, GetLabelNodes(start),
                 GetLabelNodes(end), index, descriptor);
             if (visible)
             {
@@ -543,7 +543,7 @@ namespace ObjectWeb.Asm.Tree
 
         private LabelNode[] GetLabelNodes(Label[] labels)
         {
-            var labelNodes = new LabelNode[labels.Length];
+            LabelNode[] labelNodes = new LabelNode[labels.Length];
             for (int i = 0, n = labels.Length; i < n; ++i)
             {
                 labelNodes[i] = GetLabelNode(labels[i]);
@@ -554,10 +554,10 @@ namespace ObjectWeb.Asm.Tree
 
         private object[] GetLabelNodes(object[] objects)
         {
-            var labelNodes = new object[objects.Length];
+            object[] labelNodes = new object[objects.Length];
             for (int i = 0, n = objects.Length; i < n; ++i)
             {
-                var o = objects[i];
+                object o = objects[i];
                 if (o is Label)
                 {
                     o = GetLabelNode((Label)o);
@@ -600,9 +600,9 @@ namespace ObjectWeb.Asm.Tree
 
                 if (TryCatchBlocks != null)
                 {
-                    for (var i = TryCatchBlocks.Count - 1; i >= 0; --i)
+                    for (int i = TryCatchBlocks.Count - 1; i >= 0; --i)
                     {
-                        var tryCatchBlock = TryCatchBlocks[i];
+                        TryCatchBlockNode tryCatchBlock = TryCatchBlocks[i];
                         if (tryCatchBlock.VisibleTypeAnnotations != null &&
                             tryCatchBlock.VisibleTypeAnnotations.Count > 0)
                         {
@@ -617,9 +617,9 @@ namespace ObjectWeb.Asm.Tree
                     }
                 }
 
-                for (var i = Instructions.Count() - 1; i >= 0; --i)
+                for (int i = Instructions.Count() - 1; i >= 0; --i)
                 {
-                    var insn = Instructions.Get(i);
+                    AbstractInsnNode insn = Instructions.Get(i);
                     if (insn.VisibleTypeAnnotations != null && insn.VisibleTypeAnnotations.Count > 0)
                     {
                         throw new UnsupportedClassVersionException();
@@ -632,7 +632,7 @@ namespace ObjectWeb.Asm.Tree
 
                     if (insn is MethodInsnNode)
                     {
-                        var isInterface = ((MethodInsnNode)insn).Itf;
+                        bool isInterface = ((MethodInsnNode)insn).Itf;
                         if (isInterface != (insn.opcode == Opcodes.Invokeinterface))
                         {
                             throw new UnsupportedClassVersionException();
@@ -640,7 +640,7 @@ namespace ObjectWeb.Asm.Tree
                     }
                     else if (insn is LdcInsnNode)
                     {
-                        var value = ((LdcInsnNode)insn).Cst;
+                        object value = ((LdcInsnNode)insn).Cst;
                         if (value is Handle || (value is JType && ((JType)value).Sort == JType.Method))
                         {
                             throw new UnsupportedClassVersionException();
@@ -661,12 +661,12 @@ namespace ObjectWeb.Asm.Tree
 
             if (api < Opcodes.Asm7)
             {
-                for (var i = Instructions.Count() - 1; i >= 0; --i)
+                for (int i = Instructions.Count() - 1; i >= 0; --i)
                 {
-                    var insn = Instructions.Get(i);
+                    AbstractInsnNode insn = Instructions.Get(i);
                     if (insn is LdcInsnNode)
                     {
-                        var value = ((LdcInsnNode)insn).Cst;
+                        object value = ((LdcInsnNode)insn).Cst;
                         if (value is ConstantDynamic)
                         {
                             throw new UnsupportedClassVersionException();
@@ -682,8 +682,8 @@ namespace ObjectWeb.Asm.Tree
         /// <param name = "classVisitor"> a class visitor. </param>
         public virtual void Accept(ClassVisitor classVisitor)
         {
-            var exceptionsArray = Exceptions == null ? null : ((List<string>)Exceptions).ToArray();
-            var methodVisitor = classVisitor.VisitMethod(Access, Name, Desc, Signature, exceptionsArray);
+            string[] exceptionsArray = Exceptions == null ? null : ((List<string>)Exceptions).ToArray();
+            MethodVisitor methodVisitor = classVisitor.VisitMethod(Access, Name, Desc, Signature, exceptionsArray);
             if (methodVisitor != null)
             {
                 Accept(methodVisitor);
@@ -708,7 +708,7 @@ namespace ObjectWeb.Asm.Tree
             // Visit the annotations.
             if (AnnotationDefault != null)
             {
-                var annotationVisitor = methodVisitor.VisitAnnotationDefault();
+                AnnotationVisitor annotationVisitor = methodVisitor.VisitAnnotationDefault();
                 AnnotationNode.Accept(annotationVisitor, null, AnnotationDefault);
                 if (annotationVisitor != null)
                 {
@@ -720,7 +720,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = VisibleAnnotations.Count; i < n; ++i)
                 {
-                    var annotation = VisibleAnnotations[i];
+                    AnnotationNode annotation = VisibleAnnotations[i];
                     annotation.Accept(methodVisitor.VisitAnnotation(annotation.Desc, true));
                 }
             }
@@ -729,7 +729,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = InvisibleAnnotations.Count; i < n; ++i)
                 {
-                    var annotation = InvisibleAnnotations[i];
+                    AnnotationNode annotation = InvisibleAnnotations[i];
                     annotation.Accept(methodVisitor.VisitAnnotation(annotation.Desc, false));
                 }
             }
@@ -738,7 +738,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = VisibleTypeAnnotations.Count; i < n; ++i)
                 {
-                    var typeAnnotation = VisibleTypeAnnotations[i];
+                    TypeAnnotationNode typeAnnotation = VisibleTypeAnnotations[i];
                     typeAnnotation.Accept(methodVisitor.VisitTypeAnnotation(typeAnnotation.TypeRef,
                         typeAnnotation.TypePath, typeAnnotation.Desc, true));
                 }
@@ -748,7 +748,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = InVisibleTypeAnnotations.Count; i < n; ++i)
                 {
-                    var typeAnnotation = InVisibleTypeAnnotations[i];
+                    TypeAnnotationNode typeAnnotation = InVisibleTypeAnnotations[i];
                     typeAnnotation.Accept(methodVisitor.VisitTypeAnnotation(typeAnnotation.TypeRef,
                         typeAnnotation.TypePath, typeAnnotation.Desc, false));
                 }
@@ -763,7 +763,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = VisibleParameterAnnotations.Length; i < n; ++i)
                 {
-                    var parameterAnnotations = VisibleParameterAnnotations[i];
+                    List<AnnotationNode> parameterAnnotations = VisibleParameterAnnotations[i];
                     if (parameterAnnotations == null)
                     {
                         continue;
@@ -771,7 +771,7 @@ namespace ObjectWeb.Asm.Tree
 
                     for (int j = 0, m = parameterAnnotations.Count; j < m; ++j)
                     {
-                        var annotation = parameterAnnotations[j];
+                        AnnotationNode annotation = parameterAnnotations[j];
                         annotation.Accept(methodVisitor.VisitParameterAnnotation(i, annotation.Desc, true));
                     }
                 }
@@ -786,7 +786,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = InvisibleParameterAnnotations.Length; i < n; ++i)
                 {
-                    var parameterAnnotations = InvisibleParameterAnnotations[i];
+                    List<AnnotationNode> parameterAnnotations = InvisibleParameterAnnotations[i];
                     if (parameterAnnotations == null)
                     {
                         continue;
@@ -794,7 +794,7 @@ namespace ObjectWeb.Asm.Tree
 
                     for (int j = 0, m = parameterAnnotations.Count; j < m; ++j)
                     {
-                        var annotation = parameterAnnotations[j];
+                        AnnotationNode annotation = parameterAnnotations[j];
                         annotation.Accept(methodVisitor.VisitParameterAnnotation(i, annotation.Desc, false));
                     }
                 }

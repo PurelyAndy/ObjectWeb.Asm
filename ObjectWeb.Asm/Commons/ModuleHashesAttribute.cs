@@ -46,7 +46,7 @@ namespace ObjectWeb.Asm.Commons
 
         /// <summary>
         /// The hash of the modules in <seealso cref = "modules"/>. The two lists must have the same size. </summary>
-        public List<byte[]> Hashes { get; set; }
+        public List<sbyte[]> Hashes { get; set; }
 
         /// <summary>
         /// Constructs a new <seealso cref = "ModuleHashesAttribute"/>.
@@ -54,7 +54,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name = "algorithm"> the name of the hashing algorithm. </param>
         /// <param name = "modules"> a list of module names. </param>
         /// <param name = "hashes"> the hash of the modules in 'modules'. The two lists must have the same size. </param>
-        public ModuleHashesAttribute(string algorithm, List<string> modules, List<byte[]> hashes) : base("ModuleHashes")
+        public ModuleHashesAttribute(string algorithm, List<string> modules, List<sbyte[]> hashes) : base("ModuleHashes")
         {
             this.Algorithm = algorithm;
             this.Modules = modules;
@@ -72,24 +72,24 @@ namespace ObjectWeb.Asm.Commons
         public override Attribute Read(ClassReader classReader, int offset, int length, char[] charBuffer,
             int codeAttributeOffset, Label[] labels)
         {
-            var currentOffset = offset;
-            var hashAlgorithm = classReader.ReadUtf8(currentOffset, charBuffer);
+            int currentOffset = offset;
+            string hashAlgorithm = classReader.ReadUtf8(currentOffset, charBuffer);
             currentOffset += 2;
-            var numModules = classReader.ReadUnsignedShort(currentOffset);
+            int numModules = classReader.ReadUnsignedShort(currentOffset);
             currentOffset += 2;
-            var moduleList = new List<string>(numModules);
-            var hashList = new List<byte[]>(numModules);
-            for (var i = 0; i < numModules; ++i)
+            List<string> moduleList = new List<string>(numModules);
+            List<sbyte[]> hashList = new List<sbyte[]>(numModules);
+            for (int i = 0; i < numModules; ++i)
             {
-                var module = classReader.ReadModule(currentOffset, charBuffer);
+                string module = classReader.ReadModule(currentOffset, charBuffer);
                 currentOffset += 2;
                 moduleList.Add(module);
-                var hashLength = classReader.ReadUnsignedShort(currentOffset);
+                int hashLength = classReader.ReadUnsignedShort(currentOffset);
                 currentOffset += 2;
-                var hash = new byte[hashLength];
-                for (var j = 0; j < hashLength; ++j)
+                sbyte[] hash = new sbyte[hashLength];
+                for (int j = 0; j < hashLength; ++j)
                 {
-                    hash[j] = (byte)classReader.ReadByte(currentOffset);
+                    hash[j] = (sbyte)classReader.ReadByte(currentOffset);
                     currentOffset += 1;
                 }
 
@@ -99,10 +99,10 @@ namespace ObjectWeb.Asm.Commons
             return new ModuleHashesAttribute(hashAlgorithm, moduleList, hashList);
         }
 
-        public override ByteVector Write(ClassWriter classWriter, byte[] code, int codeLength, int maxStack,
+        public override ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
             int maxLocals)
         {
-            var byteVector = new ByteVector();
+            ByteVector byteVector = new ByteVector();
             byteVector.PutShort(classWriter.NewUtf8(Algorithm));
             if (Modules == null)
             {
@@ -110,12 +110,12 @@ namespace ObjectWeb.Asm.Commons
             }
             else
             {
-                var numModules = Modules.Count;
+                int numModules = Modules.Count;
                 byteVector.PutShort(numModules);
-                for (var i = 0; i < numModules; ++i)
+                for (int i = 0; i < numModules; ++i)
                 {
-                    var module = Modules[i];
-                    var hash = Hashes[i];
+                    string module = Modules[i];
+                    sbyte[] hash = Hashes[i];
                     byteVector.PutShort(classWriter.NewModule(module)).PutShort(hash.Length)
                         .PutByteArray(hash, 0, hash.Length);
                 }

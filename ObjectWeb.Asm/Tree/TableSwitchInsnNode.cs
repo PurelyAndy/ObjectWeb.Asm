@@ -73,7 +73,7 @@ namespace ObjectWeb.Asm.Tree
 
         public override void Accept(MethodVisitor methodVisitor)
         {
-            var labelsArray = new Label[this.Labels.Count];
+            Label[] labelsArray = new Label[this.Labels.Count];
             for (int i = 0, n = labelsArray.Length; i < n; ++i)
             {
                 labelsArray[i] = this.Labels[i].Label;

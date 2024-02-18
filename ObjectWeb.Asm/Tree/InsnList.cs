@@ -106,7 +106,7 @@ namespace ObjectWeb.Asm.Tree
         /// <returns> {@literal true} if the given instruction belongs to this list. </returns>
         public virtual bool Contains(AbstractInsnNode insnNode)
         {
-            var currentInsn = _firstInsn;
+            AbstractInsnNode currentInsn = _firstInsn;
             while (currentInsn != null && currentInsn != insnNode)
             {
                 currentInsn = currentInsn.nextInsn;
@@ -141,7 +141,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name="methodVisitor"> the method visitor that must visit the instructions. </param>
         public virtual void Accept(MethodVisitor methodVisitor)
         {
-            var currentInsn = _firstInsn;
+            AbstractInsnNode currentInsn = _firstInsn;
             while (currentInsn != null)
             {
                 currentInsn.Accept(methodVisitor);
@@ -174,9 +174,9 @@ namespace ObjectWeb.Asm.Tree
         /// <returns> an array containing all the instructions in this list. </returns>
         public virtual AbstractInsnNode[] ToArray()
         {
-            var currentInsnIndex = 0;
-            var currentInsn = _firstInsn;
-            var insnNodeArray = new AbstractInsnNode[_sizeConflict];
+            int currentInsnIndex = 0;
+            AbstractInsnNode currentInsn = _firstInsn;
+            AbstractInsnNode[] insnNodeArray = new AbstractInsnNode[_sizeConflict];
             while (currentInsn != null)
             {
                 insnNodeArray[currentInsnIndex] = currentInsn;
@@ -194,7 +194,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name="newInsnNode"> another instruction, <i>which must not belong to any <seealso cref="InsnList"/></i>. </param>
         public virtual void Set(AbstractInsnNode oldInsnNode, AbstractInsnNode newInsnNode)
         {
-            var nextInsn = oldInsnNode.nextInsn;
+            AbstractInsnNode nextInsn = oldInsnNode.nextInsn;
             newInsnNode.nextInsn = nextInsn;
             if (nextInsn != null)
             {
@@ -205,7 +205,7 @@ namespace ObjectWeb.Asm.Tree
                 _lastInsn = newInsnNode;
             }
 
-            var previousInsn = oldInsnNode.previousInsn;
+            AbstractInsnNode previousInsn = oldInsnNode.previousInsn;
             newInsnNode.previousInsn = previousInsn;
             if (previousInsn != null)
             {
@@ -218,7 +218,7 @@ namespace ObjectWeb.Asm.Tree
 
             if (cache != null)
             {
-                var index = oldInsnNode.index;
+                int index = oldInsnNode.index;
                 cache[index] = newInsnNode;
                 newInsnNode.index = index;
             }
@@ -275,7 +275,7 @@ namespace ObjectWeb.Asm.Tree
             }
             else
             {
-                var firstInsnListElement = insnList._firstInsn;
+                AbstractInsnNode firstInsnListElement = insnList._firstInsn;
                 _lastInsn.nextInsn = firstInsnListElement;
                 firstInsnListElement.previousInsn = _lastInsn;
                 _lastInsn = insnList._lastInsn;
@@ -328,7 +328,7 @@ namespace ObjectWeb.Asm.Tree
             }
             else
             {
-                var lastInsnListElement = insnList._lastInsn;
+                AbstractInsnNode lastInsnListElement = insnList._lastInsn;
                 _firstInsn.previousInsn = lastInsnListElement;
                 lastInsnListElement.nextInsn = _firstInsn;
                 _firstInsn = insnList._firstInsn;
@@ -347,7 +347,7 @@ namespace ObjectWeb.Asm.Tree
         public virtual void Insert(AbstractInsnNode previousInsn, AbstractInsnNode insnNode)
         {
             ++_sizeConflict;
-            var nextInsn = previousInsn.nextInsn;
+            AbstractInsnNode nextInsn = previousInsn.nextInsn;
             if (nextInsn == null)
             {
                 _lastInsn = insnNode;
@@ -379,9 +379,9 @@ namespace ObjectWeb.Asm.Tree
             }
 
             _sizeConflict += insnList.Size;
-            var firstInsnListElement = insnList._firstInsn;
-            var lastInsnListElement = insnList._lastInsn;
-            var nextInsn = previousInsn.nextInsn;
+            AbstractInsnNode firstInsnListElement = insnList._firstInsn;
+            AbstractInsnNode lastInsnListElement = insnList._lastInsn;
+            AbstractInsnNode nextInsn = previousInsn.nextInsn;
             if (nextInsn == null)
             {
                 _lastInsn = lastInsnListElement;
@@ -407,7 +407,7 @@ namespace ObjectWeb.Asm.Tree
         public virtual void InsertBefore(AbstractInsnNode nextInsn, AbstractInsnNode insnNode)
         {
             ++_sizeConflict;
-            var previousInsn = nextInsn.previousInsn;
+            AbstractInsnNode previousInsn = nextInsn.previousInsn;
             if (previousInsn == null)
             {
                 _firstInsn = insnNode;
@@ -439,9 +439,9 @@ namespace ObjectWeb.Asm.Tree
             }
 
             _sizeConflict += insnList.Size;
-            var firstInsnListElement = insnList._firstInsn;
-            var lastInsnListElement = insnList._lastInsn;
-            var previousInsn = nextInsn.previousInsn;
+            AbstractInsnNode firstInsnListElement = insnList._firstInsn;
+            AbstractInsnNode lastInsnListElement = insnList._lastInsn;
+            AbstractInsnNode previousInsn = nextInsn.previousInsn;
             if (previousInsn == null)
             {
                 _firstInsn = firstInsnListElement;
@@ -465,8 +465,8 @@ namespace ObjectWeb.Asm.Tree
         public virtual void Remove(AbstractInsnNode insnNode)
         {
             --_sizeConflict;
-            var nextInsn = insnNode.nextInsn;
-            var previousInsn = insnNode.previousInsn;
+            AbstractInsnNode nextInsn = insnNode.nextInsn;
+            AbstractInsnNode previousInsn = insnNode.previousInsn;
             if (nextInsn == null)
             {
                 if (previousInsn == null)
@@ -508,10 +508,10 @@ namespace ObjectWeb.Asm.Tree
         {
             if (mark)
             {
-                var currentInsn = _firstInsn;
+                AbstractInsnNode currentInsn = _firstInsn;
                 while (currentInsn != null)
                 {
-                    var next = currentInsn.nextInsn;
+                    AbstractInsnNode next = currentInsn.nextInsn;
                     currentInsn.index = -1; // currentInsn no longer belongs to an InsnList.
                     currentInsn.previousInsn = null;
                     currentInsn.nextInsn = null;
@@ -538,7 +538,7 @@ namespace ObjectWeb.Asm.Tree
         /// </summary>
         public virtual void ResetLabels()
         {
-            var currentInsn = _firstInsn;
+            AbstractInsnNode currentInsn = _firstInsn;
             while (currentInsn != null)
             {
                 if (currentInsn is LabelNode)
@@ -566,7 +566,7 @@ namespace ObjectWeb.Asm.Tree
             public InsnListIterator(InsnList outerInstance, int index)
             {
                 this._outerInstance = outerInstance;
-                var outerInstanceCount = outerInstance._sizeConflict;
+                int outerInstanceCount = outerInstance._sizeConflict;
                 if (index < 0 || index > outerInstanceCount)
                 {
                     throw new System.IndexOutOfRangeException();
@@ -578,8 +578,8 @@ namespace ObjectWeb.Asm.Tree
                 }
                 else
                 {
-                    var currentInsn = outerInstance.First;
-                    for (var i = 0; i < index; i++)
+                    AbstractInsnNode currentInsn = outerInstance.First;
+                    for (int i = 0; i < index; i++)
                     {
                         currentInsn = currentInsn.nextInsn;
                     }
@@ -601,7 +601,7 @@ namespace ObjectWeb.Asm.Tree
                     throw new System.InvalidOperationException();
                 }
 
-                var result = nextInsn;
+                AbstractInsnNode result = nextInsn;
                 previousInsn = result;
                 nextInsn = result.nextInsn;
                 removeConflict = result;
@@ -642,7 +642,7 @@ namespace ObjectWeb.Asm.Tree
                     throw new InvalidOperationException("NoSuchElement");
                 }
 
-                var result = previousInsn;
+                AbstractInsnNode result = previousInsn;
                 nextInsn = result;
                 previousInsn = result.previousInsn;
                 removeConflict = result;

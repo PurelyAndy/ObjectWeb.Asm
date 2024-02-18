@@ -122,10 +122,10 @@ namespace ObjectWeb.Asm
                 firstHandler.nextHandler = RemoveRange(firstHandler.nextHandler, start, end);
             }
 
-            var handlerStart = firstHandler.startPc.bytecodeOffset;
-            var handlerEnd = firstHandler.endPc.bytecodeOffset;
-            var rangeStart = start.bytecodeOffset;
-            var rangeEnd = end == null ? int.MaxValue : end.bytecodeOffset;
+            int handlerStart = firstHandler.startPc.bytecodeOffset;
+            int handlerEnd = firstHandler.endPc.bytecodeOffset;
+            int rangeStart = start.bytecodeOffset;
+            int rangeEnd = end == null ? int.MaxValue : end.bytecodeOffset;
             // Return early if [handlerStart,handlerEnd[ and [rangeStart,rangeEnd[ don't intersect.
             if (rangeStart >= handlerEnd || rangeEnd <= handlerStart)
             {
@@ -166,8 +166,8 @@ namespace ObjectWeb.Asm
         /// <returns> the number of elements of the Handler list that begins with 'handler'. </returns>
         internal static int GetExceptionTableLength(Handler firstHandler)
         {
-            var length = 0;
-            var handler = firstHandler;
+            int length = 0;
+            Handler handler = firstHandler;
             while (handler != null)
             {
                 length++;
@@ -197,7 +197,7 @@ namespace ObjectWeb.Asm
         internal static void PutExceptionTable(Handler firstHandler, ByteVector output)
         {
             output.PutShort(GetExceptionTableLength(firstHandler));
-            var handler = firstHandler;
+            Handler handler = firstHandler;
             while (handler != null)
             {
                 output.PutShort(handler.startPc.bytecodeOffset).PutShort(handler.endPc.bytecodeOffset)

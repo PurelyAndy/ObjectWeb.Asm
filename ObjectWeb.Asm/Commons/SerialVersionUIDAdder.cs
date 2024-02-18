@@ -210,7 +210,7 @@ namespace ObjectWeb.Asm.Commons
                 // Collect the non private constructors and methods. Only the ACC_PUBLIC, ACC_PRIVATE,
                 // ACC_PROTECTED, ACC_STATIC, ACC_FINAL, ACC_SYNCHRONIZED, ACC_NATIVE, ACC_ABSTRACT and
                 // ACC_STRICT flags are used.
-                var mods = access & (Opcodes.Acc_Public | Opcodes.Acc_Private | Opcodes.Acc_Protected |
+                int mods = access & (Opcodes.Acc_Public | Opcodes.Acc_Private | Opcodes.Acc_Protected |
                                      Opcodes.Acc_Static | Opcodes.Acc_Final | Opcodes.Acc_Synchronized |
                                      Opcodes.Acc_Native | Opcodes.Acc_Abstract | Opcodes.Acc_Strict);
 
@@ -249,7 +249,7 @@ namespace ObjectWeb.Asm.Commons
                 if ((access & Opcodes.Acc_Private) == 0 ||
                     (access & (Opcodes.Acc_Static | Opcodes.Acc_Transient)) == 0)
                 {
-                    var mods = access & (Opcodes.Acc_Public | Opcodes.Acc_Private | Opcodes.Acc_Protected |
+                    int mods = access & (Opcodes.Acc_Public | Opcodes.Acc_Private | Opcodes.Acc_Protected |
                                          Opcodes.Acc_Static | Opcodes.Acc_Final | Opcodes.Acc_Volatile |
                                          Opcodes.Acc_Transient);
                     _svuidFields.Add(new Item(name, mods, desc));
@@ -314,7 +314,7 @@ namespace ObjectWeb.Asm.Commons
         // DontCheck(AbbreviationAsWordInName): can't be renamed (for backward binary compatibility).
         public virtual void AddSvuid(long svuid)
         {
-            var fieldVisitor = base.VisitField(Opcodes.Acc_Final + Opcodes.Acc_Static, "serialVersionUID", "J", null,
+            FieldVisitor fieldVisitor = base.VisitField(Opcodes.Acc_Final + Opcodes.Acc_Static, "serialVersionUID", "J", null,
                 svuid);
             if (fieldVisitor != null)
             {
@@ -332,13 +332,13 @@ namespace ObjectWeb.Asm.Commons
         {
             long svuid = 0;
 
-            using (var stream = new MemoryStream())
+            using (MemoryStream stream = new MemoryStream())
             {
                 // 1. The class name written using UTF encoding.
                 stream.WriteUtf(_name.Replace('/', '.'));
 
                 // 2. The class modifiers written as a 32-bit integer.
-                var mods = _access;
+                int mods = _access;
                 if ((mods & Opcodes.Acc_Interface) != 0)
                 {
                     mods = _svuidMethods.Count == 0 ? (mods & ~Opcodes.Acc_Abstract) : (mods | Opcodes.Acc_Abstract);
@@ -349,7 +349,7 @@ namespace ObjectWeb.Asm.Commons
 
                 // 3. The name of each interface sorted by name written using UTF encoding.
                 Array.Sort(_interfaces);
-                foreach (var interfaceName in _interfaces)
+                foreach (string interfaceName in _interfaces)
                 {
                     stream.WriteUtf(interfaceName.Replace('/', '.'));
                 }
@@ -388,12 +388,12 @@ namespace ObjectWeb.Asm.Commons
 
                 // 8. The SHA-1 algorithm is executed on the stream of bytes produced by DataOutputStream and
                 // produces five 32-bit values sha[0..4].
-                var hashBytes = ComputeShAdigest(stream.ToArray());
+                byte[] hashBytes = ComputeShAdigest(stream.ToArray());
 
                 // 9. The hash value is assembled from the first and second 32-bit values of the SHA-1 message
                 // digest. If the result of the message digest, the five 32-bit words H0 H1 H2 H3 H4, is in an
                 // array of five int values named sha, the hash value would be computed as follows:
-                for (var i = Math.Min(hashBytes.Length, 8) - 1; i >= 0; i--)
+                for (int i = Math.Min(hashBytes.Length, 8) - 1; i >= 0; i--)
                 {
                     svuid = (svuid << 8) | (uint)(hashBytes[i] & 0xFF);
                 }
@@ -424,9 +424,9 @@ namespace ObjectWeb.Asm.Commons
         /// <exception cref="IOException"> if an error occurs. </exception>
         private static void WriteItems(ICollection<Item> itemCollection, Stream stream, bool dotted)
         {
-            var items = itemCollection.ToArray();
+            Item[] items = itemCollection.ToArray();
             Array.Sort(items);
-            foreach (var item in items)
+            foreach (Item item in items)
             {
                 stream.WriteUtf(item.name);
                 stream.WriteInt(item.access);
@@ -453,7 +453,7 @@ namespace ObjectWeb.Asm.Commons
 
             public int CompareTo(Item item)
             {
-                var result = string.CompareOrdinal(name, item.name);
+                int result = string.CompareOrdinal(name, item.name);
                 if (result == 0)
                 {
                     result = string.CompareOrdinal(descriptor, item.descriptor);
@@ -491,11 +491,11 @@ namespace ObjectWeb.Asm.Commons
 
         internal static void WriteUtf(this Stream memoryStream, string str)
         {
-            var strlen = str.Length;
-            var utflen = 0;
+            int strlen = str.Length;
+            int utflen = 0;
             int c;
-            var count = 0;
-            for (var i = 0; i < strlen; i++)
+            int count = 0;
+            for (int i = 0; i < strlen; i++)
             {
                 c = str[i];
                 if (c >= 0x0001 && c <= 0x007F)

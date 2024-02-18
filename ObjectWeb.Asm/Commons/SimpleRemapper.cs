@@ -73,31 +73,31 @@ namespace ObjectWeb.Asm.Commons
 
         public override string MapMethodName(string owner, string name, string descriptor)
         {
-            var remappedName = Map(owner + '.' + name + descriptor);
+            string remappedName = Map(owner + '.' + name + descriptor);
             return string.ReferenceEquals(remappedName, null) ? name : remappedName;
         }
 
         public override string MapInvokeDynamicMethodName(string name, string descriptor)
         {
-            var remappedName = Map('.' + name + descriptor);
+            string remappedName = Map('.' + name + descriptor);
             return string.ReferenceEquals(remappedName, null) ? name : remappedName;
         }
 
         public override string MapAnnotationAttributeName(string descriptor, string name)
         {
-            var remappedName = Map(descriptor + '.' + name);
+            string remappedName = Map(descriptor + '.' + name);
             return string.ReferenceEquals(remappedName, null) ? name : remappedName;
         }
 
         public override string MapFieldName(string owner, string name, string descriptor)
         {
-            var remappedName = Map(owner + '.' + name);
+            string remappedName = Map(owner + '.' + name);
             return string.ReferenceEquals(remappedName, null) ? name : remappedName;
         }
 
         public override string Map(string key)
         {
-            _mapping.TryGetValue(key, out var value);
+            _mapping.TryGetValue(key, out string value);
             return value;
         }
     }

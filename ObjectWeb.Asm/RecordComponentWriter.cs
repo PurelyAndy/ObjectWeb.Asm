@@ -154,7 +154,7 @@ namespace ObjectWeb.Asm
         public int ComputeRecordComponentInfoSize()
         {
             // name_index, descriptor_index and attributes_count fields use 6 bytes.
-            var size = 6;
+            int size = 6;
             size += Attribute.ComputeAttributesSize(_symbolTable, 0, _signatureIndex);
             size += AnnotationWriter.ComputeAnnotationsSize(_lastRuntimeVisibleAnnotation,
                 _lastRuntimeInvisibleAnnotation, _lastRuntimeVisibleTypeAnnotation,
@@ -173,7 +173,7 @@ namespace ObjectWeb.Asm
             output.PutShort(_nameIndex).PutShort(_descriptorIndex);
             // Compute and put the attributes_count field.
             // For ease of reference, we use here the same attribute order as in Section 4.7 of the JVMS.
-            var attributesCount = 0;
+            int attributesCount = 0;
             if (_signatureIndex != 0) ++attributesCount;
             if (_lastRuntimeVisibleAnnotation != null) ++attributesCount;
             if (_lastRuntimeInvisibleAnnotation != null) ++attributesCount;

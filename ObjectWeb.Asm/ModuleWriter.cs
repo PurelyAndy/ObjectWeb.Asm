@@ -188,7 +188,7 @@ namespace ObjectWeb.Asm
             else
             {
                 _exports.PutShort(modules.Length);
-                foreach (var module in modules) _exports.PutShort(_symbolTable.AddConstantModule(module).index);
+                foreach (string module in modules) _exports.PutShort(_symbolTable.AddConstantModule(module).index);
             }
 
             _exportsCount++;
@@ -204,7 +204,7 @@ namespace ObjectWeb.Asm
             else
             {
                 _opens.PutShort(modules.Length);
-                foreach (var module in modules) _opens.PutShort(_symbolTable.AddConstantModule(module).index);
+                foreach (string module in modules) _opens.PutShort(_symbolTable.AddConstantModule(module).index);
             }
 
             _opensCount++;
@@ -220,7 +220,7 @@ namespace ObjectWeb.Asm
         {
             _provides.PutShort(_symbolTable.AddConstantClass(service).index);
             _provides.PutShort(providers.Length);
-            foreach (var provider in providers) _provides.PutShort(_symbolTable.AddConstantClass(provider).index);
+            foreach (string provider in providers) _provides.PutShort(_symbolTable.AddConstantClass(provider).index);
             _providesCount++;
         }
 
@@ -238,7 +238,7 @@ namespace ObjectWeb.Asm
         {
             _symbolTable.AddConstantUtf8(Constants.Module);
             // 6 attribute header bytes, 6 bytes for name, flags and version, and 5 * 2 bytes for counts.
-            var size = 22 + _requires.length + _exports.length + _opens.length + _usesIndex.length + _provides.length;
+            int size = 22 + _requires.length + _exports.length + _opens.length + _usesIndex.length + _provides.length;
             if (_packageCount > 0)
             {
                 _symbolTable.AddConstantUtf8(Constants.Module_Packages);
@@ -264,7 +264,7 @@ namespace ObjectWeb.Asm
         public void PutAttributes(ByteVector output)
         {
             // 6 bytes for name, flags and version, and 5 * 2 bytes for counts.
-            var moduleAttributeLength = 16 + _requires.length + _exports.length + _opens.length + _usesIndex.length +
+            int moduleAttributeLength = 16 + _requires.length + _exports.length + _opens.length + _usesIndex.length +
                                         _provides.length;
             output.PutShort(_symbolTable.AddConstantUtf8(Constants.Module)).PutInt(moduleAttributeLength)
                 .PutShort(_moduleNameIndex).PutShort(_moduleFlags).PutShort(_moduleVersionIndex)

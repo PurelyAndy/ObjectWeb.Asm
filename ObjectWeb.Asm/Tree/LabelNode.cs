@@ -71,7 +71,7 @@ namespace ObjectWeb.Asm.Tree
 
         public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
         {
-            clonedLabels.TryGetValue(this, out var ret);
+            clonedLabels.TryGetValue(this, out LabelNode ret);
             return ret;
         }
 

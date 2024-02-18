@@ -443,7 +443,7 @@ namespace ObjectWeb.Asm
         [Obsolete("use <seealso cref=\"visitMethodInsn(int, String, String, String, bool)\"/> instead.")]
         public virtual void VisitMethodInsn(int opcode, string owner, string name, string descriptor)
         {
-            var opcodeAndSource = opcode | (api < Opcodes.Asm5 ? Opcodes.Source_Deprecated : 0);
+            int opcodeAndSource = opcode | (api < Opcodes.Asm5 ? Opcodes.Source_Deprecated : 0);
             VisitMethodInsn(opcodeAndSource, owner, name, descriptor, opcode == Opcodes.Invokeinterface);
         }
 

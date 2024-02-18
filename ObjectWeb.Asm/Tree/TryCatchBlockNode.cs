@@ -87,7 +87,7 @@ namespace ObjectWeb.Asm.Tree
         ///     nodes. </param>
         public virtual void UpdateIndex(int index)
         {
-            var newTypeRef = 0x42000000 | (index << 8);
+            int newTypeRef = 0x42000000 | (index << 8);
             if (VisibleTypeAnnotations != null)
             {
                 for (int i = 0, n = VisibleTypeAnnotations.Count; i < n; ++i)
@@ -116,7 +116,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = VisibleTypeAnnotations.Count; i < n; ++i)
                 {
-                    var typeAnnotation = VisibleTypeAnnotations[i];
+                    TypeAnnotationNode typeAnnotation = VisibleTypeAnnotations[i];
                     typeAnnotation.Accept(methodVisitor.VisitTryCatchAnnotation(typeAnnotation.TypeRef,
                         typeAnnotation.TypePath, typeAnnotation.Desc, true));
                 }
@@ -126,7 +126,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = InvisibleTypeAnnotations.Count; i < n; ++i)
                 {
-                    var typeAnnotation = InvisibleTypeAnnotations[i];
+                    TypeAnnotationNode typeAnnotation = InvisibleTypeAnnotations[i];
                     typeAnnotation.Accept(methodVisitor.VisitTryCatchAnnotation(typeAnnotation.TypeRef,
                         typeAnnotation.TypePath, typeAnnotation.Desc, false));
                 }

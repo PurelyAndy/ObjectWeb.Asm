@@ -79,7 +79,7 @@ namespace ObjectWeb.Asm.Commons
             // Sort the TryCatchBlockNode elements by the length of their "try" block.
             TryCatchBlocks.Sort(new ComparatorAnonymousInnerClass(this));
             // Update the 'target' of each try catch block annotation.
-            for (var i = 0; i < TryCatchBlocks.Count; ++i)
+            for (int i = 0; i < TryCatchBlocks.Count; ++i)
             {
                 TryCatchBlocks[i].UpdateIndex(i);
             }
@@ -106,8 +106,8 @@ namespace ObjectWeb.Asm.Commons
 
             private int BlockLength(TryCatchBlockNode tryCatchBlockNode)
             {
-                var startIndex = _outerInstance.Instructions.IndexOf(tryCatchBlockNode.Start);
-                var endIndex = _outerInstance.Instructions.IndexOf(tryCatchBlockNode.End);
+                int startIndex = _outerInstance.Instructions.IndexOf(tryCatchBlockNode.Start);
+                int endIndex = _outerInstance.Instructions.IndexOf(tryCatchBlockNode.End);
                 return endIndex - startIndex;
             }
         }

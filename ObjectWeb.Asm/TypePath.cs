@@ -70,7 +70,7 @@ namespace ObjectWeb.Asm
         ///     4.7.20.2
         /// </a>
         /// </seealso>
-        private readonly byte[] _typePathContainer;
+        private readonly sbyte[] _typePathContainer;
 
         /// <summary>
         ///     The offset of the first byte of the type_path JVMS structure in <seealso cref="_typePathContainer" />.
@@ -85,7 +85,7 @@ namespace ObjectWeb.Asm
         ///     the offset of the first byte of the type_path structure in
         ///     typePathContainer.
         /// </param>
-        public TypePath(byte[] typePathContainer, int typePathOffset)
+        public TypePath(sbyte[] typePathContainer, int typePathOffset)
         {
             this._typePathContainer = typePathContainer;
             this._typePathOffset = typePathOffset;
@@ -138,13 +138,13 @@ namespace ObjectWeb.Asm
         public static TypePath FromString(string typePath)
         {
             if (ReferenceEquals(typePath, null) || typePath.Length == 0) return null;
-            var typePathLength = typePath.Length;
-            var output = new ByteVector(typePathLength);
+            int typePathLength = typePath.Length;
+            ByteVector output = new ByteVector(typePathLength);
             output.PutByte(0);
-            var typePathIndex = 0;
+            int typePathIndex = 0;
             while (typePathIndex < typePathLength)
             {
-                var c = typePath[typePathIndex++];
+                char c = typePath[typePathIndex++];
                 if (c == '[')
                 {
                     output.Put11(Array_Element, 0);
@@ -159,7 +159,7 @@ namespace ObjectWeb.Asm
                 }
                 else if (c >= '0' && c <= '9')
                 {
-                    var typeArg = c - '0';
+                    int typeArg = c - '0';
                     while (typePathIndex < typePathLength)
                     {
                         c = typePath[typePathIndex++];
@@ -179,7 +179,7 @@ namespace ObjectWeb.Asm
                 }
             }
 
-            output.data[0] = (byte)(output.length / 2);
+            output.data[0] = (sbyte)(output.length / 2);
             return new TypePath(output.data, 0);
         }
 
@@ -190,9 +190,9 @@ namespace ObjectWeb.Asm
         /// </summary>
         public override string ToString()
         {
-            var length = Length;
-            var result = new StringBuilder(length * 2);
-            for (var i = 0; i < length; ++i)
+            int length = Length;
+            StringBuilder result = new StringBuilder(length * 2);
+            for (int i = 0; i < length; ++i)
                 switch (GetStep(i))
                 {
                     case Array_Element:
@@ -228,7 +228,7 @@ namespace ObjectWeb.Asm
             }
             else
             {
-                var length = typePath._typePathContainer[typePath._typePathOffset] * 2 + 1;
+                int length = typePath._typePathContainer[typePath._typePathOffset] * 2 + 1;
                 output.PutByteArray(typePath._typePathContainer, typePath._typePathOffset, length);
             }
         }

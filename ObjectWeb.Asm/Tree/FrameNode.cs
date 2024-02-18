@@ -136,17 +136,17 @@ namespace ObjectWeb.Asm.Tree
 
         public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
         {
-            var clone = new FrameNode();
+            FrameNode clone = new FrameNode();
             clone.FrameType = FrameType;
             if (Local != null)
             {
                 clone.Local = new List<object>();
                 for (int i = 0, n = Local.Count; i < n; ++i)
                 {
-                    var localElement = Local[i];
+                    object localElement = Local[i];
                     if (localElement is LabelNode)
                     {
-                        clonedLabels.TryGetValue((LabelNode)localElement, out var ret);
+                        clonedLabels.TryGetValue((LabelNode)localElement, out LabelNode ret);
                         localElement = ret;
                     }
 
@@ -159,10 +159,10 @@ namespace ObjectWeb.Asm.Tree
                 clone.Stack = new List<object>();
                 for (int i = 0, n = Stack.Count; i < n; ++i)
                 {
-                    var stackElement = Stack[i];
+                    object stackElement = Stack[i];
                     if (stackElement is LabelNode)
                     {
-                        clonedLabels.TryGetValue((LabelNode)stackElement, out var ret);
+                        clonedLabels.TryGetValue((LabelNode)stackElement, out LabelNode ret);
                         stackElement = ret;
                     }
 
@@ -175,10 +175,10 @@ namespace ObjectWeb.Asm.Tree
 
         private static object[] AsArray(List<object> list)
         {
-            var array = new object[list.Count];
+            object[] array = new object[list.Count];
             for (int i = 0, n = array.Length; i < n; ++i)
             {
-                var o = list[i];
+                object o = list[i];
                 if (o is LabelNode)
                 {
                     o = ((LabelNode)o).Label;

@@ -131,7 +131,7 @@ namespace ObjectWeb.Asm.Tree
         // -----------------------------------------------------------------------------------------------
         public override AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
         {
-            var annotation = new AnnotationNode(descriptor);
+            AnnotationNode annotation = new AnnotationNode(descriptor);
             if (visible)
             {
                 VisibleAnnotations = Util.Add(VisibleAnnotations, annotation);
@@ -147,7 +147,7 @@ namespace ObjectWeb.Asm.Tree
         public override AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            var typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
+            TypeAnnotationNode typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
             if (visible)
             {
                 VisibleTypeAnnotations = Util.Add(VisibleTypeAnnotations, typeAnnotation);
@@ -202,7 +202,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name = "classVisitor"> a class visitor. </param>
         public virtual void Accept(ClassVisitor classVisitor)
         {
-            var fieldVisitor = classVisitor.VisitField(Access, Name, Desc, Signature, Value);
+            FieldVisitor fieldVisitor = classVisitor.VisitField(Access, Name, Desc, Signature, Value);
             if (fieldVisitor == null)
             {
                 return;
@@ -213,7 +213,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = VisibleAnnotations.Count; i < n; ++i)
                 {
-                    var annotation = VisibleAnnotations[i];
+                    AnnotationNode annotation = VisibleAnnotations[i];
                     annotation.Accept(fieldVisitor.VisitAnnotation(annotation.Desc, true));
                 }
             }
@@ -222,7 +222,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = InvisibleAnnotations.Count; i < n; ++i)
                 {
-                    var annotation = InvisibleAnnotations[i];
+                    AnnotationNode annotation = InvisibleAnnotations[i];
                     annotation.Accept(fieldVisitor.VisitAnnotation(annotation.Desc, false));
                 }
             }
@@ -231,7 +231,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = VisibleTypeAnnotations.Count; i < n; ++i)
                 {
-                    var typeAnnotation = VisibleTypeAnnotations[i];
+                    TypeAnnotationNode typeAnnotation = VisibleTypeAnnotations[i];
                     typeAnnotation.Accept(fieldVisitor.VisitTypeAnnotation(typeAnnotation.TypeRef,
                         typeAnnotation.TypePath, typeAnnotation.Desc, true));
                 }
@@ -241,7 +241,7 @@ namespace ObjectWeb.Asm.Tree
             {
                 for (int i = 0, n = InvisibleTypeAnnotations.Count; i < n; ++i)
                 {
-                    var typeAnnotation = InvisibleTypeAnnotations[i];
+                    TypeAnnotationNode typeAnnotation = InvisibleTypeAnnotations[i];
                     typeAnnotation.Accept(fieldVisitor.VisitTypeAnnotation(typeAnnotation.TypeRef,
                         typeAnnotation.TypePath, typeAnnotation.Desc, false));
                 }

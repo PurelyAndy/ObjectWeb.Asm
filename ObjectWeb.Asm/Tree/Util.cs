@@ -43,15 +43,15 @@ namespace ObjectWeb.Asm.Tree
 
         internal static List<T> Add<T>(List<T> list, T element)
         {
-            var newList = list == null ? new List<T>(1) : list;
+            List<T> newList = list == null ? new List<T>(1) : list;
             newList.Add(element);
             return newList;
         }
 
         internal static List<T> AsArrayList<T>(int length)
         {
-            var list = new List<T>(length);
-            for (var i = 0; i < length; ++i)
+            List<T> list = new List<T>(length);
+            for (int i = 0; i < length; ++i)
             {
                 list.Add(default(T));
             }
@@ -66,8 +66,8 @@ namespace ObjectWeb.Asm.Tree
                 return new List<T>();
             }
 
-            var list = new List<T>(array.Length);
-            foreach (var t in array)
+            List<T> list = new List<T>(array.Length);
+            foreach (T t in array)
             {
                 list.Add(t);
             }
@@ -75,14 +75,14 @@ namespace ObjectWeb.Asm.Tree
             return list;
         }
 
-        internal static List<sbyte> AsArrayList(byte[] byteArray)
+        internal static List<sbyte> AsArrayList(sbyte[] byteArray)
         {
             if (byteArray == null)
             {
                 return new List<sbyte>();
             }
 
-            var byteList = new List<sbyte>(byteArray.Length);
+            List<sbyte> byteList = new List<sbyte>(byteArray.Length);
             foreach (sbyte b in byteArray)
             {
                 byteList.Add(b);
@@ -98,8 +98,8 @@ namespace ObjectWeb.Asm.Tree
                 return new List<bool>();
             }
 
-            var booleanList = new List<bool>(booleanArray.Length);
-            foreach (var b in booleanArray)
+            List<bool> booleanList = new List<bool>(booleanArray.Length);
+            foreach (bool b in booleanArray)
             {
                 booleanList.Add(b);
             }
@@ -114,8 +114,8 @@ namespace ObjectWeb.Asm.Tree
                 return new List<short>();
             }
 
-            var shortList = new List<short>(shortArray.Length);
-            foreach (var s in shortArray)
+            List<short> shortList = new List<short>(shortArray.Length);
+            foreach (short s in shortArray)
             {
                 shortList.Add(s);
             }
@@ -130,8 +130,8 @@ namespace ObjectWeb.Asm.Tree
                 return new List<char>();
             }
 
-            var charList = new List<char>(charArray.Length);
-            foreach (var c in charArray)
+            List<char> charList = new List<char>(charArray.Length);
+            foreach (char c in charArray)
             {
                 charList.Add(c);
             }
@@ -146,8 +146,8 @@ namespace ObjectWeb.Asm.Tree
                 return new List<int>();
             }
 
-            var intList = new List<int>(intArray.Length);
-            foreach (var i in intArray)
+            List<int> intList = new List<int>(intArray.Length);
+            foreach (int i in intArray)
             {
                 intList.Add(i);
             }
@@ -162,8 +162,8 @@ namespace ObjectWeb.Asm.Tree
                 return new List<float>();
             }
 
-            var floatList = new List<float>(floatArray.Length);
-            foreach (var f in floatArray)
+            List<float> floatList = new List<float>(floatArray.Length);
+            foreach (float f in floatArray)
             {
                 floatList.Add(f);
             }
@@ -178,8 +178,8 @@ namespace ObjectWeb.Asm.Tree
                 return new List<long>();
             }
 
-            var longList = new List<long>(longArray.Length);
-            foreach (var l in longArray)
+            List<long> longList = new List<long>(longArray.Length);
+            foreach (long l in longArray)
             {
                 longList.Add(l);
             }
@@ -194,8 +194,8 @@ namespace ObjectWeb.Asm.Tree
                 return new List<double>();
             }
 
-            var doubleList = new List<double>(doubleArray.Length);
-            foreach (var d in doubleArray)
+            List<double> doubleList = new List<double>(doubleArray.Length);
+            foreach (double d in doubleArray)
             {
                 doubleList.Add(d);
             }
@@ -205,8 +205,8 @@ namespace ObjectWeb.Asm.Tree
 
         internal static List<T> AsArrayList<T>(int length, T[] array)
         {
-            var list = new List<T>(length);
-            for (var i = 0; i < length; ++i)
+            List<T> list = new List<T>(length);
+            for (int i = 0; i < length; ++i)
             {
                 list.Add(array[i]); // NOPMD(UseArraysAsList): we convert a part of the array.
             }

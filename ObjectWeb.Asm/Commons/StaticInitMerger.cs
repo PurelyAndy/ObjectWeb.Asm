@@ -90,8 +90,8 @@ namespace ObjectWeb.Asm.Commons
             MethodVisitor methodVisitor;
             if ("<clinit>".Equals(name))
             {
-                var newAccess = Opcodes.Acc_Private + Opcodes.Acc_Static;
-                var newName = _renamedClinitMethodPrefix + _numClinitMethods++;
+                int newAccess = Opcodes.Acc_Private + Opcodes.Acc_Static;
+                string newName = _renamedClinitMethodPrefix + _numClinitMethods++;
                 methodVisitor = base.VisitMethod(newAccess, newName, descriptor, signature, exceptions);
 
                 if (_mergedClinitVisitor == null)

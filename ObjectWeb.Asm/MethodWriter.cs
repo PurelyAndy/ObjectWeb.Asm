@@ -471,7 +471,7 @@ namespace ObjectWeb.Asm
             {
                 _numberOfExceptions = exceptions.Length;
                 _exceptionIndexTable = new int[_numberOfExceptions];
-                for (var i = 0; i < _numberOfExceptions; ++i)
+                for (int i = 0; i < _numberOfExceptions; ++i)
                     _exceptionIndexTable[i] = symbolTable.AddConstantClass(exceptions[i]).index;
             }
             else
@@ -484,7 +484,7 @@ namespace ObjectWeb.Asm
             if (compute != Compute_Nothing)
             {
                 // Update maxLocals and currentLocals.
-                var argumentsSize = JType.GetArgumentsAndReturnSizes(descriptor) >> 2;
+                int argumentsSize = JType.GetArgumentsAndReturnSizes(descriptor) >> 2;
                 if ((access & Opcodes.Acc_Static) != 0) --argumentsSize;
                 _maxLocals = argumentsSize;
                 _currentLocals = argumentsSize;
@@ -618,18 +618,18 @@ namespace ObjectWeb.Asm
             {
                 if (_previousFrame == null)
                 {
-                    var argumentsSize = JType.GetArgumentsAndReturnSizes(_descriptor) >> 2;
-                    var implicitFirstFrame = new Frame(new Label());
+                    int argumentsSize = JType.GetArgumentsAndReturnSizes(_descriptor) >> 2;
+                    Frame implicitFirstFrame = new Frame(new Label());
                     implicitFirstFrame.SetInputFrameFromDescriptor(_symbolTable, _accessFlags, _descriptor,
                         argumentsSize);
                     implicitFirstFrame.Accept(this);
                 }
 
                 _currentLocals = numLocal;
-                var frameIndex = VisitFrameStart(_code.length, numLocal, numStack);
-                for (var i = 0; i < numLocal; ++i)
+                int frameIndex = VisitFrameStart(_code.length, numLocal, numStack);
+                for (int i = 0; i < numLocal; ++i)
                     _currentFrame[frameIndex++] = Frame.GetAbstractTypeFromApiFormat(_symbolTable, local[i]);
-                for (var i = 0; i < numStack; ++i)
+                for (int i = 0; i < numStack; ++i)
                     _currentFrame[frameIndex++] = Frame.GetAbstractTypeFromApiFormat(_symbolTable, stack[i]);
                 VisitFrameEnd();
             }
@@ -659,14 +659,14 @@ namespace ObjectWeb.Asm
                     case Opcodes.F_Full:
                         _currentLocals = numLocal;
                         _stackMapTableEntries.PutByte(Frame.Full_Frame).PutShort(offsetDelta).PutShort(numLocal);
-                        for (var i = 0; i < numLocal; ++i) PutFrameType(local[i]);
+                        for (int i = 0; i < numLocal; ++i) PutFrameType(local[i]);
                         _stackMapTableEntries.PutShort(numStack);
-                        for (var i = 0; i < numStack; ++i) PutFrameType(stack[i]);
+                        for (int i = 0; i < numStack; ++i) PutFrameType(stack[i]);
                         break;
                     case Opcodes.F_Append:
                         _currentLocals += numLocal;
                         _stackMapTableEntries.PutByte(Frame.Same_Frame_Extended + numLocal).PutShort(offsetDelta);
-                        for (var i = 0; i < numLocal; ++i) PutFrameType(local[i]);
+                        for (int i = 0; i < numLocal; ++i) PutFrameType(local[i]);
                         break;
                     case Opcodes.F_Chop:
                         _currentLocals -= numLocal;
@@ -697,7 +697,7 @@ namespace ObjectWeb.Asm
             if (_compute == Compute_Max_Stack_And_Local_From_Frames)
             {
                 _relativeStackSize = numStack;
-                for (var i = 0; i < numStack; ++i)
+                for (int i = 0; i < numStack; ++i)
                     if (Equals(stack[i], Opcodes.@long) || Equals(stack[i], Opcodes.@double))
                         _relativeStackSize++;
                 if (_relativeStackSize > _maxRelativeStackSize) _maxRelativeStackSize = _relativeStackSize;
@@ -721,7 +721,7 @@ namespace ObjectWeb.Asm
                 }
                 else
                 {
-                    var size = _relativeStackSize + STACK_SIZE_DELTA[opcode];
+                    int size = _relativeStackSize + STACK_SIZE_DELTA[opcode];
                     if (size > _maxRelativeStackSize) _maxRelativeStackSize = size;
                     _relativeStackSize = size;
                 }
@@ -750,7 +750,7 @@ namespace ObjectWeb.Asm
                 else if (opcode != Opcodes.Newarray)
                 {
                     // The stack size delta is 1 for BIPUSH or SIPUSH, and 0 for NEWARRAY.
-                    var size = _relativeStackSize + 1;
+                    int size = _relativeStackSize + 1;
                     if (size > _maxRelativeStackSize) _maxRelativeStackSize = size;
                     _relativeStackSize = size;
                 }
@@ -798,7 +798,7 @@ namespace ObjectWeb.Asm
                     else
                     {
                         // xLOAD or xSTORE
-                        var size = _relativeStackSize + STACK_SIZE_DELTA[opcode];
+                        int size = _relativeStackSize + STACK_SIZE_DELTA[opcode];
                         if (size > _maxRelativeStackSize) _maxRelativeStackSize = size;
                         _relativeStackSize = size;
                     }
@@ -831,7 +831,7 @@ namespace ObjectWeb.Asm
         {
             _lastBytecodeOffset = _code.length;
             // Add the instruction to the bytecode of the method.
-            var typeSymbol = _symbolTable.AddConstantClass(type);
+            Symbol typeSymbol = _symbolTable.AddConstantClass(type);
             _code.Put12(opcode, typeSymbol.index);
             // If needed, update the maximum stack size and number of locals, and stack map frames.
             if (_currentBasicBlock != null)
@@ -843,7 +843,7 @@ namespace ObjectWeb.Asm
                 else if (opcode == Opcodes.New)
                 {
                     // The stack size delta is 1 for NEW, and 0 for ANEWARRAY, CHECKCAST, or INSTANCEOF.
-                    var size = _relativeStackSize + 1;
+                    int size = _relativeStackSize + 1;
                     if (size > _maxRelativeStackSize) _maxRelativeStackSize = size;
                     _relativeStackSize = size;
                 }
@@ -854,7 +854,7 @@ namespace ObjectWeb.Asm
         {
             _lastBytecodeOffset = _code.length;
             // Add the instruction to the bytecode of the method.
-            var fieldrefSymbol = _symbolTable.AddConstantFieldref(owner, name, descriptor);
+            Symbol fieldrefSymbol = _symbolTable.AddConstantFieldref(owner, name, descriptor);
             _code.Put12(opcode, fieldrefSymbol.index);
             // If needed, update the maximum stack size and number of locals, and stack map frames.
             if (_currentBasicBlock != null)
@@ -866,7 +866,7 @@ namespace ObjectWeb.Asm
                 else
                 {
                     int size;
-                    var firstDescChar = descriptor[0];
+                    char firstDescChar = descriptor[0];
                     switch (opcode)
                     {
                         case Opcodes.Getstatic:
@@ -894,7 +894,7 @@ namespace ObjectWeb.Asm
         {
             _lastBytecodeOffset = _code.length;
             // Add the instruction to the bytecode of the method.
-            var methodrefSymbol = _symbolTable.AddConstantMethodref(owner, name, descriptor, isInterface);
+            Symbol methodrefSymbol = _symbolTable.AddConstantMethodref(owner, name, descriptor, isInterface);
             if (opcode == Opcodes.Invokeinterface)
                 _code.Put12(Opcodes.Invokeinterface, methodrefSymbol.index)
                     .Put11(methodrefSymbol.ArgumentsAndReturnSizes >> 2, 0);
@@ -909,8 +909,8 @@ namespace ObjectWeb.Asm
                 }
                 else
                 {
-                    var argumentsAndReturnSize = methodrefSymbol.ArgumentsAndReturnSizes;
-                    var stackSizeDelta = (argumentsAndReturnSize & 3) - (argumentsAndReturnSize >> 2);
+                    int argumentsAndReturnSize = methodrefSymbol.ArgumentsAndReturnSizes;
+                    int stackSizeDelta = (argumentsAndReturnSize & 3) - (argumentsAndReturnSize >> 2);
                     int size;
                     if (opcode == Opcodes.Invokestatic)
                         size = _relativeStackSize + stackSizeDelta + 1;
@@ -927,7 +927,7 @@ namespace ObjectWeb.Asm
         {
             _lastBytecodeOffset = _code.length;
             // Add the instruction to the bytecode of the method.
-            var invokeDynamicSymbol =
+            Symbol invokeDynamicSymbol =
                 _symbolTable.AddConstantInvokeDynamic(name, descriptor, bootstrapMethodHandle,
                     bootstrapMethodArguments);
             _code.Put12(Opcodes.Invokedynamic, invokeDynamicSymbol.index);
@@ -941,9 +941,9 @@ namespace ObjectWeb.Asm
                 }
                 else
                 {
-                    var argumentsAndReturnSize = invokeDynamicSymbol.ArgumentsAndReturnSizes;
-                    var stackSizeDelta = (argumentsAndReturnSize & 3) - (argumentsAndReturnSize >> 2) + 1;
-                    var size = _relativeStackSize + stackSizeDelta;
+                    int argumentsAndReturnSize = invokeDynamicSymbol.ArgumentsAndReturnSizes;
+                    int stackSizeDelta = (argumentsAndReturnSize & 3) - (argumentsAndReturnSize >> 2) + 1;
+                    int size = _relativeStackSize + stackSizeDelta;
                     if (size > _maxRelativeStackSize) _maxRelativeStackSize = size;
                     _relativeStackSize = size;
                 }
@@ -955,8 +955,8 @@ namespace ObjectWeb.Asm
             _lastBytecodeOffset = _code.length;
             // Add the instruction to the bytecode of the method.
             // Compute the 'base' opcode, i.e. GOTO or JSR if opcode is GOTO_W or JSR_W, otherwise opcode.
-            var baseOpcode = opcode >= Constants.Goto_W ? opcode - Constants.WideJumpOpcodeDelta : opcode;
-            var nextInsnIsJumpTarget = false;
+            int baseOpcode = opcode >= Constants.Goto_W ? opcode - Constants.WideJumpOpcodeDelta : opcode;
+            bool nextInsnIsJumpTarget = false;
             if ((label.flags & Label.Flag_Resolved) != 0 && label.bytecodeOffset - _code.length < short.MinValue)
             {
                 // Case of a backward jump with an offset < -32768. In this case we automatically replace GOTO
@@ -1169,13 +1169,13 @@ namespace ObjectWeb.Asm
         {
             _lastBytecodeOffset = _code.length;
             // Add the instruction to the bytecode of the method.
-            var constantSymbol = _symbolTable.AddConstant(value);
-            var constantIndex = constantSymbol.index;
+            Symbol constantSymbol = _symbolTable.AddConstant(value);
+            int constantIndex = constantSymbol.index;
             char firstDescriptorChar;
-            var isLongOrDouble = constantSymbol.tag == Symbol.Constant_Long_Tag ||
-                                 constantSymbol.tag == Symbol.Constant_Double_Tag ||
-                                 constantSymbol.tag == Symbol.Constant_Dynamic_Tag &&
-                                 ((firstDescriptorChar = constantSymbol.value[0]) == 'J' || firstDescriptorChar == 'D');
+            bool isLongOrDouble = constantSymbol.tag == Symbol.Constant_Long_Tag ||
+                                  constantSymbol.tag == Symbol.Constant_Double_Tag ||
+                                  constantSymbol.tag == Symbol.Constant_Dynamic_Tag &&
+                                  ((firstDescriptorChar = constantSymbol.value[0]) == 'J' || firstDescriptorChar == 'D');
             if (isLongOrDouble)
                 _code.Put12(Constants.Ldc2_W, constantIndex);
             else if (constantIndex >= 256)
@@ -1191,7 +1191,7 @@ namespace ObjectWeb.Asm
                 }
                 else
                 {
-                    var size = _relativeStackSize + (isLongOrDouble ? 2 : 1);
+                    int size = _relativeStackSize + (isLongOrDouble ? 2 : 1);
                     if (size > _maxRelativeStackSize) _maxRelativeStackSize = size;
                     _relativeStackSize = size;
                 }
@@ -1211,7 +1211,7 @@ namespace ObjectWeb.Asm
                 _currentBasicBlock.frame.Execute(Opcodes.Iinc, varIndex, null, null);
             if (_compute != Compute_Nothing)
             {
-                var currentMaxLocals = varIndex + 1;
+                int currentMaxLocals = varIndex + 1;
                 if (currentMaxLocals > _maxLocals) _maxLocals = currentMaxLocals;
             }
         }
@@ -1223,7 +1223,7 @@ namespace ObjectWeb.Asm
             _code.PutByte(Opcodes.Tableswitch).PutByteArray(null, 0, (4 - _code.length % 4) % 4);
             dflt.Put(_code, _lastBytecodeOffset, true);
             _code.PutInt(min).PutInt(max);
-            foreach (var label in labels) label.Put(_code, _lastBytecodeOffset, true);
+            foreach (Label label in labels) label.Put(_code, _lastBytecodeOffset, true);
             // If needed, update the maximum stack size and number of locals, and stack map frames.
             VisitSwitchInsn(dflt, labels);
         }
@@ -1235,7 +1235,7 @@ namespace ObjectWeb.Asm
             _code.PutByte(Opcodes.Lookupswitch).PutByteArray(null, 0, (4 - _code.length % 4) % 4);
             dflt.Put(_code, _lastBytecodeOffset, true);
             _code.PutInt(labels.Length);
-            for (var i = 0; i < labels.Length; ++i)
+            for (int i = 0; i < labels.Length; ++i)
             {
                 _code.PutInt(keys[i]);
                 labels[i].Put(_code, _lastBytecodeOffset, true);
@@ -1255,7 +1255,7 @@ namespace ObjectWeb.Asm
                     // Add all the labels as successors of the current basic block.
                     AddSuccessorToCurrentBasicBlock(Edge.Jump, dflt);
                     dflt.CanonicalInstance.flags |= Label.Flag_Jump_Target;
-                    foreach (var label in labels)
+                    foreach (Label label in labels)
                     {
                         AddSuccessorToCurrentBasicBlock(Edge.Jump, label);
                         label.CanonicalInstance.flags |= Label.Flag_Jump_Target;
@@ -1267,7 +1267,7 @@ namespace ObjectWeb.Asm
                     --_relativeStackSize;
                     // Add all the labels as successors of the current basic block.
                     AddSuccessorToCurrentBasicBlock(_relativeStackSize, dflt);
-                    foreach (var label in labels) AddSuccessorToCurrentBasicBlock(_relativeStackSize, label);
+                    foreach (Label label in labels) AddSuccessorToCurrentBasicBlock(_relativeStackSize, label);
                 }
 
                 // End the current basic block.
@@ -1279,7 +1279,7 @@ namespace ObjectWeb.Asm
         {
             _lastBytecodeOffset = _code.length;
             // Add the instruction to the bytecode of the method.
-            var descSymbol = _symbolTable.AddConstantClass(descriptor);
+            Symbol descSymbol = _symbolTable.AddConstantClass(descriptor);
             _code.Put12(Opcodes.Multianewarray, descSymbol.index).PutByte(numDimensions);
             // If needed, update the maximum stack size and number of locals, and stack map frames.
             if (_currentBasicBlock != null)
@@ -1306,7 +1306,7 @@ namespace ObjectWeb.Asm
 
         public override void VisitTryCatchBlock(Label start, Label end, Label handler, string type)
         {
-            var newHandler = new Handler(start, end, handler,
+            Handler newHandler = new Handler(start, end, handler,
                 !ReferenceEquals(type, null) ? _symbolTable.AddConstantClass(type).index : 0, type);
             if (_firstHandler == null)
                 _firstHandler = newHandler;
@@ -1344,8 +1344,8 @@ namespace ObjectWeb.Asm
                 .PutShort(index);
             if (_compute != Compute_Nothing)
             {
-                var firstDescChar = descriptor[0];
-                var currentMaxLocals = index + (firstDescChar == 'J' || firstDescChar == 'D' ? 2 : 1);
+                char firstDescChar = descriptor[0];
+                int currentMaxLocals = index + (firstDescChar == 'J' || firstDescChar == 'D' ? 2 : 1);
                 if (currentMaxLocals > _maxLocals) _maxLocals = currentMaxLocals;
             }
         }
@@ -1355,10 +1355,10 @@ namespace ObjectWeb.Asm
         {
             // Create a ByteVector to hold a 'type_annotation' JVMS structure.
             // See https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.20.
-            var typeAnnotation = new ByteVector();
+            ByteVector typeAnnotation = new ByteVector();
             // Write target_type, target_info, and target_path.
             typeAnnotation.PutByte((int)((uint)typeRef >> 24)).PutShort(start.Length);
-            for (var i = 0; i < start.Length; ++i)
+            for (int i = 0; i < start.Length; ++i)
                 typeAnnotation.PutShort(start[i].bytecodeOffset)
                     .PutShort(end[i].bytecodeOffset - start[i].bytecodeOffset).PutShort(index[i]);
             TypePath.Put(typePath, typeAnnotation);
@@ -1406,19 +1406,19 @@ namespace ObjectWeb.Asm
         private void ComputeAllFrames()
         {
             // Complete the control flow graph with exception handler blocks.
-            var handler = _firstHandler;
+            Handler handler = _firstHandler;
             while (handler != null)
             {
-                var catchTypeDescriptor = ReferenceEquals(handler.catchTypeDescriptor, null)
+                string catchTypeDescriptor = ReferenceEquals(handler.catchTypeDescriptor, null)
                     ? "java/lang/Throwable"
                     : handler.catchTypeDescriptor;
-                var catchType = Frame.GetAbstractTypeFromInternalName(_symbolTable, catchTypeDescriptor);
+                int catchType = Frame.GetAbstractTypeFromInternalName(_symbolTable, catchTypeDescriptor);
                 // Mark handlerBlock as an exception handler.
-                var handlerBlock = handler.handlerPc.CanonicalInstance;
+                Label handlerBlock = handler.handlerPc.CanonicalInstance;
                 handlerBlock.flags |= Label.Flag_Jump_Target;
                 // Add handlerBlock as a successor of all the basic blocks in the exception handler range.
-                var handlerRangeBlock = handler.startPc.CanonicalInstance;
-                var handlerRangeEnd = handler.endPc.CanonicalInstance;
+                Label handlerRangeBlock = handler.startPc.CanonicalInstance;
+                Label handlerRangeEnd = handler.endPc.CanonicalInstance;
                 while (handlerRangeBlock != handlerRangeEnd)
                 {
                     handlerRangeBlock.outgoingEdges =
@@ -1430,7 +1430,7 @@ namespace ObjectWeb.Asm
             }
 
             // Create and visit the first (implicit) frame.
-            var firstFrame = _firstBasicBlock.frame;
+            Frame firstFrame = _firstBasicBlock.frame;
             firstFrame.SetInputFrameFromDescriptor(_symbolTable, _accessFlags, _descriptor, _maxLocals);
             firstFrame.Accept(this);
 
@@ -1440,9 +1440,9 @@ namespace ObjectWeb.Asm
             // (which might change them, in which case these blocks must be processed too, and are thus
             // added to the list of blocks to process). Also compute the maximum stack size of the method,
             // as a by-product.
-            var listOfBlocksToProcess = _firstBasicBlock;
+            Label listOfBlocksToProcess = _firstBasicBlock;
             listOfBlocksToProcess.nextListElement = Label.EmptyList;
-            var maxStackSize = 0;
+            int maxStackSize = 0;
             Label basicBlock;
             while (listOfBlocksToProcess != Label.EmptyList)
             {
@@ -1453,14 +1453,14 @@ namespace ObjectWeb.Asm
                 // By definition, basicBlock is reachable.
                 basicBlock.flags |= Label.Flag_Reachable;
                 // Update the (absolute) maximum stack size.
-                var maxBlockStackSize = basicBlock.frame.InputStackSize + basicBlock.outputStackMax;
+                int maxBlockStackSize = basicBlock.frame.InputStackSize + basicBlock.outputStackMax;
                 if (maxBlockStackSize > maxStackSize) maxStackSize = maxBlockStackSize;
                 // Update the successor blocks of basicBlock in the control flow graph.
-                var outgoingEdge = basicBlock.outgoingEdges;
+                Edge outgoingEdge = basicBlock.outgoingEdges;
                 while (outgoingEdge != null)
                 {
-                    var successorBlock = outgoingEdge.successor.CanonicalInstance;
-                    var successorBlockChanged =
+                    Label successorBlock = outgoingEdge.successor.CanonicalInstance;
+                    bool successorBlockChanged =
                         basicBlock.frame.Merge(_symbolTable, successorBlock.frame, outgoingEdge.info);
                     if (successorBlockChanged && successorBlock.nextListElement == null)
                     {
@@ -1485,17 +1485,17 @@ namespace ObjectWeb.Asm
                 if ((basicBlock.flags & Label.Flag_Reachable) == 0)
                 {
                     // Find the start and end bytecode offsets of this unreachable block.
-                    var nextBasicBlock = basicBlock.nextBasicBlock;
-                    var startOffset = basicBlock.bytecodeOffset;
-                    var endOffset = (nextBasicBlock == null ? _code.length : nextBasicBlock.bytecodeOffset) - 1;
+                    Label nextBasicBlock = basicBlock.nextBasicBlock;
+                    int startOffset = basicBlock.bytecodeOffset;
+                    int endOffset = (nextBasicBlock == null ? _code.length : nextBasicBlock.bytecodeOffset) - 1;
                     if (endOffset >= startOffset)
                     {
                         // Replace its instructions with NOP ... NOP ATHROW.
-                        for (var i = startOffset; i < endOffset; ++i) _code.data[i] = Opcodes.Nop;
-                        _code.data[endOffset] = unchecked((byte)Opcodes.Athrow);
+                        for (int i = startOffset; i < endOffset; ++i) _code.data[i] = Opcodes.Nop;
+                        _code.data[endOffset] = unchecked((sbyte)Opcodes.Athrow);
                         // Emit a frame for this unreachable block, with no local and a Throwable on the stack
                         // (so that the ATHROW could consume this Throwable if it were reachable).
-                        var frameIndex = VisitFrameStart(startOffset, 0, 1);
+                        int frameIndex = VisitFrameStart(startOffset, 0, 1);
                         _currentFrame[frameIndex] =
                             Frame.GetAbstractTypeFromInternalName(_symbolTable, "java/lang/Throwable");
                         VisitFrameEnd();
@@ -1518,12 +1518,12 @@ namespace ObjectWeb.Asm
         private void ComputeMaxStackAndLocal()
         {
             // Complete the control flow graph with exception handler blocks.
-            var handler = _firstHandler;
+            Handler handler = _firstHandler;
             while (handler != null)
             {
-                var handlerBlock = handler.handlerPc;
-                var handlerRangeBlock = handler.startPc;
-                var handlerRangeEnd = handler.endPc;
+                Label handlerBlock = handler.handlerPc;
+                Label handlerRangeBlock = handler.startPc;
+                Label handlerRangeEnd = handler.endPc;
                 // Add handlerBlock as a successor of all the basic blocks in the exception handler range.
                 while (handlerRangeBlock != handlerRangeEnd)
                 {
@@ -1560,7 +1560,7 @@ namespace ObjectWeb.Asm
                         if ((basicBlock.flags & Label.Flag_Subroutine_Caller) != 0 &&
                             basicBlock.subroutineId == currentSubroutine)
                         {
-                            var jsrTarget = basicBlock.outgoingEdges.nextEdge.successor;
+                            Label jsrTarget = basicBlock.outgoingEdges.nextEdge.successor;
                             if (jsrTarget.subroutineId == 0)
                                 // If this subroutine has not been marked yet, find its basic blocks.
                                 jsrTarget.MarkSubroutine(++numSubroutines);
@@ -1580,7 +1580,7 @@ namespace ObjectWeb.Asm
                     {
                         // By construction, jsr targets are stored in the second outgoing edge of basic blocks
                         // that ends with a jsr instruction (see {@link #FLAG_SUBROUTINE_CALLER}).
-                        var subroutine = basicBlock.outgoingEdges.nextEdge.successor;
+                        Label subroutine = basicBlock.outgoingEdges.nextEdge.successor;
                         subroutine.AddSubroutineRetSuccessors(basicBlock);
                     }
 
@@ -1592,24 +1592,24 @@ namespace ObjectWeb.Asm
             // whose input stack size has changed) and, while there are blocks to process, remove one
             // from the list, update the input stack size of its successor blocks in the control flow
             // graph, and add these blocks to the list of blocks to process (if not already done).
-            var listOfBlocksToProcess = _firstBasicBlock;
+            Label listOfBlocksToProcess = _firstBasicBlock;
             listOfBlocksToProcess.nextListElement = Label.EmptyList;
-            var maxStackSize = _maxStack;
+            int maxStackSize = _maxStack;
             while (listOfBlocksToProcess != Label.EmptyList)
             {
                 // Remove a basic block from the list of blocks to process. Note that we don't reset
                 // basicBlock.nextListElement to null on purpose, to make sure we don't reprocess already
                 // processed basic blocks.
-                var basicBlock = listOfBlocksToProcess;
+                Label basicBlock = listOfBlocksToProcess;
                 listOfBlocksToProcess = listOfBlocksToProcess.nextListElement;
                 // Compute the (absolute) input stack size and maximum stack size of this block.
                 int inputStackTop = basicBlock.inputStackSize;
-                var maxBlockStackSize = inputStackTop + basicBlock.outputStackMax;
+                int maxBlockStackSize = inputStackTop + basicBlock.outputStackMax;
                 // Update the absolute maximum stack size of the method.
                 if (maxBlockStackSize > maxStackSize) maxStackSize = maxBlockStackSize;
                 // Update the input stack size of the successor blocks of basicBlock in the control flow
                 // graph, and add these blocks to the list of blocks to process, if not already done.
-                var outgoingEdge = basicBlock.outgoingEdges;
+                Edge outgoingEdge = basicBlock.outgoingEdges;
                 if ((basicBlock.flags & Label.Flag_Subroutine_Caller) != 0)
                     // Ignore the first outgoing edge of the basic blocks ending with a jsr: these are virtual
                     // edges which lead to the instruction just after the jsr, and do not correspond to a
@@ -1618,7 +1618,7 @@ namespace ObjectWeb.Asm
                     outgoingEdge = outgoingEdge.nextEdge;
                 while (outgoingEdge != null)
                 {
-                    var successorBlock = outgoingEdge.successor;
+                    Label successorBlock = outgoingEdge.successor;
                     if (successorBlock.nextListElement == null)
                     {
                         successorBlock.inputStackSize = (short)(outgoingEdge.info == Edge.Exception
@@ -1667,7 +1667,7 @@ namespace ObjectWeb.Asm
         {
             if (_compute == Compute_All_Frames)
             {
-                var nextBasicBlock = new Label();
+                Label nextBasicBlock = new Label();
                 nextBasicBlock.frame = new Frame(nextBasicBlock);
                 nextBasicBlock.Resolve(_code.data, _code.length);
                 _lastBasicBlock.nextBasicBlock = nextBasicBlock;
@@ -1694,7 +1694,7 @@ namespace ObjectWeb.Asm
         /// <returns> the index of the next element to be written in this frame. </returns>
         public int VisitFrameStart(int offset, int numLocal, int numStack)
         {
-            var frameLength = 3 + numLocal + numStack;
+            int frameLength = 3 + numLocal + numStack;
             if (_currentFrame == null || _currentFrame.Length < frameLength) _currentFrame = new int[frameLength];
             _currentFrame[0] = offset;
             _currentFrame[1] = numLocal;
@@ -1735,8 +1735,8 @@ namespace ObjectWeb.Asm
         /// </summary>
         private void PutFrame()
         {
-            var numLocal = _currentFrame[1];
-            var numStack = _currentFrame[2];
+            int numLocal = _currentFrame[1];
+            int numStack = _currentFrame[2];
             if (_symbolTable.MajorVersion < Opcodes.V1_6)
             {
                 // Generate a StackMap attribute entry, which are always uncompressed.
@@ -1747,12 +1747,12 @@ namespace ObjectWeb.Asm
                 return;
             }
 
-            var offsetDelta = _stackMapTableNumberOfEntries == 0
+            int offsetDelta = _stackMapTableNumberOfEntries == 0
                 ? _currentFrame[0]
                 : _currentFrame[0] - _previousFrame[0] - 1;
-            var previousNumlocal = _previousFrame[1];
-            var numLocalDelta = numLocal - previousNumlocal;
-            var type = Frame.Full_Frame;
+            int previousNumlocal = _previousFrame[1];
+            int numLocalDelta = numLocal - previousNumlocal;
+            int type = Frame.Full_Frame;
             if (numStack == 0)
                 switch (numLocalDelta)
                 {
@@ -1778,8 +1778,8 @@ namespace ObjectWeb.Asm
             if (type != Frame.Full_Frame)
             {
                 // Verify if locals are the same as in the previous frame.
-                var frameIndex = 3;
-                for (var i = 0; i < previousNumlocal && i < numLocal; i++)
+                int frameIndex = 3;
+                for (int i = 0; i < previousNumlocal && i < numLocal; i++)
                 {
                     if (_currentFrame[frameIndex] != _previousFrame[frameIndex])
                     {
@@ -1832,7 +1832,7 @@ namespace ObjectWeb.Asm
         /// <param name="end"> index of last type in <seealso cref="_currentFrame" /> to write (exclusive). </param>
         private void PutAbstractTypes(int start, int end)
         {
-            for (var i = start; i < end; ++i)
+            for (int i = start; i < end; ++i)
                 Frame.PutAbstractType(_symbolTable, _currentFrame[i], _stackMapTableEntries);
         }
 
@@ -1908,7 +1908,7 @@ namespace ObjectWeb.Asm
             if (source != _symbolTable.Source || descriptorIndex != this._descriptorIndex ||
                 signatureIndex != this._signatureIndex ||
                 hasDeprecatedAttribute != ((_accessFlags & Opcodes.Acc_Deprecated) != 0)) return false;
-            var needSyntheticAttribute =
+            bool needSyntheticAttribute =
                 _symbolTable.MajorVersion < Opcodes.V1_5 && (_accessFlags & Opcodes.Acc_Synthetic) != 0;
             if (hasSyntheticAttribute != needSyntheticAttribute) return false;
             if (exceptionsOffset == 0)
@@ -1917,8 +1917,8 @@ namespace ObjectWeb.Asm
             }
             else if (source.ReadUnsignedShort(exceptionsOffset) == _numberOfExceptions)
             {
-                var currentExceptionOffset = exceptionsOffset + 2;
-                for (var i = 0; i < _numberOfExceptions; ++i)
+                int currentExceptionOffset = exceptionsOffset + 2;
+                for (int i = 0; i < _numberOfExceptions; ++i)
                 {
                     if (source.ReadUnsignedShort(currentExceptionOffset) != _exceptionIndexTable[i]) return false;
                     currentExceptionOffset += 2;
@@ -1960,7 +1960,7 @@ namespace ObjectWeb.Asm
                 // sourceLength excludes the first 6 bytes for access_flags, name_index and descriptor_index.
                 return 6 + _sourceLength;
             // 2 bytes each for access_flags, name_index, descriptor_index and attributes_count.
-            var size = 8;
+            int size = 8;
             // For ease of reference, we use here the same attribute order as in Section 4.7 of the JVMS.
             if (_code.length > 0)
             {
@@ -1972,7 +1972,7 @@ namespace ObjectWeb.Asm
                 size += 16 + _code.length + Handler.GetExceptionTableSize(_firstHandler);
                 if (_stackMapTableEntries != null)
                 {
-                    var useStackMapTable = _symbolTable.MajorVersion >= Opcodes.V1_6;
+                    bool useStackMapTable = _symbolTable.MajorVersion >= Opcodes.V1_6;
                     _symbolTable.AddConstantUtf8(useStackMapTable ? Constants.Stack_Map_Table : "StackMap");
                     // 6 header bytes and 2 bytes for number_of_entries.
                     size += 8 + _stackMapTableEntries.length;
@@ -2056,8 +2056,8 @@ namespace ObjectWeb.Asm
         /// <param name="output"> where the method_info structure must be put. </param>
         public void PutMethodInfo(ByteVector output)
         {
-            var useSyntheticAttribute = _symbolTable.MajorVersion < Opcodes.V1_5;
-            var mask = useSyntheticAttribute ? Opcodes.Acc_Synthetic : 0;
+            bool useSyntheticAttribute = _symbolTable.MajorVersion < Opcodes.V1_5;
+            int mask = useSyntheticAttribute ? Opcodes.Acc_Synthetic : 0;
             output.PutShort(_accessFlags & ~mask).PutShort(_nameIndex).PutShort(_descriptorIndex);
             // If this method_info must be copied from an existing one, copy it now and return early.
             if (_sourceOffset != 0)
@@ -2067,7 +2067,7 @@ namespace ObjectWeb.Asm
             }
 
             // For ease of reference, we use here the same attribute order as in Section 4.7 of the JVMS.
-            var attributeCount = 0;
+            int attributeCount = 0;
             if (_code.length > 0) ++attributeCount;
             if (_numberOfExceptions > 0) ++attributeCount;
             if ((_accessFlags & Opcodes.Acc_Synthetic) != 0 && useSyntheticAttribute) ++attributeCount;
@@ -2088,8 +2088,8 @@ namespace ObjectWeb.Asm
             {
                 // 2, 2, 4 and 2 bytes respectively for max_stack, max_locals, code_length and
                 // attributes_count, plus the bytecode and the exception table.
-                var size = 10 + _code.length + Handler.GetExceptionTableSize(_firstHandler);
-                var codeAttributeCount = 0;
+                int size = 10 + _code.length + Handler.GetExceptionTableSize(_firstHandler);
+                int codeAttributeCount = 0;
                 if (_stackMapTableEntries != null)
                 {
                     // 6 header bytes and 2 bytes for number_of_entries.
@@ -2145,7 +2145,7 @@ namespace ObjectWeb.Asm
                 output.PutShort(codeAttributeCount);
                 if (_stackMapTableEntries != null)
                 {
-                    var useStackMapTable = _symbolTable.MajorVersion >= Opcodes.V1_6;
+                    bool useStackMapTable = _symbolTable.MajorVersion >= Opcodes.V1_6;
                     output
                         .PutShort(
                             _symbolTable.AddConstantUtf8(useStackMapTable ? Constants.Stack_Map_Table : "StackMap"))
@@ -2180,7 +2180,7 @@ namespace ObjectWeb.Asm
             {
                 output.PutShort(_symbolTable.AddConstantUtf8(Constants.Exceptions)).PutInt(2 + 2 * _numberOfExceptions)
                     .PutShort(_numberOfExceptions);
-                foreach (var exceptionIndex in _exceptionIndexTable) output.PutShort(exceptionIndex);
+                foreach (int exceptionIndex in _exceptionIndexTable) output.PutShort(exceptionIndex);
             }
 
             Attribute.PutAttributes(_symbolTable, _accessFlags, _signatureIndex, output);

@@ -66,13 +66,13 @@ namespace ObjectWeb.Asm.Tree
 
         public override void Accept(MethodVisitor methodVisitor)
         {
-            var keysArray = new int[this.Keys.Count];
+            int[] keysArray = new int[this.Keys.Count];
             for (int i = 0, n = keysArray.Length; i < n; ++i)
             {
                 keysArray[i] = this.Keys[i];
             }
 
-            var labelsArray = new Label[this.Labels.Count];
+            Label[] labelsArray = new Label[this.Labels.Count];
             for (int i = 0, n = labelsArray.Length; i < n; ++i)
             {
                 labelsArray[i] = this.Labels[i].Label;
@@ -84,7 +84,7 @@ namespace ObjectWeb.Asm.Tree
 
         public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
         {
-            var clone = new LookupSwitchInsnNode(LookupSwitchInsnNode.Clone(Dflt, clonedLabels), null,
+            LookupSwitchInsnNode clone = new LookupSwitchInsnNode(LookupSwitchInsnNode.Clone(Dflt, clonedLabels), null,
                 LookupSwitchInsnNode.Clone(Labels, clonedLabels));
             ((List<int>)clone.Keys).AddRange(Keys);
             return clone.CloneAnnotations(this);

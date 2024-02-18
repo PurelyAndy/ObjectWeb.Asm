@@ -142,7 +142,7 @@ namespace ObjectWeb.Asm.Commons
                     Locals.Add(owner);
             }
 
-            foreach (var argumentType in JType.GetArgumentTypes(descriptor))
+            foreach (JType argumentType in JType.GetArgumentTypes(descriptor))
                 switch (argumentType.Sort)
                 {
                     case JType.Boolean:
@@ -202,9 +202,9 @@ namespace ObjectWeb.Asm.Commons
 
         private static void VisitFrameTypes(int numTypes, object[] frameTypes, List<object> result)
         {
-            for (var i = 0; i < numTypes; ++i)
+            for (int i = 0; i < numTypes; ++i)
             {
-                var frameType = frameTypes[i];
+                object frameType = frameTypes[i];
                 result.Add(frameType);
                 if (Equals(frameType, Opcodes.@long) || Equals(frameType, Opcodes.@double))
                     result.Add(Opcodes.top);
@@ -231,8 +231,8 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitVarInsn(int opcode, int varIndex)
         {
             base.VisitVarInsn(opcode, varIndex);
-            var isLongOrDouble = opcode == Opcodes.Lload || opcode == Opcodes.Dload || opcode == Opcodes.Lstore ||
-                                 opcode == Opcodes.Dstore;
+            bool isLongOrDouble = opcode == Opcodes.Lload || opcode == Opcodes.Dload || opcode == Opcodes.Lstore ||
+                                  opcode == Opcodes.Dstore;
             _maxLocals = Math.Max(_maxLocals, varIndex + (isLongOrDouble ? 2 : 1));
             Execute(opcode, varIndex, null);
         }
@@ -243,14 +243,14 @@ namespace ObjectWeb.Asm.Commons
             {
                 if (_labels == null)
                 {
-                    var label = new Label();
+                    Label label = new Label();
                     _labels = new List<Label>(3);
                     _labels.Add(label);
                     if (mv != null)
                         mv.VisitLabel(label);
                 }
 
-                foreach (var label in _labels)
+                foreach (Label label in _labels)
                     UninitializedTypes[label] = type;
             }
 
@@ -275,7 +275,7 @@ namespace ObjectWeb.Asm.Commons
             }
 
             base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
-            var opcode = opcodeAndSource & ~Opcodes.Source_Mask;
+            int opcode = opcodeAndSource & ~Opcodes.Source_Mask;
             if (Locals == null)
             {
                 _labels = null;
@@ -285,7 +285,7 @@ namespace ObjectWeb.Asm.Commons
             Pop(descriptor);
             if (opcode != Opcodes.Invokestatic)
             {
-                var value = Pop();
+                object value = Pop();
                 if (opcode == Opcodes.Invokespecial && name.Equals("<init>"))
                 {
                     object initializedValue;
@@ -296,10 +296,10 @@ namespace ObjectWeb.Asm.Commons
                         UninitializedTypes.TryGetValue(value, out initializedValue);
                     }
 
-                    for (var i = 0; i < Locals.Count; ++i)
+                    for (int i = 0; i < Locals.Count; ++i)
                         if (Locals[i] == value)
                             Locals[i] = initializedValue;
-                    for (var i = 0; i < Stack.Count; ++i)
+                    for (int i = 0; i < Stack.Count; ++i)
                         if (Stack[i] == value)
                             Stack[i] = initializedValue;
                 }
@@ -376,7 +376,7 @@ namespace ObjectWeb.Asm.Commons
             }
             else if (value is JType)
             {
-                var sort = ((JType)value).Sort;
+                int sort = ((JType)value).Sort;
                 if (sort == JType.Object || sort == JType.Array)
                     Push("java/lang/Class");
                 else if (sort == JType.Method)
@@ -432,7 +432,7 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitLocalVariable(string name, string descriptor, string signature, Label start,
             Label end, int index)
         {
-            var firstDescriptorChar = descriptor[0];
+            char firstDescriptorChar = descriptor[0];
             _maxLocals = Math.Max(_maxLocals,
                 index + (firstDescriptorChar == 'J' || firstDescriptorChar == 'D' ? 2 : 1));
             base.VisitLocalVariable(name, descriptor, signature, start, end, index);
@@ -471,7 +471,7 @@ namespace ObjectWeb.Asm.Commons
 
         private void PushDescriptor(string fieldOrMethodDescriptor)
         {
-            var descriptor = fieldOrMethodDescriptor[0] == '('
+            string descriptor = fieldOrMethodDescriptor[0] == '('
                 ? JType.GetReturnType(fieldOrMethodDescriptor).Descriptor
                 : fieldOrMethodDescriptor;
             switch (descriptor[0])
@@ -509,28 +509,28 @@ namespace ObjectWeb.Asm.Commons
 
         private object Pop()
         {
-            var stackCount = Stack.Count - 1;
-            var current = Stack[stackCount];
+            int stackCount = Stack.Count - 1;
+            object current = Stack[stackCount];
             Stack.RemoveAt(stackCount);
             return current;
         }
 
         private void Pop(int numSlots)
         {
-            var size = Stack.Count;
-            var end = size - numSlots;
-            for (var i = size - 1; i >= end; --i)
+            int size = Stack.Count;
+            int end = size - numSlots;
+            for (int i = size - 1; i >= end; --i)
                 Stack.RemoveAt(i);
         }
 
         private void Pop(string descriptor)
         {
-            var firstDescriptorChar = descriptor[0];
+            char firstDescriptorChar = descriptor[0];
             if (firstDescriptorChar == '(')
             {
-                var numSlots = 0;
-                var types = JType.GetArgumentTypes(descriptor);
-                foreach (var type in types)
+                int numSlots = 0;
+                JType[] types = JType.GetArgumentTypes(descriptor);
+                foreach (JType type in types)
                     numSlots += type.Size;
                 Pop(numSlots);
             }

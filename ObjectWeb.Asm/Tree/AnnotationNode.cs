@@ -101,9 +101,9 @@ namespace ObjectWeb.Asm.Tree
                 Values.Add(name);
             }
 
-            if (value is byte[])
+            if (value is sbyte[] || value is byte[])
             {
-                Values.Add(Util.AsArrayList((byte[])value));
+                Values.Add(Util.AsArrayList((sbyte[])value));
             }
             else if (value is bool[])
             {
@@ -166,7 +166,7 @@ namespace ObjectWeb.Asm.Tree
                 Values.Add(name);
             }
 
-            var annotation = new AnnotationNode(descriptor);
+            AnnotationNode annotation = new AnnotationNode(descriptor);
             Values.Add(annotation);
             return annotation;
         }
@@ -183,7 +183,7 @@ namespace ObjectWeb.Asm.Tree
                 Values.Add(name);
             }
 
-            var array = new List<object>();
+            List<object> array = new List<object>();
             Values.Add(array);
             return new AnnotationNode(array);
         }
@@ -220,8 +220,8 @@ namespace ObjectWeb.Asm.Tree
                 {
                     for (int i = 0, n = Values.Count; i < n; i += 2)
                     {
-                        var name = (string)Values[i];
-                        var value = Values[i + 1];
+                        string name = (string)Values[i];
+                        object value = Values[i + 1];
                         Accept(annotationVisitor, name, value);
                     }
                 }
@@ -242,20 +242,20 @@ namespace ObjectWeb.Asm.Tree
             {
                 if (value is string[])
                 {
-                    var typeValue = (string[])value;
+                    string[] typeValue = (string[])value;
                     annotationVisitor.VisitEnum(name, typeValue[0], typeValue[1]);
                 }
                 else if (value is AnnotationNode)
                 {
-                    var annotationValue = (AnnotationNode)value;
+                    AnnotationNode annotationValue = (AnnotationNode)value;
                     annotationValue.Accept(annotationVisitor.VisitAnnotation(name, annotationValue.Desc));
                 }
                 else if (value is System.Collections.IList)
                 {
-                    var arrayAnnotationVisitor = annotationVisitor.VisitArray(name);
+                    AnnotationVisitor arrayAnnotationVisitor = annotationVisitor.VisitArray(name);
                     if (arrayAnnotationVisitor != null)
                     {
-                        var arrayValue = (IList)value;
+                        IList arrayValue = (IList)value;
                         for (int i = 0, n = arrayValue.Count; i < n; ++i)
                         {
                             Accept(arrayAnnotationVisitor, null, arrayValue[i]);

@@ -48,7 +48,7 @@ namespace ObjectWeb.Asm
         public override void Execute(int opcode, int arg, Symbol symbolArg, SymbolTable symbolTable)
         {
             base.Execute(opcode, arg, symbolArg, symbolTable);
-            var successor = new Frame(null);
+            Frame successor = new Frame(null);
             Merge(symbolTable, successor, 0);
             CopyFrom(successor);
         }

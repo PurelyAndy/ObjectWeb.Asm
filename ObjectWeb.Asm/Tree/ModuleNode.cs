@@ -204,7 +204,7 @@ namespace ObjectWeb.Asm.Tree
         /// <param name = "classVisitor"> a class visitor. </param>
         public virtual void Accept(ClassVisitor classVisitor)
         {
-            var moduleVisitor = classVisitor.VisitModule(Name, Access, Version);
+            ModuleVisitor moduleVisitor = classVisitor.VisitModule(Name, Access, Version);
             if (moduleVisitor == null)
             {
                 return;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 // ASM: a very small and fast Java bytecode manipulation framework
 // Copyright (c) 2000-2011 INRIA, France Telecom
@@ -97,20 +98,20 @@ namespace ObjectWeb.Asm.Commons
 
         public override ModuleVisitor VisitModule(string name, int flags, string version)
         {
-            var moduleVisitor = base.VisitModule(remapper.MapModuleName(name), flags, version);
+            ModuleVisitor moduleVisitor = base.VisitModule(remapper.MapModuleName(name), flags, version);
             return moduleVisitor == null ? null : CreateModuleRemapper(moduleVisitor);
         }
 
         public override AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
         {
-            var annotationVisitor = base.VisitAnnotation(remapper.MapDesc(descriptor), visible);
+            AnnotationVisitor annotationVisitor = base.VisitAnnotation(remapper.MapDesc(descriptor), visible);
             return annotationVisitor == null ? null : CreateAnnotationRemapper(descriptor, annotationVisitor);
         }
 
         public override AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            var annotationVisitor = base.VisitTypeAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
+            AnnotationVisitor annotationVisitor = base.VisitTypeAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
             return annotationVisitor == null ? null : CreateAnnotationRemapper(descriptor, annotationVisitor);
         }
 
@@ -118,9 +119,9 @@ namespace ObjectWeb.Asm.Commons
         {
             if (attribute is ModuleHashesAttribute)
             {
-                var moduleHashesAttribute = (ModuleHashesAttribute)attribute;
-                var modules = moduleHashesAttribute.Modules;
-                for (var i = 0; i < modules.Count; ++i)
+                ModuleHashesAttribute moduleHashesAttribute = (ModuleHashesAttribute)attribute;
+                List<string> modules = moduleHashesAttribute.Modules;
+                for (int i = 0; i < modules.Count; ++i)
                     modules[i] = remapper.MapModuleName(modules[i]);
             }
 
@@ -129,7 +130,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override RecordComponentVisitor VisitRecordComponent(string name, string descriptor, string signature)
         {
-            var recordComponentVisitor = base.VisitRecordComponent(
+            RecordComponentVisitor recordComponentVisitor = base.VisitRecordComponent(
                 remapper.MapRecordComponentName(className, name, descriptor), remapper.MapDesc(descriptor),
                 remapper.MapSignature(signature, true));
             return recordComponentVisitor == null ? null : CreateRecordComponentRemapper(recordComponentVisitor);
@@ -138,7 +139,7 @@ namespace ObjectWeb.Asm.Commons
         public override FieldVisitor VisitField(int access, string name, string descriptor, string signature,
             object value)
         {
-            var fieldVisitor = base.VisitField(access, remapper.MapFieldName(className, name, descriptor),
+            FieldVisitor fieldVisitor = base.VisitField(access, remapper.MapFieldName(className, name, descriptor),
                 remapper.MapDesc(descriptor), remapper.MapSignature(signature, true),
                 value == null ? null : remapper.MapValue(value));
             return fieldVisitor == null ? null : CreateFieldRemapper(fieldVisitor);
@@ -147,8 +148,8 @@ namespace ObjectWeb.Asm.Commons
         public override MethodVisitor VisitMethod(int access, string name, string descriptor, string signature,
             string[] exceptions)
         {
-            var remappedDescriptor = remapper.MapMethodDesc(descriptor);
-            var methodVisitor = base.VisitMethod(access, remapper.MapMethodName(className, name, descriptor),
+            string remappedDescriptor = remapper.MapMethodDesc(descriptor);
+            MethodVisitor methodVisitor = base.VisitMethod(access, remapper.MapMethodName(className, name, descriptor),
                 remappedDescriptor, remapper.MapSignature(signature, false),
                 exceptions == null ? null : remapper.MapTypes(exceptions));
             return methodVisitor == null ? null : CreateMethodRemapper(methodVisitor);

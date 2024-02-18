@@ -224,7 +224,7 @@ namespace ObjectWeb.Asm
         {
             get
             {
-                var numDimensions = Dimensions;
+                int numDimensions = Dimensions;
                 return GetTypeInternal(_valueBuffer, _valueBegin + numDimensions, _valueEnd);
             }
         }
@@ -277,8 +277,8 @@ namespace ObjectWeb.Asm
                     case Double:
                         return "double";
                     case Array:
-                        var stringBuilder = new StringBuilder(ElementType.ClassName);
-                        for (var i = Dimensions; i > 0; --i) stringBuilder.Append("[]");
+                        StringBuilder stringBuilder = new StringBuilder(ElementType.ClassName);
+                        for (int i = Dimensions; i > 0; --i) stringBuilder.Append("[]");
                         return stringBuilder.ToString();
                     case Object:
                     case Internal:
@@ -338,7 +338,7 @@ namespace ObjectWeb.Asm
         {
             get
             {
-                var numDimensions = 1;
+                int numDimensions = 1;
                 while (_valueBuffer[_valueBegin + numDimensions] == '[') numDimensions++;
                 return numDimensions;
             }
@@ -419,7 +419,7 @@ namespace ObjectWeb.Asm
                     return VoidType;
                 if (clazz == typeof(bool))
                     return BooleanType;
-                if (clazz == typeof(byte) || clazz == typeof(byte))
+                if (clazz == typeof(byte) || clazz == typeof(sbyte))
                     return ByteType;
                 if (clazz == typeof(char))
                     return CharType;
@@ -503,9 +503,9 @@ namespace ObjectWeb.Asm
         public static JType[] GetArgumentTypes(string methodDescriptor)
         {
             // First step: compute the number of argument types in methodDescriptor.
-            var numArgumentTypes = 0;
+            int numArgumentTypes = 0;
             // Skip the first character, which is always a '('.
-            var currentOffset = 1;
+            int currentOffset = 1;
             // Parse the argument types, one at a each loop iteration.
             while (methodDescriptor[currentOffset] != ')')
             {
@@ -513,7 +513,7 @@ namespace ObjectWeb.Asm
                 if (methodDescriptor[currentOffset++] == 'L')
                 {
                     // Skip the argument descriptor content.
-                    var semiColumnOffset = methodDescriptor.IndexOf(';', currentOffset);
+                    int semiColumnOffset = methodDescriptor.IndexOf(';', currentOffset);
                     currentOffset = Math.Max(currentOffset, semiColumnOffset + 1);
                 }
 
@@ -521,19 +521,19 @@ namespace ObjectWeb.Asm
             }
 
             // Second step: create a Type instance for each argument type.
-            var argumentTypes = new JType[numArgumentTypes];
+            JType[] argumentTypes = new JType[numArgumentTypes];
             // Skip the first character, which is always a '('.
             currentOffset = 1;
             // Parse and create the argument types, one at each loop iteration.
-            var currentArgumentTypeIndex = 0;
+            int currentArgumentTypeIndex = 0;
             while (methodDescriptor[currentOffset] != ')')
             {
-                var currentArgumentTypeOffset = currentOffset;
+                int currentArgumentTypeOffset = currentOffset;
                 while (methodDescriptor[currentOffset] == '[') currentOffset++;
                 if (methodDescriptor[currentOffset++] == 'L')
                 {
                     // Skip the argument descriptor content.
-                    var semiColumnOffset = methodDescriptor.IndexOf(';', currentOffset);
+                    int semiColumnOffset = methodDescriptor.IndexOf(';', currentOffset);
                     currentOffset = Math.Max(currentOffset, semiColumnOffset + 1);
                 }
 
@@ -551,9 +551,9 @@ namespace ObjectWeb.Asm
         /// <returns> the <seealso cref="Type" /> values corresponding to the argument types of the given method. </returns>
         public static JType[] GetArgumentTypes(MethodInfo method)
         {
-            var classes = method.GetParameters().Select(p => p.ParameterType).ToArray();
-            var types = new JType[classes.Length];
-            for (var i = classes.Length - 1; i >= 0; --i) types[i] = GetType(classes[i]);
+            Type[] classes = method.GetParameters().Select(p => p.ParameterType).ToArray();
+            JType[] types = new JType[classes.Length];
+            for (int i = classes.Length - 1; i >= 0; --i) types[i] = GetType(classes[i]);
             return types;
         }
 
@@ -585,7 +585,7 @@ namespace ObjectWeb.Asm
         internal static int GetReturnTypeOffset(string methodDescriptor)
         {
             // Skip the first character, which is always a '('.
-            var currentOffset = 1;
+            int currentOffset = 1;
             // Skip the argument types, one at a each loop iteration.
             while (methodDescriptor[currentOffset] != ')')
             {
@@ -593,7 +593,7 @@ namespace ObjectWeb.Asm
                 if (methodDescriptor[currentOffset++] == 'L')
                 {
                     // Skip the argument descriptor content.
-                    var semiColumnOffset = methodDescriptor.IndexOf(';', currentOffset);
+                    int semiColumnOffset = methodDescriptor.IndexOf(';', currentOffset);
                     currentOffset = Math.Max(currentOffset, semiColumnOffset + 1);
                 }
             }
@@ -665,7 +665,7 @@ namespace ObjectWeb.Asm
         /// <returns> the descriptor corresponding to the given class. </returns>
         public static string GetDescriptor(Type clazz)
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
             AppendDescriptor(clazz, stringBuilder);
             return stringBuilder.ToString();
         }
@@ -677,10 +677,10 @@ namespace ObjectWeb.Asm
         /// <returns> the descriptor of the given constructor. </returns>
         public static string GetConstructorDescriptor(ConstructorInfo constructor)
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append('(');
-            var parameters = constructor.GetParameters().Select(p => p.ParameterType).ToArray();
-            foreach (var parameter in parameters) AppendDescriptor(parameter, stringBuilder);
+            Type[] parameters = constructor.GetParameters().Select(p => p.ParameterType).ToArray();
+            foreach (Type parameter in parameters) AppendDescriptor(parameter, stringBuilder);
             return stringBuilder.Append(")V").ToString();
         }
 
@@ -692,9 +692,9 @@ namespace ObjectWeb.Asm
         /// <returns> the descriptor corresponding to the given argument and return types. </returns>
         public static string GetMethodDescriptor(JType returnType, params JType[] argumentTypes)
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append('(');
-            foreach (var argumentType in argumentTypes) argumentType.AppendDescriptor(stringBuilder);
+            foreach (JType argumentType in argumentTypes) argumentType.AppendDescriptor(stringBuilder);
             stringBuilder.Append(')');
             returnType.AppendDescriptor(stringBuilder);
             return stringBuilder.ToString();
@@ -707,10 +707,10 @@ namespace ObjectWeb.Asm
         /// <returns> the descriptor of the given method. </returns>
         public static string GetMethodDescriptor(MethodInfo method)
         {
-            var stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append('(');
-            var parameters = method.GetParameters().Select(p => p.ParameterType).ToArray();
-            foreach (var parameter in parameters) AppendDescriptor(parameter, stringBuilder);
+            Type[] parameters = method.GetParameters().Select(p => p.ParameterType).ToArray();
+            foreach (Type parameter in parameters) AppendDescriptor(parameter, stringBuilder);
             stringBuilder.Append(')');
             AppendDescriptor(method.ReturnType, stringBuilder);
             return stringBuilder.ToString();
@@ -737,7 +737,7 @@ namespace ObjectWeb.Asm
         /// <param name="stringBuilder"> the string builder to which the descriptor must be appended. </param>
         private static void AppendDescriptor(Type clazz, StringBuilder stringBuilder)
         {
-            var currentClass = clazz;
+            Type currentClass = clazz;
             while (currentClass.IsArray)
             {
                 stringBuilder.Append('[');
@@ -753,7 +753,7 @@ namespace ObjectWeb.Asm
                     descriptor = 'V';
                 else if (currentClass == typeof(bool))
                     descriptor = 'Z';
-                else if (currentClass == typeof(byte))
+                else if (currentClass == typeof(sbyte))
                     descriptor = 'B';
                 else if (currentClass == typeof(char))
                     descriptor = 'C';
@@ -787,9 +787,9 @@ namespace ObjectWeb.Asm
         /// </returns>
         public static int GetArgumentsAndReturnSizes(string methodDescriptor)
         {
-            var argumentsSize = 1;
+            int argumentsSize = 1;
             // Skip the first character, which is always a '('.
-            var currentOffset = 1;
+            int currentOffset = 1;
             int currentChar = methodDescriptor[currentOffset];
             // Parse the argument types and compute their size, one at a each loop iteration.
             while (currentChar != ')')
@@ -805,7 +805,7 @@ namespace ObjectWeb.Asm
                     if (methodDescriptor[currentOffset++] == 'L')
                     {
                         // Skip the argument descriptor content.
-                        var semiColumnOffset = methodDescriptor.IndexOf(';', currentOffset);
+                        int semiColumnOffset = methodDescriptor.IndexOf(';', currentOffset);
                         currentOffset = Math.Max(currentOffset, semiColumnOffset + 1);
                     }
 
@@ -818,7 +818,7 @@ namespace ObjectWeb.Asm
             currentChar = methodDescriptor[currentOffset + 1];
             if (currentChar == 'V') return argumentsSize << 2;
 
-            var returnSize = currentChar == 'J' || currentChar == 'D' ? 2 : 1;
+            int returnSize = currentChar == 'J' || currentChar == 'D' ? 2 : 1;
             return (argumentsSize << 2) | returnSize;
         }
 
@@ -910,12 +910,12 @@ namespace ObjectWeb.Asm
         {
             if (this == @object) return true;
             if (!(@object is Type)) return false;
-            var other = (JType)@object;
+            JType other = (JType)@object;
             if ((_sort == Internal ? Object : _sort) != (other._sort == Internal ? Object : other._sort)) return false;
-            var begin = _valueBegin;
-            var end = _valueEnd;
-            var otherBegin = other._valueBegin;
-            var otherEnd = other._valueEnd;
+            int begin = _valueBegin;
+            int end = _valueEnd;
+            int otherBegin = other._valueBegin;
+            int otherEnd = other._valueEnd;
             // Compare the values.
             if (end - begin != otherEnd - otherBegin) return false;
             for (int i = begin, j = otherBegin; i < end; i++, j++)
@@ -930,7 +930,7 @@ namespace ObjectWeb.Asm
         /// <returns> a hash code value for this type. </returns>
         public override int GetHashCode()
         {
-            var hashCode = 13 * (_sort == Internal ? Object : _sort);
+            int hashCode = 13 * (_sort == Internal ? Object : _sort);
             if (_sort >= Array)
                 for (int i = _valueBegin, end = _valueEnd; i < end; i++)
                     hashCode = 17 * (hashCode + _valueBuffer[i]);

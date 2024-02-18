@@ -50,7 +50,7 @@ namespace ObjectWeb.Asm
         /// The 6 header bytes of the attribute (attribute_name_index and attribute_length) are <i>not</i>
         /// included.
         /// </summary>
-        private byte[] _content;
+        private sbyte[] _content;
 
         /// <summary>
         /// The next attribute in this attribute list (Attribute instances can be linked via this field to
@@ -113,8 +113,8 @@ namespace ObjectWeb.Asm
         public virtual Attribute Read(ClassReader classReader, int offset, int length, char[] charBuffer,
             int codeAttributeOffset, Label[] labels)
         {
-            var attribute = new Attribute(type);
-            attribute._content = new byte[length];
+            Attribute attribute = new Attribute(type);
+            attribute._content = new sbyte[length];
             Array.Copy(classReader.classFileBuffer, offset, attribute._content, 0, length);
             return attribute;
         }
@@ -137,7 +137,7 @@ namespace ObjectWeb.Asm
         /// <param name="maxLocals"> the maximum number of local variables of the method corresponding to this code
         ///     attribute, or -1 if this attribute is not a Code attribute. </param>
         /// <returns> the byte array form of this attribute. </returns>
-        public virtual ByteVector Write(ClassWriter classWriter, byte[] code, int codeLength, int maxStack,
+        public virtual ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
             int maxLocals)
         {
             return new ByteVector(_content);
@@ -151,8 +151,8 @@ namespace ObjectWeb.Asm
         {
             get
             {
-                var count = 0;
-                var attribute = this;
+                int count = 0;
+                Attribute attribute = this;
                 while (attribute != null)
                 {
                     count += 1;
@@ -173,7 +173,7 @@ namespace ObjectWeb.Asm
         ///     the attribute headers. </returns>
         public int ComputeAttributesSize(SymbolTable symbolTable)
         {
-            const byte[] code = null;
+            const sbyte[] code = null;
             const int codeLength = 0;
             const int maxStack = -1;
             const int maxLocals = -1;
@@ -198,12 +198,12 @@ namespace ObjectWeb.Asm
         ///     Code attributes, or -1 if they are not Code attribute. </param>
         /// <returns> the size of all the attributes in this attribute list. This size includes the size of
         ///     the attribute headers. </returns>
-        public int ComputeAttributesSize(SymbolTable symbolTable, byte[] code, int codeLength, int maxStack,
+        public int ComputeAttributesSize(SymbolTable symbolTable, sbyte[] code, int codeLength, int maxStack,
             int maxLocals)
         {
-            var classWriter = symbolTable.classWriter;
-            var size = 0;
-            var attribute = this;
+            ClassWriter classWriter = symbolTable.classWriter;
+            int size = 0;
+            Attribute attribute = this;
             while (attribute != null)
             {
                 symbolTable.AddConstantUtf8(attribute.type);
@@ -227,7 +227,7 @@ namespace ObjectWeb.Asm
         ///     headers. </returns>
         internal static int ComputeAttributesSize(SymbolTable symbolTable, int accessFlags, int signatureIndex)
         {
-            var size = 0;
+            int size = 0;
             // Before Java 1.5, synthetic fields are represented with a Synthetic attribute.
             if ((accessFlags & Opcodes.Acc_Synthetic) != 0 && symbolTable.MajorVersion < Opcodes.V1_5)
             {
@@ -263,7 +263,7 @@ namespace ObjectWeb.Asm
         /// <param name="output"> where the attributes must be written. </param>
         public void PutAttributes(SymbolTable symbolTable, ByteVector output)
         {
-            const byte[] code = null;
+            const sbyte[] code = null;
             const int codeLength = 0;
             const int maxStack = -1;
             const int maxLocals = -1;
@@ -287,14 +287,14 @@ namespace ObjectWeb.Asm
         /// <param name="maxLocals"> the maximum number of local variables of the method corresponding to these
         ///     Code attributes, or -1 if they are not Code attribute. </param>
         /// <param name="output"> where the attributes must be written. </param>
-        public void PutAttributes(SymbolTable symbolTable, byte[] code, int codeLength, int maxStack, int maxLocals,
+        public void PutAttributes(SymbolTable symbolTable, sbyte[] code, int codeLength, int maxStack, int maxLocals,
             ByteVector output)
         {
-            var classWriter = symbolTable.classWriter;
-            var attribute = this;
+            ClassWriter classWriter = symbolTable.classWriter;
+            Attribute attribute = this;
             while (attribute != null)
             {
-                var attributeContent = attribute.Write(classWriter, code, codeLength, maxStack, maxLocals);
+                ByteVector attributeContent = attribute.Write(classWriter, code, codeLength, maxStack, maxLocals);
                 // Put attribute_name_index and attribute_length.
                 output.PutShort(symbolTable.AddConstantUtf8(attribute.type)).PutInt(attributeContent.length);
                 output.PutByteArray(attributeContent.data, 0, attributeContent.length);
@@ -342,7 +342,7 @@ namespace ObjectWeb.Asm
 
             public void AddAttributes(Attribute attributeList)
             {
-                var attribute = attributeList;
+                Attribute attribute = attributeList;
                 while (attribute != null)
                 {
                     if (!Contains(attribute))
@@ -356,14 +356,14 @@ namespace ObjectWeb.Asm
 
             public Attribute[] ToArray()
             {
-                var result = new Attribute[size];
+                Attribute[] result = new Attribute[size];
                 Array.Copy(data, 0, result, 0, size);
                 return result;
             }
 
             public bool Contains(Attribute attribute)
             {
-                for (var i = 0; i < size; ++i)
+                for (int i = 0; i < size; ++i)
                 {
                     if (data[i].type.Equals(attribute.type))
                     {
@@ -378,7 +378,7 @@ namespace ObjectWeb.Asm
             {
                 if (size >= data.Length)
                 {
-                    var newData = new Attribute[data.Length + Size_Increment];
+                    Attribute[] newData = new Attribute[data.Length + Size_Increment];
                     Array.Copy(data, 0, newData, 0, size);
                     data = newData;
                 }

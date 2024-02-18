@@ -68,13 +68,13 @@ namespace ObjectWeb.Asm.Commons
 
         public override AnnotationVisitor VisitAnnotationDefault()
         {
-            var annotationVisitor = base.VisitAnnotationDefault();
+            AnnotationVisitor annotationVisitor = base.VisitAnnotationDefault();
             return annotationVisitor == null ? annotationVisitor : CreateAnnotationRemapper(null, annotationVisitor);
         }
 
         public override AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
         {
-            var annotationVisitor = base.VisitAnnotation(remapper.MapDesc(descriptor), visible);
+            AnnotationVisitor annotationVisitor = base.VisitAnnotation(remapper.MapDesc(descriptor), visible);
             return annotationVisitor == null
                 ? annotationVisitor
                 : CreateAnnotationRemapper(descriptor, annotationVisitor);
@@ -83,7 +83,7 @@ namespace ObjectWeb.Asm.Commons
         public override AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            var annotationVisitor = base.VisitTypeAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
+            AnnotationVisitor annotationVisitor = base.VisitTypeAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
             return annotationVisitor == null
                 ? annotationVisitor
                 : CreateAnnotationRemapper(descriptor, annotationVisitor);
@@ -91,7 +91,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override AnnotationVisitor VisitParameterAnnotation(int parameter, string descriptor, bool visible)
         {
-            var annotationVisitor = base.VisitParameterAnnotation(parameter, remapper.MapDesc(descriptor), visible);
+            AnnotationVisitor annotationVisitor = base.VisitParameterAnnotation(parameter, remapper.MapDesc(descriptor), visible);
             return annotationVisitor == null
                 ? annotationVisitor
                 : CreateAnnotationRemapper(descriptor, annotationVisitor);
@@ -107,7 +107,7 @@ namespace ObjectWeb.Asm.Commons
         {
             if (frameTypes == null) return frameTypes;
             object[] remappedFrameTypes = null;
-            for (var i = 0; i < numTypes; ++i)
+            for (int i = 0; i < numTypes; ++i)
                 if (frameTypes[i] is string)
                 {
                     if (remappedFrameTypes == null)
@@ -145,8 +145,8 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitInvokeDynamicInsn(string name, string descriptor, Handle bootstrapMethodHandle,
             params object[] bootstrapMethodArguments)
         {
-            var remappedBootstrapMethodArguments = new object[bootstrapMethodArguments.Length];
-            for (var i = 0; i < bootstrapMethodArguments.Length; ++i)
+            object[] remappedBootstrapMethodArguments = new object[bootstrapMethodArguments.Length];
+            for (int i = 0; i < bootstrapMethodArguments.Length; ++i)
                 remappedBootstrapMethodArguments[i] = remapper.MapValue(bootstrapMethodArguments[i]);
             base.VisitInvokeDynamicInsn(remapper.MapInvokeDynamicMethodName(name, descriptor),
                 remapper.MapMethodDesc(descriptor), (Handle)remapper.MapValue(bootstrapMethodHandle),
@@ -171,7 +171,7 @@ namespace ObjectWeb.Asm.Commons
         public override AnnotationVisitor VisitInsnAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            var annotationVisitor = base.VisitInsnAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
+            AnnotationVisitor annotationVisitor = base.VisitInsnAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
             return annotationVisitor == null
                 ? annotationVisitor
                 : CreateAnnotationRemapper(descriptor, annotationVisitor);
@@ -185,7 +185,7 @@ namespace ObjectWeb.Asm.Commons
         public override AnnotationVisitor VisitTryCatchAnnotation(int typeRef, TypePath typePath, string descriptor,
             bool visible)
         {
-            var annotationVisitor =
+            AnnotationVisitor annotationVisitor =
                 base.VisitTryCatchAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
             return annotationVisitor == null
                 ? annotationVisitor
@@ -202,7 +202,7 @@ namespace ObjectWeb.Asm.Commons
         public override AnnotationVisitor VisitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start,
             Label[] end, int[] index, string descriptor, bool visible)
         {
-            var annotationVisitor = base.VisitLocalVariableAnnotation(typeRef, typePath, start, end, index,
+            AnnotationVisitor annotationVisitor = base.VisitLocalVariableAnnotation(typeRef, typePath, start, end, index,
                 remapper.MapDesc(descriptor), visible);
             return annotationVisitor == null
                 ? annotationVisitor

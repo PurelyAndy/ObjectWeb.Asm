@@ -124,7 +124,7 @@ namespace ObjectWeb.Asm.Commons
                 return;
             }
 
-            var opcode = opcodeAndSource & ~Opcodes.Source_Mask;
+            int opcode = opcodeAndSource & ~Opcodes.Source_Mask;
 
             if (opcode == Opcodes.Invokeinterface)
             {

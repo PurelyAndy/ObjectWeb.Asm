@@ -193,7 +193,7 @@ namespace ObjectWeb.Asm
                 return false;
             }
 
-            var member = "(Annotation|Class|Field|Method|Module|RecordComponent|Signature)";
+            string member = "(Annotation|Class|Field|Method|Module|RecordComponent|Signature)";
             return internalName.Contains("Test$") ||
                    Regex.IsMatch(internalName, "org/objectweb/asm/util/Trace" + member + "Visitor(\\$.*)?") ||
                    Regex.IsMatch(internalName, "org/objectweb/asm/util/Check" + member + "Adapter(\\$.*)?");
@@ -206,10 +206,10 @@ namespace ObjectWeb.Asm
                 throw new System.InvalidOperationException("Bytecode not available, can't check class version");
             }
 
-            using (var binary = new BinaryReader(classInputStream))
+            using (BinaryReader binary = new BinaryReader(classInputStream))
             {
                 binary.ReadInt32();
-                var bytes = binary.ReadBytes(2);
+                byte[] bytes = binary.ReadBytes(2);
 
                 if (BitConverter.IsLittleEndian)
                 {

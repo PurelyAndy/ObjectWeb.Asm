@@ -125,7 +125,7 @@ namespace ObjectWeb.Asm
         {
             get
             {
-                var firstCharOfDescriptor = _descriptor[0];
+                char firstCharOfDescriptor = _descriptor[0];
                 return (firstCharOfDescriptor == 'J' || firstCharOfDescriptor == 'D') ? 2 : 1;
             }
         }
@@ -153,7 +153,7 @@ namespace ObjectWeb.Asm
                 return false;
             }
 
-            var constantDynamic = (ConstantDynamic)@object;
+            ConstantDynamic constantDynamic = (ConstantDynamic)@object;
             return _name.Equals(constantDynamic._name) && _descriptor.Equals(constantDynamic._descriptor) &&
                    _bootstrapMethod.Equals(constantDynamic._bootstrapMethod) &&
                    _bootstrapMethodArguments.SequenceEqual(constantDynamic._bootstrapMethodArguments);

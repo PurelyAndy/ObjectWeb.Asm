@@ -115,7 +115,7 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitJumpInsn(int opcode, Label label)
         {
             base.VisitJumpInsn(opcode, label);
-            var labelNode = ((JumpInsnNode)Instructions.Last).Label;
+            LabelNode labelNode = ((JumpInsnNode)Instructions.Last).Label;
             if (opcode == Opcodes.Jsr && !_subroutinesInsns.ContainsKey(labelNode))
                 _subroutinesInsns[labelNode] = new BitArray(64);
         }
@@ -139,7 +139,7 @@ namespace ObjectWeb.Asm.Commons
         private void FindSubroutinesInsns()
         {
             // Find the instructions that belong to main subroutine.
-            var visitedInsns = new BitArray(64);
+            BitArray visitedInsns = new BitArray(64);
             FindSubroutineInsns(0, _mainSubroutineInsns, visitedInsns);
             // For each subroutine, find the instructions that belong to this subroutine.
             foreach (KeyValuePair<LabelNode, BitArray> pair in _subroutinesInsns)
@@ -169,18 +169,18 @@ namespace ObjectWeb.Asm.Commons
             // Then find the instructions reachable via the applicable exception handlers.
             while (true)
             {
-                var applicableHandlerFound = false;
-                foreach (var tryCatchBlockNode in TryCatchBlocks)
+                bool applicableHandlerFound = false;
+                foreach (TryCatchBlockNode tryCatchBlockNode in TryCatchBlocks)
                 {
                     // If the handler has already been processed, skip it.
-                    var handlerIndex = Instructions.IndexOf(tryCatchBlockNode.Handler);
+                    int handlerIndex = Instructions.IndexOf(tryCatchBlockNode.Handler);
                     if (subroutineInsns.Get(handlerIndex))
                         continue;
                     // If an instruction in the exception handler range belongs to the subroutine, the handler
                     // can be reached from the routine, and its instructions must be added to the subroutine.
-                    var startIndex = Instructions.IndexOf(tryCatchBlockNode.Start);
-                    var endIndex = Instructions.IndexOf(tryCatchBlockNode.End);
-                    var firstSubroutineInsnAfterTryCatchStart =
+                    int startIndex = Instructions.IndexOf(tryCatchBlockNode.Start);
+                    int endIndex = Instructions.IndexOf(tryCatchBlockNode.End);
+                    int firstSubroutineInsnAfterTryCatchStart =
                         subroutineInsns.OfType<bool>().ToList().IndexOf(true, startIndex);
                     if (firstSubroutineInsnAfterTryCatchStart >= startIndex &&
                         firstSubroutineInsnAfterTryCatchStart < endIndex)
@@ -211,7 +211,7 @@ namespace ObjectWeb.Asm.Commons
         /// </param>
         private void FindReachableInsns(int insnIndex, BitArray subroutineInsns, BitArray visitedInsns)
         {
-            var currentInsnIndex = insnIndex;
+            int currentInsnIndex = insnIndex;
             // We implicitly assume below that execution can always fall through to the next instruction
             // after a JSR. But a subroutine may never return, in which case Opcodes.the code after the JSR is
             // unreachable and can be anything. In particular, it can seem to fall off the end of the
@@ -227,25 +227,25 @@ namespace ObjectWeb.Asm.Commons
                 if (visitedInsns.Get(currentInsnIndex))
                     sharedSubroutineInsns.Set(currentInsnIndex, true);
                 visitedInsns.Set(currentInsnIndex, true);
-                var currentInsnNode = Instructions.Get(currentInsnIndex);
+                AbstractInsnNode currentInsnNode = Instructions.Get(currentInsnIndex);
                 if (currentInsnNode.Type == AbstractInsnNode.Jump_Insn && currentInsnNode.Opcode != Opcodes.Jsr)
                 {
                     // Don't follow JSR instructions in the control flow graph.
-                    var jumpInsnNode = (JumpInsnNode)currentInsnNode;
+                    JumpInsnNode jumpInsnNode = (JumpInsnNode)currentInsnNode;
                     FindReachableInsns(Instructions.IndexOf(jumpInsnNode.Label), subroutineInsns, visitedInsns);
                 }
                 else if (currentInsnNode.Type == AbstractInsnNode.Tableswitch_Insn)
                 {
-                    var tableSwitchInsnNode = (TableSwitchInsnNode)currentInsnNode;
+                    TableSwitchInsnNode tableSwitchInsnNode = (TableSwitchInsnNode)currentInsnNode;
                     FindReachableInsns(Instructions.IndexOf(tableSwitchInsnNode.Dflt), subroutineInsns, visitedInsns);
-                    foreach (var labelNode in tableSwitchInsnNode.Labels)
+                    foreach (LabelNode labelNode in tableSwitchInsnNode.Labels)
                         FindReachableInsns(Instructions.IndexOf(labelNode), subroutineInsns, visitedInsns);
                 }
                 else if (currentInsnNode.Type == AbstractInsnNode.Lookupswitch_Insn)
                 {
-                    var lookupSwitchInsnNode = (LookupSwitchInsnNode)currentInsnNode;
+                    LookupSwitchInsnNode lookupSwitchInsnNode = (LookupSwitchInsnNode)currentInsnNode;
                     FindReachableInsns(Instructions.IndexOf(lookupSwitchInsnNode.Dflt), subroutineInsns, visitedInsns);
-                    foreach (var labelNode in lookupSwitchInsnNode.Labels)
+                    foreach (LabelNode labelNode in lookupSwitchInsnNode.Labels)
                         FindReachableInsns(Instructions.IndexOf(labelNode), subroutineInsns, visitedInsns);
                 }
 
@@ -279,16 +279,16 @@ namespace ObjectWeb.Asm.Commons
         /// </summary>
         private void EmitCode()
         {
-            var worklist = new LinkedList<Instantiation>();
+            LinkedList<Instantiation> worklist = new LinkedList<Instantiation>();
             // Create an instantiation of the main "subroutine", which is just the main routine.
             worklist.AddLast(new Instantiation(this, null, _mainSubroutineInsns));
             // Emit instantiations of each subroutine we encounter, including the main subroutine.
-            var newInstructions = new InsnList();
-            var newTryCatchBlocks = new List<TryCatchBlockNode>();
-            var newLocalVariables = new List<LocalVariableNode>();
+            InsnList newInstructions = new InsnList();
+            List<TryCatchBlockNode> newTryCatchBlocks = new List<TryCatchBlockNode>();
+            List<LocalVariableNode> newLocalVariables = new List<LocalVariableNode>();
             while (worklist.Count > 0)
             {
-                var instantiation = worklist.First.Value;
+                Instantiation instantiation = worklist.First.Value;
                 worklist.RemoveFirst();
                 EmitInstantiation(instantiation, worklist, newInstructions, newTryCatchBlocks, newLocalVariables);
             }
@@ -319,14 +319,14 @@ namespace ObjectWeb.Asm.Commons
             List<LocalVariableNode> newLocalVariables)
         {
             LabelNode previousLabelNode = null;
-            for (var i = 0; i < Instructions.Count(); ++i)
+            for (int i = 0; i < Instructions.Count(); ++i)
             {
-                var insnNode = Instructions.Get(i);
+                AbstractInsnNode insnNode = Instructions.Get(i);
                 if (insnNode.Type == AbstractInsnNode.Label_Insn)
                 {
                     // Always clone all labels, while avoiding to add the same label more than once.
-                    var labelNode = (LabelNode)insnNode;
-                    var clonedLabelNode = instantiation.GetClonedLabel(labelNode);
+                    LabelNode labelNode = (LabelNode)insnNode;
+                    LabelNode clonedLabelNode = instantiation.GetClonedLabel(labelNode);
                     if (clonedLabelNode != previousLabelNode)
                     {
                         newInstructions.Add(clonedLabelNode);
@@ -345,7 +345,7 @@ namespace ObjectWeb.Asm.Commons
                         // parent subroutine; therefore, to find the appropriate ret label we find the oldest
                         // instantiation that claims to own this instruction.
                         LabelNode retLabel = null;
-                        for (var retLabelOwner = instantiation;
+                        for (Instantiation retLabelOwner = instantiation;
                              retLabelOwner != null;
                              retLabelOwner = retLabelOwner.parent)
                             if (retLabelOwner.subroutineInsns.Get(i))
@@ -358,10 +358,10 @@ namespace ObjectWeb.Asm.Commons
                     }
                     else if (insnNode.Opcode == Opcodes.Jsr)
                     {
-                        var jsrLabelNode = ((JumpInsnNode)insnNode).Label;
-                        _subroutinesInsns.TryGetValue(jsrLabelNode, out var subroutineInsns);
-                        var newInstantiation = new Instantiation(this, instantiation, subroutineInsns);
-                        var clonedJsrLabelNode = newInstantiation.GetClonedLabelForJumpInsn(jsrLabelNode);
+                        LabelNode jsrLabelNode = ((JumpInsnNode)insnNode).Label;
+                        _subroutinesInsns.TryGetValue(jsrLabelNode, out BitArray subroutineInsns);
+                        Instantiation newInstantiation = new Instantiation(this, instantiation, subroutineInsns);
+                        LabelNode clonedJsrLabelNode = newInstantiation.GetClonedLabelForJumpInsn(jsrLabelNode);
                         // Replace the JSR instruction with a GOTO to the instantiated subroutine, and push NULL
                         // for what was once the return address value. This hack allows us to avoid doing any sort
                         // of data flow analysis to figure out which instructions manipulate the old return
@@ -380,13 +380,13 @@ namespace ObjectWeb.Asm.Commons
             }
 
             // Emit the try/catch blocks that are relevant for this instantiation.
-            foreach (var tryCatchBlockNode in TryCatchBlocks)
+            foreach (TryCatchBlockNode tryCatchBlockNode in TryCatchBlocks)
             {
-                var start = instantiation.GetClonedLabel(tryCatchBlockNode.Start);
-                var end = instantiation.GetClonedLabel(tryCatchBlockNode.End);
+                LabelNode start = instantiation.GetClonedLabel(tryCatchBlockNode.Start);
+                LabelNode end = instantiation.GetClonedLabel(tryCatchBlockNode.End);
                 if (start != end)
                 {
-                    var handler = instantiation.GetClonedLabelForJumpInsn(tryCatchBlockNode.Handler);
+                    LabelNode handler = instantiation.GetClonedLabelForJumpInsn(tryCatchBlockNode.Handler);
                     if (start == null || end == null || handler == null)
                         throw new InvalidOperationException("Internal error!");
                     newTryCatchBlocks.Add(new TryCatchBlockNode(start, end, handler, tryCatchBlockNode.Type));
@@ -394,10 +394,10 @@ namespace ObjectWeb.Asm.Commons
             }
 
             // Emit the local variable nodes that are relevant for this instantiation.
-            foreach (var localVariableNode in LocalVariables)
+            foreach (LocalVariableNode localVariableNode in LocalVariables)
             {
-                var start = instantiation.GetClonedLabel(localVariableNode.Start);
-                var end = instantiation.GetClonedLabel(localVariableNode.End);
+                LabelNode start = instantiation.GetClonedLabel(localVariableNode.Start);
+                LabelNode end = instantiation.GetClonedLabel(localVariableNode.End);
                 if (start != end)
                     newLocalVariables.Add(new LocalVariableNode(localVariableNode.Name, localVariableNode.Desc,
                         localVariableNode.Signature, start, end, localVariableNode.Index));
@@ -442,7 +442,7 @@ namespace ObjectWeb.Asm.Commons
             public Instantiation(JsrInlinerAdapter outerInstance, Instantiation parent, BitArray subroutineInsns)
             {
                 this._outerInstance = outerInstance;
-                for (var instantiation = parent; instantiation != null; instantiation = instantiation.parent)
+                for (Instantiation instantiation = parent; instantiation != null; instantiation = instantiation.parent)
                     if (instantiation.subroutineInsns == subroutineInsns)
                         throw new ArgumentException("Recursive invocation of " + subroutineInsns);
                 this.parent = parent;
@@ -452,12 +452,12 @@ namespace ObjectWeb.Asm.Commons
                 // Create a clone of each label in the original code of the subroutine. Note that we collapse
                 // labels which point at the same instruction into one.
                 LabelNode clonedLabelNode = null;
-                for (var insnIndex = 0; insnIndex < outerInstance.Instructions.Count(); insnIndex++)
+                for (int insnIndex = 0; insnIndex < outerInstance.Instructions.Count(); insnIndex++)
                 {
-                    var insnNode = outerInstance.Instructions.Get(insnIndex);
+                    AbstractInsnNode insnNode = outerInstance.Instructions.Get(insnIndex);
                     if (insnNode.Type == AbstractInsnNode.Label_Insn)
                     {
-                        var labelNode = (LabelNode)insnNode;
+                        LabelNode labelNode = (LabelNode)insnNode;
                         // If we already have a label pointing at this spot, don't recreate it.
                         if (clonedLabelNode == null)
                             clonedLabelNode = new LabelNode();
@@ -499,8 +499,8 @@ namespace ObjectWeb.Asm.Commons
                     return null;
                 if (!_outerInstance.sharedSubroutineInsns.Get(insnIndex))
                     return this;
-                var owner = this;
-                for (var instantiation = parent; instantiation != null; instantiation = instantiation.parent)
+                Instantiation owner = this;
+                for (Instantiation instantiation = parent; instantiation != null; instantiation = instantiation.parent)
                     if (instantiation.subroutineInsns.Get(insnIndex))
                         owner = instantiation;
                 return owner;
@@ -517,7 +517,7 @@ namespace ObjectWeb.Asm.Commons
                 // findOwner should never return null, because owner is null only if an instruction cannot be
                 // reached from this subroutine.
                 FindOwner(_outerInstance.Instructions.IndexOf(labelNode)).clonedLabels
-                    .TryGetValue(labelNode, out var ret);
+                    .TryGetValue(labelNode, out LabelNode ret);
                 return ret;
             }
 
@@ -532,7 +532,7 @@ namespace ObjectWeb.Asm.Commons
             /// </returns>
             public virtual LabelNode GetClonedLabel(LabelNode labelNode)
             {
-                clonedLabels.TryGetValue(labelNode, out var ret);
+                clonedLabels.TryGetValue(labelNode, out LabelNode ret);
                 return ret;
             }
 

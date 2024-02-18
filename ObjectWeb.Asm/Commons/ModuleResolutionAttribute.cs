@@ -89,10 +89,10 @@ namespace ObjectWeb.Asm.Commons
             return new ModuleResolutionAttribute(classReader.ReadUnsignedShort(offset));
         }
 
-        public override ByteVector Write(ClassWriter classWriter, byte[] code, int codeLength, int maxStack,
+        public override ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
             int maxLocals)
         {
-            var byteVector = new ByteVector();
+            ByteVector byteVector = new ByteVector();
             byteVector.PutShort(Resolution);
             return byteVector;
         }

@@ -57,7 +57,7 @@ namespace ObjectWeb.Asm.Commons
 
         static Method()
         {
-            var descriptors = new Dictionary<string, string>();
+            Dictionary<string, string> descriptors = new Dictionary<string, string>();
             descriptors["void"] = "V";
             descriptors["byte"] = "B";
             descriptors["char"] = "C";
@@ -171,13 +171,13 @@ namespace ObjectWeb.Asm.Commons
         /// <exception cref="IllegalArgumentException"> if <code>method</code> could not get parsed. </exception>
         public static Method GetMethod(string method, bool defaultPackage)
         {
-            var spaceIndex = method.IndexOf(' ');
-            var currentArgumentStartIndex = method.IndexOf('(', spaceIndex) + 1;
-            var endIndex = method.IndexOf(')', currentArgumentStartIndex);
+            int spaceIndex = method.IndexOf(' ');
+            int currentArgumentStartIndex = method.IndexOf('(', spaceIndex) + 1;
+            int endIndex = method.IndexOf(')', currentArgumentStartIndex);
             if (spaceIndex == -1 || currentArgumentStartIndex == 0 || endIndex == -1) throw new ArgumentException();
-            var returnType = method.Substring(0, spaceIndex);
-            var methodName = method.Substring(spaceIndex + 1, currentArgumentStartIndex - 1 - (spaceIndex + 1)).Trim();
-            var stringBuilder = new StringBuilder();
+            string returnType = method.Substring(0, spaceIndex);
+            string methodName = method.Substring(spaceIndex + 1, currentArgumentStartIndex - 1 - (spaceIndex + 1)).Trim();
+            StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append('(');
             int currentArgumentEndIndex;
             do
@@ -221,13 +221,13 @@ namespace ObjectWeb.Asm.Commons
         {
             if ("".Equals(type)) return type;
 
-            var stringBuilder = new StringBuilder();
-            var arrayBracketsIndex = 0;
+            StringBuilder stringBuilder = new StringBuilder();
+            int arrayBracketsIndex = 0;
             while ((arrayBracketsIndex = type.IndexOf("[]", arrayBracketsIndex, StringComparison.Ordinal) + 1) > 0)
                 stringBuilder.Append('[');
 
-            var elementType = type.Substring(0, type.Length - stringBuilder.Length * 2);
-            if (PRIMITIVE_TYPE_DESCRIPTORS.TryGetValue(elementType, out var descriptor))
+            string elementType = type.Substring(0, type.Length - stringBuilder.Length * 2);
+            if (PRIMITIVE_TYPE_DESCRIPTORS.TryGetValue(elementType, out string descriptor))
             {
                 stringBuilder.Append(descriptor);
             }
@@ -258,7 +258,7 @@ namespace ObjectWeb.Asm.Commons
         public override bool Equals(object other)
         {
             if (!(other is Method)) return false;
-            var otherMethod = (Method)other;
+            Method otherMethod = (Method)other;
             return _name.Equals(otherMethod._name) && _descriptor.Equals(otherMethod._descriptor);
         }
 

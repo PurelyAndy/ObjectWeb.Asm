@@ -62,10 +62,10 @@ namespace ObjectWeb.Asm.Commons
             return new ModuleTargetAttribute(classReader.ReadUtf8(offset, charBuffer));
         }
 
-        public override ByteVector Write(ClassWriter classWriter, byte[] code, int codeLength, int maxStack,
+        public override ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
             int maxLocals)
         {
-            var byteVector = new ByteVector();
+            ByteVector byteVector = new ByteVector();
             byteVector.PutShort(string.ReferenceEquals(Platform, null) ? 0 : classWriter.NewUtf8(Platform));
             return byteVector;
         }

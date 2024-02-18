@@ -67,8 +67,8 @@ namespace ObjectWeb.Asm.Commons
             switch (type.Sort)
             {
                 case JType.Array:
-                    var remappedDescriptor = new StringBuilder();
-                    for (var i = 0; i < type.Dimensions; ++i)
+                    StringBuilder remappedDescriptor = new StringBuilder();
+                    for (int i = 0; i < type.Dimensions; ++i)
                     {
                         remappedDescriptor.Append('[');
                     }
@@ -76,7 +76,7 @@ namespace ObjectWeb.Asm.Commons
                     remappedDescriptor.Append(MapType(type.ElementType).Descriptor);
                     return JType.GetType(remappedDescriptor.ToString());
                 case JType.Object:
-                    var remappedInternalName = Map(type.InternalName);
+                    string remappedInternalName = Map(type.InternalName);
                     return !string.ReferenceEquals(remappedInternalName, null)
                         ? JType.GetObjectType(remappedInternalName)
                         : type;
@@ -110,10 +110,10 @@ namespace ObjectWeb.Asm.Commons
         public virtual string[] MapTypes(string[] internalNames)
         {
             string[] remappedInternalNames = null;
-            for (var i = 0; i < internalNames.Length; ++i)
+            for (int i = 0; i < internalNames.Length; ++i)
             {
-                var internalName = internalNames[i];
-                var remappedInternalName = MapType(internalName);
+                string internalName = internalNames[i];
+                string remappedInternalName = MapType(internalName);
                 if (!string.ReferenceEquals(remappedInternalName, null))
                 {
                     if (remappedInternalNames == null)
@@ -142,13 +142,13 @@ namespace ObjectWeb.Asm.Commons
                 return methodDescriptor;
             }
 
-            var stringBuilder = new StringBuilder("(");
-            foreach (var argumentType in JType.GetArgumentTypes(methodDescriptor))
+            StringBuilder stringBuilder = new StringBuilder("(");
+            foreach (JType argumentType in JType.GetArgumentTypes(methodDescriptor))
             {
                 stringBuilder.Append(MapType(argumentType).Descriptor);
             }
 
-            var returnType = JType.GetReturnType(methodDescriptor);
+            JType returnType = JType.GetReturnType(methodDescriptor);
             if (returnType == JType.VoidType)
             {
                 stringBuilder.Append(")V");
@@ -179,8 +179,8 @@ namespace ObjectWeb.Asm.Commons
 
             if (value is Handle)
             {
-                var handle = (Handle)value;
-                var isFieldHandle = handle.Tag <= Opcodes.H_Putstatic;
+                Handle handle = (Handle)value;
+                bool isFieldHandle = handle.Tag <= Opcodes.H_Putstatic;
                 return new Handle(handle.Tag,
                     MapType(handle.Owner),
                     isFieldHandle
@@ -192,15 +192,15 @@ namespace ObjectWeb.Asm.Commons
 
             if (value is ConstantDynamic)
             {
-                var constantDynamic = (ConstantDynamic)value;
-                var bootstrapMethodArgumentCount = constantDynamic.BootstrapMethodArgumentCount;
-                var remappedBootstrapMethodArguments = new object[bootstrapMethodArgumentCount];
-                for (var i = 0; i < bootstrapMethodArgumentCount; ++i)
+                ConstantDynamic constantDynamic = (ConstantDynamic)value;
+                int bootstrapMethodArgumentCount = constantDynamic.BootstrapMethodArgumentCount;
+                object[] remappedBootstrapMethodArguments = new object[bootstrapMethodArgumentCount];
+                for (int i = 0; i < bootstrapMethodArgumentCount; ++i)
                 {
                     remappedBootstrapMethodArguments[i] = MapValue(constantDynamic.GetBootstrapMethodArgument(i));
                 }
 
-                var descriptor = constantDynamic.Descriptor;
+                string descriptor = constantDynamic.Descriptor;
                 return new ConstantDynamic(MapInvokeDynamicMethodName(constantDynamic.Name, descriptor),
                     MapDesc(descriptor), (Handle)MapValue(constantDynamic.BootstrapMethod),
                     remappedBootstrapMethodArguments);
@@ -224,9 +224,9 @@ namespace ObjectWeb.Asm.Commons
                 return null;
             }
 
-            var signatureReader = new SignatureReader(signature);
-            var signatureWriter = new SignatureWriter();
-            var signatureRemapper = CreateSignatureRemapper(signatureWriter);
+            SignatureReader signatureReader = new SignatureReader(signature);
+            SignatureWriter signatureWriter = new SignatureWriter();
+            SignatureVisitor signatureRemapper = CreateSignatureRemapper(signatureWriter);
             if (typeSignature)
             {
                 signatureReader.AcceptType(signatureRemapper);
@@ -286,10 +286,10 @@ namespace ObjectWeb.Asm.Commons
         /// <returns> the new inner name of the inner class. </returns>
         public virtual string MapInnerClassName(string name, string ownerName, string innerName)
         {
-            var remappedInnerName = this.MapType(name);
+            string remappedInnerName = this.MapType(name);
             if (remappedInnerName.Contains("$"))
             {
-                var index = remappedInnerName.LastIndexOf('$') + 1;
+                int index = remappedInnerName.LastIndexOf('$') + 1;
                 while (index < remappedInnerName.Length && char.IsDigit(remappedInnerName[index]))
                 {
                     index++;

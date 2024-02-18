@@ -98,7 +98,7 @@ namespace ObjectWeb.Asm.Commons
             methodVisitor)
         {
             nextLocal = (Opcodes.Acc_Static & access) == 0 ? 1 : 0;
-            foreach (var argumentType in JType.GetArgumentTypes(descriptor)) nextLocal += argumentType.Size;
+            foreach (JType argumentType in JType.GetArgumentTypes(descriptor)) nextLocal += argumentType.Size;
             firstLocal = nextLocal;
         }
 
@@ -148,16 +148,16 @@ namespace ObjectWeb.Asm.Commons
         public override void VisitLocalVariable(string name, string descriptor, string signature, Label start,
             Label end, int index)
         {
-            var remappedIndex = Remap(index, JType.GetType(descriptor));
+            int remappedIndex = Remap(index, JType.GetType(descriptor));
             base.VisitLocalVariable(name, descriptor, signature, start, end, remappedIndex);
         }
 
         public override AnnotationVisitor VisitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start,
             Label[] end, int[] index, string descriptor, bool visible)
         {
-            var type = JType.GetType(descriptor);
-            var remappedIndex = new int[index.Length];
-            for (var i = 0; i < remappedIndex.Length; ++i) remappedIndex[i] = Remap(index[i], type);
+            JType type = JType.GetType(descriptor);
+            int[] remappedIndex = new int[index.Length];
+            for (int i = 0; i < remappedIndex.Length; ++i) remappedIndex[i] = Remap(index[i], type);
             return base.VisitLocalVariableAnnotation(typeRef, typePath, start, end, remappedIndex, descriptor, visible);
         }
 
@@ -169,20 +169,20 @@ namespace ObjectWeb.Asm.Commons
                     "LocalVariablesSorter only accepts expanded frames (see ClassReader.EXPAND_FRAMES)");
 
             // Create a copy of remappedLocals.
-            var oldRemappedLocals = new object[_remappedLocalTypes.Length];
+            object[] oldRemappedLocals = new object[_remappedLocalTypes.Length];
             Array.Copy(_remappedLocalTypes, 0, oldRemappedLocals, 0, oldRemappedLocals.Length);
 
             UpdateNewLocals(_remappedLocalTypes);
 
             // Copy the types from 'local' to 'remappedLocals'. 'remappedLocals' already contains the
             // variables added with 'newLocal'.
-            var oldVar = 0; // Old local variable index.
-            for (var i = 0; i < numLocal; ++i)
+            int oldVar = 0; // Old local variable index.
+            for (int i = 0; i < numLocal; ++i)
             {
-                var localType = local[i];
+                object localType = local[i];
                 if (!Equals(localType, Opcodes.top))
                 {
-                    var varType = OBJECT_TYPE;
+                    JType varType = OBJECT_TYPE;
                     if (Equals(localType, Opcodes.integer))
                         varType = JType.IntType;
                     else if (Equals(localType, Opcodes.@float))
@@ -200,11 +200,11 @@ namespace ObjectWeb.Asm.Commons
 
             // Remove TOP after long and double types as well as trailing TOPs.
             oldVar = 0;
-            var newVar = 0;
-            var remappedNumLocal = 0;
+            int newVar = 0;
+            int remappedNumLocal = 0;
             while (oldVar < _remappedLocalTypes.Length)
             {
-                var localType = _remappedLocalTypes[oldVar];
+                object localType = _remappedLocalTypes[oldVar];
                 oldVar += Equals(localType, Opcodes.@long) || Equals(localType, Opcodes.@double) ? 2 : 1;
                 if (localType != null && localType != (object)Opcodes.top)
                 {
@@ -262,7 +262,7 @@ namespace ObjectWeb.Asm.Commons
                     throw new Exception("AssertionError");
             }
 
-            var local = NewLocalMapping(type);
+            int local = NewLocalMapping(type);
             SetLocalType(local, type);
             SetFrameLocal(local, localType);
             return local;
@@ -301,10 +301,10 @@ namespace ObjectWeb.Asm.Commons
 
         private void SetFrameLocal(int local, object type)
         {
-            var numLocals = _remappedLocalTypes.Length;
+            int numLocals = _remappedLocalTypes.Length;
             if (local >= numLocals)
             {
-                var newRemappedLocalTypes = new object[Math.Max(2 * numLocals, local + 1)];
+                object[] newRemappedLocalTypes = new object[Math.Max(2 * numLocals, local + 1)];
                 Array.Copy(_remappedLocalTypes, 0, newRemappedLocalTypes, 0, numLocals);
                 _remappedLocalTypes = newRemappedLocalTypes;
             }
@@ -315,16 +315,16 @@ namespace ObjectWeb.Asm.Commons
         private int Remap(int var, JType type)
         {
             if (var + type.Size <= firstLocal) return var;
-            var key = 2 * var + type.Size - 1;
-            var size = _remappedVariableIndices.Length;
+            int key = 2 * var + type.Size - 1;
+            int size = _remappedVariableIndices.Length;
             if (key >= size)
             {
-                var newRemappedVariableIndices = new int[Math.Max(2 * size, key + 1)];
+                int[] newRemappedVariableIndices = new int[Math.Max(2 * size, key + 1)];
                 Array.Copy(_remappedVariableIndices, 0, newRemappedVariableIndices, 0, size);
                 _remappedVariableIndices = newRemappedVariableIndices;
             }
 
-            var value = _remappedVariableIndices[key];
+            int value = _remappedVariableIndices[key];
             if (value == 0)
             {
                 value = NewLocalMapping(type);
@@ -341,7 +341,7 @@ namespace ObjectWeb.Asm.Commons
 
         public virtual int NewLocalMapping(JType type)
         {
-            var local = nextLocal;
+            int local = nextLocal;
             nextLocal += type.Size;
             return local;
         }

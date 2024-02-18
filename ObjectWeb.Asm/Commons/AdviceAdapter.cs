@@ -136,7 +136,7 @@ namespace ObjectWeb.Asm.Commons
             base.VisitLabel(label);
             if (_isConstructor && _forwardJumpStackFrames != null)
             {
-                if (_forwardJumpStackFrames.TryGetValue(label, out var labelStackFrame))
+                if (_forwardJumpStackFrames.TryGetValue(label, out List<object> labelStackFrame))
                 {
                     _stackFrame = labelStackFrame;
                     _superClassConstructorCalled = false;
@@ -375,8 +375,8 @@ namespace ObjectWeb.Asm.Commons
             base.VisitFieldInsn(opcode, owner, name, descriptor);
             if (_isConstructor && !_superClassConstructorCalled)
             {
-                var firstDescriptorChar = descriptor[0];
-                var longOrDouble = firstDescriptorChar == 'J' || firstDescriptorChar == 'D';
+                char firstDescriptorChar = descriptor[0];
+                bool longOrDouble = firstDescriptorChar == 'J' || firstDescriptorChar == 'D';
                 switch (opcode)
                 {
                     case Opcodes.Getstatic:
@@ -423,7 +423,7 @@ namespace ObjectWeb.Asm.Commons
             base.VisitMultiANewArrayInsn(descriptor, numDimensions);
             if (_isConstructor && !_superClassConstructorCalled)
             {
-                for (var i = 0; i < numDimensions; i++) PopValue();
+                for (int i = 0; i < numDimensions; i++) PopValue();
                 PushValue(OTHER);
             }
         }
@@ -446,7 +446,7 @@ namespace ObjectWeb.Asm.Commons
             }
 
             base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
-            var opcode = opcodeAndSource & ~Opcodes.Source_Mask;
+            int opcode = opcodeAndSource & ~Opcodes.Source_Mask;
 
             DoVisitMethodInsn(opcode, name, descriptor);
         }
@@ -455,7 +455,7 @@ namespace ObjectWeb.Asm.Commons
         {
             if (_isConstructor && !_superClassConstructorCalled)
             {
-                foreach (var argumentType in JType.GetArgumentTypes(descriptor))
+                foreach (JType argumentType in JType.GetArgumentTypes(descriptor))
                 {
                     PopValue();
                     if (argumentType.Size == 2) PopValue();
@@ -468,7 +468,7 @@ namespace ObjectWeb.Asm.Commons
                         PopValue();
                         break;
                     case Opcodes.Invokespecial:
-                        var value = PopValue();
+                        object value = PopValue();
                         if (value == UNINITIALIZED_THIS && !_superClassConstructorCalled && name.Equals("<init>"))
                         {
                             _superClassConstructorCalled = true;
@@ -478,7 +478,7 @@ namespace ObjectWeb.Asm.Commons
                         break;
                 }
 
-                var returnType = JType.GetReturnType(descriptor);
+                JType returnType = JType.GetReturnType(descriptor);
                 if (returnType != JType.VoidType)
                 {
                     PushValue(OTHER);
@@ -569,7 +569,7 @@ namespace ObjectWeb.Asm.Commons
             // 'onMethodEnter').
             if (_isConstructor && !_forwardJumpStackFrames.ContainsKey(handler))
             {
-                var handlerStackFrame = new List<object>();
+                List<object> handlerStackFrame = new List<object>();
                 handlerStackFrame.Add(OTHER);
                 _forwardJumpStackFrames[handler] = handlerStackFrame;
             }
@@ -578,7 +578,7 @@ namespace ObjectWeb.Asm.Commons
         private void AddForwardJumps(Label dflt, Label[] labels)
         {
             AddForwardJump(dflt);
-            foreach (var label in labels) AddForwardJump(label);
+            foreach (Label label in labels) AddForwardJump(label);
         }
 
         private void AddForwardJump(Label label)
@@ -603,8 +603,8 @@ namespace ObjectWeb.Asm.Commons
 
         private object PopValue()
         {
-            var index = _stackFrame.Count - 1;
-            var oldValue = _stackFrame[index];
+            int index = _stackFrame.Count - 1;
+            object oldValue = _stackFrame[index];
             _stackFrame.RemoveAt(index);
             return oldValue;
         }

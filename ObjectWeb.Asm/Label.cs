@@ -349,10 +349,10 @@ namespace ObjectWeb.Asm
             {
                 if (_otherLineNumbers == null)
                     _otherLineNumbers = new int[Line_Numbers_Capacity_Increment];
-                var otherLineNumberIndex = ++_otherLineNumbers[0];
+                int otherLineNumberIndex = ++_otherLineNumbers[0];
                 if (otherLineNumberIndex >= _otherLineNumbers.Length)
                 {
-                    var newLineNumbers = new int[_otherLineNumbers.Length + Line_Numbers_Capacity_Increment];
+                    int[] newLineNumbers = new int[_otherLineNumbers.Length + Line_Numbers_Capacity_Increment];
                     Array.Copy(_otherLineNumbers, 0, newLineNumbers, 0, _otherLineNumbers.Length);
                     _otherLineNumbers = newLineNumbers;
                 }
@@ -373,7 +373,7 @@ namespace ObjectWeb.Asm
             {
                 methodVisitor.VisitLineNumber(_lineNumber & 0xFFFF, this);
                 if (_otherLineNumbers != null)
-                    for (var i = 1; i <= _otherLineNumbers[0]; ++i)
+                    for (int i = 1; i <= _otherLineNumbers[0]; ++i)
                         methodVisitor.VisitLineNumber(_otherLineNumbers[i], this);
             }
         }
@@ -438,10 +438,10 @@ namespace ObjectWeb.Asm
         {
             if (_forwardReferences == null)
                 _forwardReferences = new int[Forward_References_Capacity_Increment];
-            var lastElementIndex = _forwardReferences[0];
+            int lastElementIndex = _forwardReferences[0];
             if (lastElementIndex + 2 >= _forwardReferences.Length)
             {
-                var newValues = new int[_forwardReferences.Length + Forward_References_Capacity_Increment];
+                int[] newValues = new int[_forwardReferences.Length + Forward_References_Capacity_Increment];
                 Array.Copy(_forwardReferences, 0, newValues, 0, _forwardReferences.Length);
                 _forwardReferences = newValues;
             }
@@ -466,19 +466,19 @@ namespace ObjectWeb.Asm
         ///     instructions are later replaced with standard bytecode instructions with wider offsets (4
         ///     bytes instead of 2), in ClassReader.
         /// </returns>
-        public bool Resolve(byte[] code, int bytecodeOffset)
+        public bool Resolve(sbyte[] code, int bytecodeOffset)
         {
             flags |= Flag_Resolved;
             this.bytecodeOffset = bytecodeOffset;
             if (_forwardReferences == null)
                 return false;
-            var hasAsmInstructions = false;
-            for (var i = _forwardReferences[0]; i > 0; i -= 2)
+            bool hasAsmInstructions = false;
+            for (int i = _forwardReferences[0]; i > 0; i -= 2)
             {
-                var sourceInsnBytecodeOffset = _forwardReferences[i - 1];
-                var reference = _forwardReferences[i];
-                var relativeOffset = bytecodeOffset - sourceInsnBytecodeOffset;
-                var handle = reference & Forward_Reference_Handle_Mask;
+                int sourceInsnBytecodeOffset = _forwardReferences[i - 1];
+                int reference = _forwardReferences[i];
+                int relativeOffset = bytecodeOffset - sourceInsnBytecodeOffset;
+                int handle = reference & Forward_Reference_Handle_Mask;
                 if ((reference & Forward_Reference_Type_Mask) == Forward_Reference_Type_Short)
                 {
                     if (relativeOffset < short.MinValue || relativeOffset > short.MaxValue)
@@ -487,25 +487,25 @@ namespace ObjectWeb.Asm
                         // ClassReader. These ASM specific opcodes are similar to jump instruction opcodes, except
                         // that the 2 bytes offset is unsigned (and can therefore represent values from 0 to
                         // 65535, which is sufficient since the size of a method is limited to 65535 bytes).
-                        var opcode = code[sourceInsnBytecodeOffset] & 0xFF;
+                        int opcode = code[sourceInsnBytecodeOffset] & 0xFF;
                         if (opcode < Opcodes.Ifnull)
                             // Change IFEQ ... JSR to ASM_IFEQ ... ASM_JSR.
-                            code[sourceInsnBytecodeOffset] = (byte)(opcode + Constants.Asm_Opcode_Delta);
+                            code[sourceInsnBytecodeOffset] = (sbyte)(opcode + Constants.Asm_Opcode_Delta);
                         else
                             // Change IFNULL and IFNONNULL to ASM_IFNULL and ASM_IFNONNULL.
-                            code[sourceInsnBytecodeOffset] = (byte)(opcode + Constants.Asm_Ifnull_Opcode_Delta);
+                            code[sourceInsnBytecodeOffset] = (sbyte)(opcode + Constants.Asm_Ifnull_Opcode_Delta);
                         hasAsmInstructions = true;
                     }
 
-                    code[handle++] = (byte)(int)((uint)relativeOffset >> 8);
-                    code[handle] = (byte)relativeOffset;
+                    code[handle++] = (sbyte)(int)((uint)relativeOffset >> 8);
+                    code[handle] = (sbyte)relativeOffset;
                 }
                 else
                 {
-                    code[handle++] = (byte)(int)((uint)relativeOffset >> 24);
-                    code[handle++] = (byte)(int)((uint)relativeOffset >> 16);
-                    code[handle++] = (byte)(int)((uint)relativeOffset >> 8);
-                    code[handle] = (byte)relativeOffset;
+                    code[handle++] = (sbyte)(int)((uint)relativeOffset >> 24);
+                    code[handle++] = (sbyte)(int)((uint)relativeOffset >> 16);
+                    code[handle++] = (sbyte)(int)((uint)relativeOffset >> 8);
+                    code[handle] = (sbyte)relativeOffset;
                 }
             }
 
@@ -535,12 +535,12 @@ namespace ObjectWeb.Asm
             // belonging to subroutine subroutineId) and, while there are blocks to process, remove one from
             // the list, mark it as belonging to the subroutine, and add its successor basic blocks in the
             // control flow graph to the list of blocks to process (if not already done).
-            var listOfBlocksToProcess = this;
+            Label listOfBlocksToProcess = this;
             listOfBlocksToProcess.nextListElement = EmptyList;
             while (listOfBlocksToProcess != EmptyList)
             {
                 // Remove a basic block from the list of blocks to process.
-                var basicBlock = listOfBlocksToProcess;
+                Label basicBlock = listOfBlocksToProcess;
                 listOfBlocksToProcess = listOfBlocksToProcess.nextListElement;
                 basicBlock.nextListElement = null;
                 // If it is not already marked as belonging to a subroutine, mark it as belonging to
@@ -575,13 +575,13 @@ namespace ObjectWeb.Asm
             // remove one from the list, put it in a list of blocks that have been processed, add a return
             // edge to the successor of subroutineCaller if applicable, and add its successor basic blocks
             // in the control flow graph to the list of blocks to process (if not already done).
-            var listOfProcessedBlocks = EmptyList;
-            var listOfBlocksToProcess = this;
+            Label listOfProcessedBlocks = EmptyList;
+            Label listOfBlocksToProcess = this;
             listOfBlocksToProcess.nextListElement = EmptyList;
             while (listOfBlocksToProcess != EmptyList)
             {
                 // Move a basic block from the list of blocks to process to the list of processed blocks.
-                var basicBlock = listOfBlocksToProcess;
+                Label basicBlock = listOfBlocksToProcess;
                 listOfBlocksToProcess = basicBlock.nextListElement;
                 basicBlock.nextListElement = listOfProcessedBlocks;
                 listOfProcessedBlocks = basicBlock;
@@ -603,7 +603,7 @@ namespace ObjectWeb.Asm
             // so that this method can be called again with a different subroutine or subroutine caller.
             while (listOfProcessedBlocks != EmptyList)
             {
-                var newListOfProcessedBlocks = listOfProcessedBlocks.nextListElement;
+                Label newListOfProcessedBlocks = listOfProcessedBlocks.nextListElement;
                 listOfProcessedBlocks.nextListElement = null;
                 listOfProcessedBlocks = newListOfProcessedBlocks;
             }
@@ -621,13 +621,13 @@ namespace ObjectWeb.Asm
         /// <returns> the new list of blocks to process. </returns>
         private Label PushSuccessors(Label listOfLabelsToProcess)
         {
-            var newListOfLabelsToProcess = listOfLabelsToProcess;
-            var outgoingEdge = outgoingEdges;
+            Label newListOfLabelsToProcess = listOfLabelsToProcess;
+            Edge outgoingEdge = outgoingEdges;
             while (outgoingEdge != null)
             {
                 // By construction, the second outgoing edge of a basic block that ends with a jsr instruction
                 // leads to the jsr target (see {@link #FLAG_SUBROUTINE_CALLER}).
-                var isJsrTarget = (flags & Flag_Subroutine_Caller) != 0 && outgoingEdge == outgoingEdges.nextEdge;
+                bool isJsrTarget = (flags & Flag_Subroutine_Caller) != 0 && outgoingEdge == outgoingEdges.nextEdge;
                 if (!isJsrTarget && outgoingEdge.successor.nextListElement == null)
                 {
                     // Add this successor to the list of blocks to process, if it does not already belong to a

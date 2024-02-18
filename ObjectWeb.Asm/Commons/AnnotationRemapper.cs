@@ -122,7 +122,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override AnnotationVisitor VisitAnnotation(string name, string descriptor)
         {
-            var annotationVisitor =
+            AnnotationVisitor annotationVisitor =
                 base.VisitAnnotation(MapAnnotationAttributeName(name), remapper.MapDesc(descriptor));
             if (annotationVisitor == null)
                 return null;
@@ -131,7 +131,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override AnnotationVisitor VisitArray(string name)
         {
-            var annotationVisitor = base.VisitArray(MapAnnotationAttributeName(name));
+            AnnotationVisitor annotationVisitor = base.VisitArray(MapAnnotationAttributeName(name));
             if (annotationVisitor == null)
                 return null;
             return annotationVisitor == av ? this : CreateAnnotationRemapper(null, annotationVisitor);
@@ -182,7 +182,7 @@ namespace ObjectWeb.Asm.Commons
         {
             if (deprecatedAnnotationVisitor.GetType() == GetType())
             {
-                var deprecatedAnnotationRemapper = (AnnotationRemapper)deprecatedAnnotationVisitor;
+                AnnotationRemapper deprecatedAnnotationRemapper = (AnnotationRemapper)deprecatedAnnotationVisitor;
                 if (deprecatedAnnotationRemapper.api == api && deprecatedAnnotationRemapper.av == av &&
                     deprecatedAnnotationRemapper.remapper == remapper) return this;
             }

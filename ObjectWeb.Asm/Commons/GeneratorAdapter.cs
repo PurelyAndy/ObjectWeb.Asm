@@ -299,8 +299,8 @@ namespace ObjectWeb.Asm.Commons
         /// <returns> the internal names of the given types. </returns>
         private static string[] GetInternalNames(JType[] types)
         {
-            var names = new string[types.Length];
-            for (var i = 0; i < names.Length; ++i) names[i] = types[i].InternalName;
+            string[] names = new string[types.Length];
+            for (int i = 0; i < names.Length; ++i) names[i] = types[i].InternalName;
             return names;
         }
 
@@ -351,7 +351,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="value"> the value to be pushed on the stack. </param>
         public virtual void Push(float value)
         {
-            var bits = Int32AndSingleConverter.Convert(value);
+            int bits = Int32AndSingleConverter.Convert(value);
             if (bits == 0L || bits == 0x3F800000 || bits == 0x40000000)
                 // 0..2
                 mv.VisitInsn(Opcodes.Fconst_0 + (int)value);
@@ -365,7 +365,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="value"> the value to be pushed on the stack. </param>
         public virtual void Push(double value)
         {
-            var bits = BitConverter.DoubleToInt64Bits(value);
+            long bits = BitConverter.DoubleToInt64Bits(value);
             if (bits == 0L || bits == 0x3FF0000000000000L)
                 // +0.0d and 1.0d
                 mv.VisitInsn(Opcodes.Dconst_0 + (int)value);
@@ -461,8 +461,8 @@ namespace ObjectWeb.Asm.Commons
         /// <returns> the index of the given method argument in the frame's local variables array. </returns>
         private int GetArgIndex(int arg)
         {
-            var index = (_access & Opcodes.Acc_Static) == 0 ? 1 : 0;
-            for (var i = 0; i < arg; i++) index += _argumentTypes[i].Size;
+            int index = (_access & Opcodes.Acc_Static) == 0 ? 1 : 0;
+            for (int i = 0; i < arg; i++) index += _argumentTypes[i].Size;
             return index;
         }
 
@@ -512,10 +512,10 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="count"> the number of method arguments to be loaded. </param>
         public virtual void LoadArgs(int arg, int count)
         {
-            var index = GetArgIndex(arg);
-            for (var i = 0; i < count; ++i)
+            int index = GetArgIndex(arg);
+            for (int i = 0; i < count; ++i)
             {
-                var argumentType = _argumentTypes[arg + i];
+                JType argumentType = _argumentTypes[arg + i];
                 LoadInsn(argumentType, index);
                 index += argumentType.Size;
             }
@@ -537,7 +537,7 @@ namespace ObjectWeb.Asm.Commons
         {
             Push(_argumentTypes.Length);
             NewArray(OBJECT_TYPE);
-            for (var i = 0; i < _argumentTypes.Length; i++)
+            for (int i = 0; i < _argumentTypes.Length; i++)
             {
                 Dup();
                 Push(i);
@@ -575,7 +575,7 @@ namespace ObjectWeb.Asm.Commons
 
         public override void SetLocalType(int local, JType type)
         {
-            var index = local - firstLocal;
+            int index = local - firstLocal;
             while (_localTypes.Count < index + 1) _localTypes.Add(null);
             _localTypes[index] = type;
         }
@@ -854,7 +854,7 @@ namespace ObjectWeb.Asm.Commons
             }
             else
             {
-                var boxedType = GetBoxedType(type);
+                JType boxedType = GetBoxedType(type);
                 NewInstance(boxedType);
                 if (type.Size == 2)
                 {
@@ -888,7 +888,7 @@ namespace ObjectWeb.Asm.Commons
             }
             else
             {
-                var boxedType = GetBoxedType(type);
+                JType boxedType = GetBoxedType(type);
                 InvokeStatic(boxedType, new Method("valueOf", boxedType, new[] { type }));
             }
         }
@@ -900,7 +900,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="type"> the type of the top stack value. </param>
         public virtual void Unbox(JType type)
         {
-            var boxedType = NUMBER_TYPE;
+            JType boxedType = NUMBER_TYPE;
             Method unboxMethod;
             switch (type.Sort)
             {
@@ -972,7 +972,7 @@ namespace ObjectWeb.Asm.Commons
         /// <returns> the label that was created to mark the current code position. </returns>
         public virtual Label Mark()
         {
-            var label = new Label();
+            Label label = new Label();
             mv.VisitLabel(label);
             return label;
         }
@@ -1014,7 +1014,7 @@ namespace ObjectWeb.Asm.Commons
                         throw new ArgumentException("Bad comparison for type " + type);
                     }
                 default:
-                    var intOp = -1;
+                    int intOp = -1;
                     switch (mode)
                     {
                         case Eq:
@@ -1133,25 +1133,25 @@ namespace ObjectWeb.Asm.Commons
         /// </param>
         public virtual void TableSwitch(int[] keys, ITableSwitchGenerator generator, bool useTable)
         {
-            for (var i = 1; i < keys.Length; ++i)
+            for (int i = 1; i < keys.Length; ++i)
                 if (keys[i] < keys[i - 1])
                     throw new ArgumentException("keys must be sorted in ascending order");
-            var defaultLabel = NewLabel();
-            var endLabel = NewLabel();
+            Label defaultLabel = NewLabel();
+            Label endLabel = NewLabel();
             if (keys.Length > 0)
             {
-                var numKeys = keys.Length;
+                int numKeys = keys.Length;
                 if (useTable)
                 {
-                    var min = keys[0];
-                    var max = keys[numKeys - 1];
-                    var range = max - min + 1;
-                    var labels = Enumerable.Repeat(defaultLabel, range).ToArray();
-                    for (var i = 0; i < numKeys; ++i) labels[keys[i] - min] = NewLabel();
+                    int min = keys[0];
+                    int max = keys[numKeys - 1];
+                    int range = max - min + 1;
+                    Label[] labels = Enumerable.Repeat(defaultLabel, range).ToArray();
+                    for (int i = 0; i < numKeys; ++i) labels[keys[i] - min] = NewLabel();
                     mv.VisitTableSwitchInsn(min, max, defaultLabel, labels);
-                    for (var i = 0; i < range; ++i)
+                    for (int i = 0; i < range; ++i)
                     {
-                        var label = labels[i];
+                        Label label = labels[i];
                         if (label != defaultLabel)
                         {
                             Mark(label);
@@ -1161,10 +1161,10 @@ namespace ObjectWeb.Asm.Commons
                 }
                 else
                 {
-                    var labels = new Label[numKeys];
-                    for (var i = 0; i < numKeys; ++i) labels[i] = NewLabel();
+                    Label[] labels = new Label[numKeys];
+                    for (int i = 0; i < numKeys; ++i) labels[i] = NewLabel();
                     mv.VisitLookupSwitchInsn(defaultLabel, keys, labels);
-                    for (var i = 0; i < numKeys; ++i)
+                    for (int i = 0; i < numKeys; ++i)
                     {
                         Mark(labels[i]);
                         generator.GenerateCase(keys[i], endLabel);
@@ -1258,7 +1258,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="isInterface"> whether the 'type' class is an interface or not. </param>
         private void InvokeInsn(int opcode, JType type, Method method, bool isInterface)
         {
-            var owner = type.Sort == JType.Array ? type.Descriptor : type.InternalName;
+            string owner = type.Sort == JType.Array ? type.Descriptor : type.InternalName;
             mv.VisitMethodInsn(opcode, owner, method.Name, method.Descriptor, isInterface);
         }
 
@@ -1443,7 +1443,7 @@ namespace ObjectWeb.Asm.Commons
         /// <param name="exception"> internal name of the type of exceptions handled by the handler. </param>
         public virtual void CatchException(Label start, Label end, JType exception)
         {
-            var catchLabel = new Label();
+            Label catchLabel = new Label();
             if (exception == null)
                 mv.VisitTryCatchBlock(start, end, catchLabel, null);
             else

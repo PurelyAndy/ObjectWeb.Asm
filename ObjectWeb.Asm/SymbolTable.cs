@@ -156,9 +156,9 @@ namespace ObjectWeb.Asm
             _sourceClassReader = classReader;
 
             // Copy the constant pool binary content.
-            var inputBytes = classReader.classFileBuffer;
-            var constantPoolOffset = classReader.GetItem(1) - 1;
-            var constantPoolLength = classReader.header - constantPoolOffset;
+            sbyte[] inputBytes = classReader.classFileBuffer;
+            int constantPoolOffset = classReader.GetItem(1) - 1;
+            int constantPoolLength = classReader.header - constantPoolOffset;
             _constantPoolCount = classReader.ItemCount;
             _constantPool = new ByteVector(constantPoolLength);
             _constantPool.PutByteArray(inputBytes, constantPoolOffset, constantPoolLength);
@@ -167,12 +167,12 @@ namespace ObjectWeb.Asm
             // avoid too many hash set collisions (entries is not dynamically resized by the addConstant*
             // method calls below), and to account for bootstrap method entries.
             _entries = new Entry[_constantPoolCount * 2];
-            var charBuffer = new char[classReader.MaxStringLength];
-            var hasBootstrapMethods = false;
-            var itemIndex = 1;
+            char[] charBuffer = new char[classReader.MaxStringLength];
+            bool hasBootstrapMethods = false;
+            int itemIndex = 1;
             while (itemIndex < _constantPoolCount)
             {
-                var itemOffset = classReader.GetItem(itemIndex);
+                int itemOffset = classReader.GetItem(itemIndex);
                 int itemTag = inputBytes[itemOffset - 1];
                 int nameAndTypeItemOffset;
                 switch (itemTag)
@@ -201,7 +201,7 @@ namespace ObjectWeb.Asm
                         AddConstantUtf8(itemIndex, classReader.ReadUtf(itemIndex, charBuffer));
                         break;
                     case Symbol.Constant_Method_Handle_Tag:
-                        var memberRefItemOffset = classReader.GetItem(classReader.ReadUnsignedShort(itemOffset + 1));
+                        int memberRefItemOffset = classReader.GetItem(classReader.ReadUnsignedShort(itemOffset + 1));
                         nameAndTypeItemOffset =
                             classReader.GetItem(classReader.ReadUnsignedShort(memberRefItemOffset + 2));
                         AddConstantMethodHandle(itemIndex, classReader.ReadByte(itemOffset),
@@ -281,11 +281,11 @@ namespace ObjectWeb.Asm
         private void CopyBootstrapMethods(ClassReader classReader, char[] charBuffer)
         {
             // Find attributOffset of the 'bootstrap_methods' array.
-            var inputBytes = classReader.classFileBuffer;
-            var currentAttributeOffset = classReader.FirstAttributeOffset;
-            for (var i = classReader.ReadUnsignedShort(currentAttributeOffset - 2); i > 0; --i)
+            sbyte[] inputBytes = classReader.classFileBuffer;
+            int currentAttributeOffset = classReader.FirstAttributeOffset;
+            for (int i = classReader.ReadUnsignedShort(currentAttributeOffset - 2); i > 0; --i)
             {
-                var attributeName = classReader.ReadUtf8(currentAttributeOffset, charBuffer);
+                string attributeName = classReader.ReadUtf8(currentAttributeOffset, charBuffer);
                 if (Constants.Bootstrap_Methods.Equals(attributeName))
                 {
                     _bootstrapMethodCount = classReader.ReadUnsignedShort(currentAttributeOffset + 6);
@@ -298,24 +298,24 @@ namespace ObjectWeb.Asm
             if (_bootstrapMethodCount > 0)
             {
                 // Compute the offset and the length of the BootstrapMethods 'bootstrap_methods' array.
-                var bootstrapMethodsOffset = currentAttributeOffset + 8;
-                var bootstrapMethodsLength = classReader.ReadInt(currentAttributeOffset + 2) - 2;
+                int bootstrapMethodsOffset = currentAttributeOffset + 8;
+                int bootstrapMethodsLength = classReader.ReadInt(currentAttributeOffset + 2) - 2;
                 _bootstrapMethods = new ByteVector(bootstrapMethodsLength);
                 _bootstrapMethods.PutByteArray(inputBytes, bootstrapMethodsOffset, bootstrapMethodsLength);
 
                 // Add each bootstrap method in the symbol table entries.
-                var currentOffset = bootstrapMethodsOffset;
-                for (var i = 0; i < _bootstrapMethodCount; i++)
+                int currentOffset = bootstrapMethodsOffset;
+                for (int i = 0; i < _bootstrapMethodCount; i++)
                 {
-                    var offset = currentOffset - bootstrapMethodsOffset;
-                    var bootstrapMethodRef = classReader.ReadUnsignedShort(currentOffset);
+                    int offset = currentOffset - bootstrapMethodsOffset;
+                    int bootstrapMethodRef = classReader.ReadUnsignedShort(currentOffset);
                     currentOffset += 2;
-                    var numBootstrapArguments = classReader.ReadUnsignedShort(currentOffset);
+                    int numBootstrapArguments = classReader.ReadUnsignedShort(currentOffset);
                     currentOffset += 2;
-                    var hashCode = classReader.ReadConst(bootstrapMethodRef, charBuffer).GetHashCode();
+                    int hashCode = classReader.ReadConst(bootstrapMethodRef, charBuffer).GetHashCode();
                     while (numBootstrapArguments-- > 0)
                     {
-                        var bootstrapArgument = classReader.ReadUnsignedShort(currentOffset);
+                        int bootstrapArgument = classReader.ReadUnsignedShort(currentOffset);
                         currentOffset += 2;
                         hashCode ^= classReader.ReadConst(bootstrapArgument, charBuffer).GetHashCode();
                     }
@@ -406,16 +406,16 @@ namespace ObjectWeb.Asm
         {
             if (_entryCount > _entries.Length * 3 / 4)
             {
-                var currentCapacity = _entries.Length;
-                var newCapacity = currentCapacity * 2 + 1;
-                var newEntries = new Entry[newCapacity];
-                for (var i = currentCapacity - 1; i >= 0; --i)
+                int currentCapacity = _entries.Length;
+                int newCapacity = currentCapacity * 2 + 1;
+                Entry[] newEntries = new Entry[newCapacity];
+                for (int i = currentCapacity - 1; i >= 0; --i)
                 {
-                    var currentEntry = _entries[i];
+                    Entry currentEntry = _entries[i];
                     while (currentEntry != null)
                     {
-                        var newCurrentEntryIndex = currentEntry.hashCode % newCapacity;
-                        var nextEntry = currentEntry.next;
+                        int newCurrentEntryIndex = currentEntry.hashCode % newCapacity;
+                        Entry nextEntry = currentEntry.next;
                         currentEntry.next = newEntries[newCurrentEntryIndex];
                         newEntries[newCurrentEntryIndex] = currentEntry;
                         currentEntry = nextEntry;
@@ -426,7 +426,7 @@ namespace ObjectWeb.Asm
             }
 
             _entryCount++;
-            var index = entry.hashCode % _entries.Length;
+            int index = entry.hashCode % _entries.Length;
             entry.next = _entries[index];
             return _entries[index] = entry;
         }
@@ -440,7 +440,7 @@ namespace ObjectWeb.Asm
         private void Add(Entry entry)
         {
             _entryCount++;
-            var index = entry.hashCode % _entries.Length;
+            int index = entry.hashCode % _entries.Length;
             entry.next = _entries[index];
             _entries[index] = entry;
         }
@@ -483,8 +483,8 @@ namespace ObjectWeb.Asm
 
             if (value is JType)
             {
-                var type = (JType)value;
-                var typeSort = type.Sort;
+                JType type = (JType)value;
+                int typeSort = type.Sort;
                 if (typeSort == JType.Object)
                     return AddConstantClass(type.InternalName);
                 if (typeSort == JType.Method)
@@ -494,13 +494,13 @@ namespace ObjectWeb.Asm
 
             if (value is Handle)
             {
-                var handle = (Handle)value;
+                Handle handle = (Handle)value;
                 return AddConstantMethodHandle(handle.Tag, handle.Owner, handle.Name, handle.Desc, handle.Interface);
             }
 
             if (value is ConstantDynamic)
             {
-                var constantDynamic = (ConstantDynamic)value;
+                ConstantDynamic constantDynamic = (ConstantDynamic)value;
                 return AddConstantDynamic(constantDynamic.Name, constantDynamic.Descriptor,
                     constantDynamic.BootstrapMethod, constantDynamic.BootstrapMethodArgumentsUnsafe);
             }
@@ -543,7 +543,7 @@ namespace ObjectWeb.Asm
         /// <returns> a new or already existing Symbol with the given value. </returns>
         public Symbol AddConstantMethodref(string owner, string name, string descriptor, bool isInterface)
         {
-            var tag = isInterface ? Symbol.Constant_Interface_Methodref_Tag : Symbol.Constant_Methodref_Tag;
+            int tag = isInterface ? Symbol.Constant_Interface_Methodref_Tag : Symbol.Constant_Methodref_Tag;
             return AddConstantMemberReference(tag, owner, name, descriptor);
         }
 
@@ -562,8 +562,8 @@ namespace ObjectWeb.Asm
         /// <returns> a new or already existing Symbol with the given value. </returns>
         private Entry AddConstantMemberReference(int tag, string owner, string name, string descriptor)
         {
-            var hashCode = Hash(tag, owner, name, descriptor);
-            var entry = Get(hashCode);
+            int hashCode = Hash(tag, owner, name, descriptor);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == tag && entry.hashCode == hashCode && entry.owner.Equals(owner) &&
@@ -637,8 +637,8 @@ namespace ObjectWeb.Asm
         /// <returns> a constant pool constant with the given tag and primitive values. </returns>
         private Symbol AddConstantIntegerOrFloat(int tag, int value)
         {
-            var hashCode = Hash(tag, value);
-            var entry = Get(hashCode);
+            int hashCode = Hash(tag, value);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == tag && entry.hashCode == hashCode && entry.data == value) return entry;
@@ -695,15 +695,15 @@ namespace ObjectWeb.Asm
         /// <returns> a constant pool constant with the given tag and primitive values. </returns>
         private Symbol AddConstantLongOrDouble(int tag, long value)
         {
-            var hashCode = Hash(tag, value);
-            var entry = Get(hashCode);
+            int hashCode = Hash(tag, value);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == tag && entry.hashCode == hashCode && entry.data == value) return entry;
                 entry = entry.next;
             }
 
-            var index = _constantPoolCount;
+            int index = _constantPoolCount;
             _constantPool.PutByte(tag).PutLong(value);
             _constantPoolCount += 2;
             return Put(new Entry(index, tag, value, hashCode));
@@ -731,8 +731,8 @@ namespace ObjectWeb.Asm
         public int AddConstantNameAndType(string name, string descriptor)
         {
             const int tag = Symbol.Constant_Name_And_Type_Tag;
-            var hashCode = Hash(tag, name, descriptor);
-            var entry = Get(hashCode);
+            int hashCode = Hash(tag, name, descriptor);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == tag && entry.hashCode == hashCode && entry.name.Equals(name) &&
@@ -764,8 +764,8 @@ namespace ObjectWeb.Asm
         /// <returns> a new or already existing Symbol with the given value. </returns>
         public int AddConstantUtf8(string value)
         {
-            var hashCode = Hash(Symbol.Constant_Utf8_Tag, value);
-            var entry = Get(hashCode);
+            int hashCode = Hash(Symbol.Constant_Utf8_Tag, value);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == Symbol.Constant_Utf8_Tag && entry.hashCode == hashCode && entry.value.Equals(value))
@@ -808,8 +808,8 @@ namespace ObjectWeb.Asm
             const int tag = Symbol.Constant_Method_Handle_Tag;
             // Note that we don't need to include isInterface in the hash computation, because it is
             // redundant with owner (we can't have the same owner with different isInterface values).
-            var hashCode = Hash(tag, owner, name, descriptor, referenceKind);
-            var entry = Get(hashCode);
+            int hashCode = Hash(tag, owner, name, descriptor, referenceKind);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == tag && entry.hashCode == hashCode && entry.data == referenceKind &&
@@ -842,7 +842,7 @@ namespace ObjectWeb.Asm
         private void AddConstantMethodHandle(int index, int referenceKind, string owner, string name, string descriptor)
         {
             const int tag = Symbol.Constant_Method_Handle_Tag;
-            var hashCode = Hash(tag, owner, name, descriptor, referenceKind);
+            int hashCode = Hash(tag, owner, name, descriptor, referenceKind);
             Add(new Entry(index, tag, owner, name, descriptor, referenceKind, hashCode));
         }
 
@@ -870,7 +870,7 @@ namespace ObjectWeb.Asm
         public Symbol AddConstantDynamic(string name, string descriptor, Handle bootstrapMethodHandle,
             params object[] bootstrapMethodArguments)
         {
-            var bootstrapMethod = AddBootstrapMethod(bootstrapMethodHandle, bootstrapMethodArguments);
+            Symbol bootstrapMethod = AddBootstrapMethod(bootstrapMethodHandle, bootstrapMethodArguments);
             return AddConstantDynamicOrInvokeDynamicReference(Symbol.Constant_Dynamic_Tag, name, descriptor,
                 bootstrapMethod.index);
         }
@@ -888,7 +888,7 @@ namespace ObjectWeb.Asm
         public Symbol AddConstantInvokeDynamic(string name, string descriptor, Handle bootstrapMethodHandle,
             params object[] bootstrapMethodArguments)
         {
-            var bootstrapMethod = AddBootstrapMethod(bootstrapMethodHandle, bootstrapMethodArguments);
+            Symbol bootstrapMethod = AddBootstrapMethod(bootstrapMethodHandle, bootstrapMethodArguments);
             return AddConstantDynamicOrInvokeDynamicReference(Symbol.Constant_Invoke_Dynamic_Tag, name, descriptor,
                 bootstrapMethod.index);
         }
@@ -911,8 +911,8 @@ namespace ObjectWeb.Asm
         private Symbol AddConstantDynamicOrInvokeDynamicReference(int tag, string name, string descriptor,
             int bootstrapMethodIndex)
         {
-            var hashCode = Hash(tag, name, descriptor, bootstrapMethodIndex);
-            var entry = Get(hashCode);
+            int hashCode = Hash(tag, name, descriptor, bootstrapMethodIndex);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == tag && entry.hashCode == hashCode && entry.data == bootstrapMethodIndex &&
@@ -942,7 +942,7 @@ namespace ObjectWeb.Asm
         private void AddConstantDynamicOrInvokeDynamicReference(int tag, int index, string name, string descriptor,
             int bootstrapMethodIndex)
         {
-            var hashCode = Hash(tag, name, descriptor, bootstrapMethodIndex);
+            int hashCode = Hash(tag, name, descriptor, bootstrapMethodIndex);
             Add(new Entry(index, tag, null, name, descriptor, bootstrapMethodIndex, hashCode));
         }
 
@@ -985,8 +985,8 @@ namespace ObjectWeb.Asm
         /// <returns> a new or already existing Symbol with the given value. </returns>
         private Symbol AddConstantUtf8Reference(int tag, string value)
         {
-            var hashCode = Hash(tag, value);
-            var entry = Get(hashCode);
+            int hashCode = Hash(tag, value);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == tag && entry.hashCode == hashCode && entry.value.Equals(value)) return entry;
@@ -1029,34 +1029,34 @@ namespace ObjectWeb.Asm
         /// <returns> a new or already existing Symbol with the given value. </returns>
         public Symbol AddBootstrapMethod(Handle bootstrapMethodHandle, params object[] bootstrapMethodArguments)
         {
-            var bootstrapMethodsAttribute = _bootstrapMethods;
+            ByteVector bootstrapMethodsAttribute = _bootstrapMethods;
             if (bootstrapMethodsAttribute == null) bootstrapMethodsAttribute = _bootstrapMethods = new ByteVector();
 
             // The bootstrap method arguments can be Constant_Dynamic values, which reference other
             // bootstrap methods. We must therefore add the bootstrap method arguments to the constant pool
             // and BootstrapMethods attribute first, so that the BootstrapMethods attribute is not modified
             // while adding the given bootstrap method to it, in the rest of this method.
-            var numBootstrapArguments = bootstrapMethodArguments.Length;
-            var bootstrapMethodArgumentIndexes = new int[numBootstrapArguments];
-            for (var i = 0; i < numBootstrapArguments; i++)
+            int numBootstrapArguments = bootstrapMethodArguments.Length;
+            int[] bootstrapMethodArgumentIndexes = new int[numBootstrapArguments];
+            for (int i = 0; i < numBootstrapArguments; i++)
                 bootstrapMethodArgumentIndexes[i] = AddConstant(bootstrapMethodArguments[i]).index;
 
             // Write the bootstrap method in the BootstrapMethods table. This is necessary to be able to
             // compare it with existing ones, and will be reverted below if there is already a similar
             // bootstrap method.
-            var bootstrapMethodOffset = bootstrapMethodsAttribute.length;
+            int bootstrapMethodOffset = bootstrapMethodsAttribute.length;
             bootstrapMethodsAttribute.PutShort(AddConstantMethodHandle(bootstrapMethodHandle.Tag,
                 bootstrapMethodHandle.Owner, bootstrapMethodHandle.Name, bootstrapMethodHandle.Desc,
                 bootstrapMethodHandle.Interface).index);
 
             bootstrapMethodsAttribute.PutShort(numBootstrapArguments);
-            for (var i = 0; i < numBootstrapArguments; i++)
+            for (int i = 0; i < numBootstrapArguments; i++)
                 bootstrapMethodsAttribute.PutShort(bootstrapMethodArgumentIndexes[i]);
 
             // Compute the length and the hash code of the bootstrap method.
-            var bootstrapMethodlength = bootstrapMethodsAttribute.length - bootstrapMethodOffset;
-            var hashCode = bootstrapMethodHandle.GetHashCode();
-            foreach (var bootstrapMethodArgument in bootstrapMethodArguments)
+            int bootstrapMethodlength = bootstrapMethodsAttribute.length - bootstrapMethodOffset;
+            int hashCode = bootstrapMethodHandle.GetHashCode();
+            foreach (object bootstrapMethodArgument in bootstrapMethodArguments)
                 hashCode ^= bootstrapMethodArgument.GetHashCode();
             hashCode &= 0x7FFFFFFF;
 
@@ -1075,15 +1075,15 @@ namespace ObjectWeb.Asm
         /// <returns> a new or already existing Symbol with the given value. </returns>
         private Symbol AddBootstrapMethod(int offset, int length, int hashCode)
         {
-            var bootstrapMethodsData = _bootstrapMethods.data;
-            var entry = Get(hashCode);
+            sbyte[] bootstrapMethodsData = _bootstrapMethods.data;
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == Symbol.Bootstrap_Method_Tag && entry.hashCode == hashCode)
                 {
-                    var otherOffset = (int)entry.data;
-                    var isSameBootstrapMethod = true;
-                    for (var i = 0; i < length; ++i)
+                    int otherOffset = (int)entry.data;
+                    bool isSameBootstrapMethod = true;
+                    for (int i = 0; i < length; ++i)
                         if (bootstrapMethodsData[offset + i] != bootstrapMethodsData[otherOffset + i])
                         {
                             isSameBootstrapMethod = false;
@@ -1125,8 +1125,8 @@ namespace ObjectWeb.Asm
         /// <returns> the index of a new or already existing type Symbol with the given value. </returns>
         public int AddType(string value)
         {
-            var hashCode = Hash(Symbol.Type_Tag, value);
-            var entry = Get(hashCode);
+            int hashCode = Hash(Symbol.Type_Tag, value);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == Symbol.Type_Tag && entry.hashCode == hashCode && entry.value.Equals(value))
@@ -1149,8 +1149,8 @@ namespace ObjectWeb.Asm
         /// <returns> the index of a new or already existing type Symbol with the given value. </returns>
         public int AddUninitializedType(string value, int bytecodeOffset)
         {
-            var hashCode = Hash(Symbol.Uninitialized_Type_Tag, value, bytecodeOffset);
-            var entry = Get(hashCode);
+            int hashCode = Hash(Symbol.Uninitialized_Type_Tag, value, bytecodeOffset);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == Symbol.Uninitialized_Type_Tag && entry.hashCode == hashCode &&
@@ -1180,11 +1180,11 @@ namespace ObjectWeb.Asm
         /// </returns>
         public int AddMergedType(int typeTableIndex1, int typeTableIndex2)
         {
-            var data = typeTableIndex1 < typeTableIndex2
+            long data = typeTableIndex1 < typeTableIndex2
                 ? (uint)typeTableIndex1 | ((long)typeTableIndex2 << 32)
                 : typeTableIndex2 | ((long)typeTableIndex1 << 32);
-            var hashCode = Hash(Symbol.Merged_Type_Tag, typeTableIndex1 + typeTableIndex2);
-            var entry = Get(hashCode);
+            int hashCode = Hash(Symbol.Merged_Type_Tag, typeTableIndex1 + typeTableIndex2);
+            Entry entry = Get(hashCode);
             while (entry != null)
             {
                 if (entry.tag == Symbol.Merged_Type_Tag && entry.hashCode == hashCode && entry.data == data)
@@ -1192,9 +1192,9 @@ namespace ObjectWeb.Asm
                 entry = entry.next;
             }
 
-            var type1 = _typeTable[typeTableIndex1].value;
-            var type2 = _typeTable[typeTableIndex2].value;
-            var commonSuperTypeIndex = AddType(classWriter.GetCommonSuperClass(type1, type2));
+            string type1 = _typeTable[typeTableIndex1].value;
+            string type2 = _typeTable[typeTableIndex2].value;
+            int commonSuperTypeIndex = AddType(classWriter.GetCommonSuperClass(type1, type2));
             Put(new Entry(_typeCount, Symbol.Merged_Type_Tag, data, hashCode)).info = commonSuperTypeIndex;
             return commonSuperTypeIndex;
         }
@@ -1215,7 +1215,7 @@ namespace ObjectWeb.Asm
             if (_typeTable == null) _typeTable = new Entry[16];
             if (_typeCount == _typeTable.Length)
             {
-                var newTypeTable = new Entry[2 * _typeTable.Length];
+                Entry[] newTypeTable = new Entry[2 * _typeTable.Length];
                 Array.Copy(_typeTable, 0, newTypeTable, 0, _typeTable.Length);
                 _typeTable = newTypeTable;
             }
