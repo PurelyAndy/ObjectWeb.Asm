@@ -57,7 +57,7 @@ namespace ObjectWeb.Asm.Tree
             this.Start = start;
         }
 
-        public override int Type => Line;
+        public override int Type => Line_Insn;
 
         public override void Accept(MethodVisitor methodVisitor)
         {

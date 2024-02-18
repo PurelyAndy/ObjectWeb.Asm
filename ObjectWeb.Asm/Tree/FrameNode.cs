@@ -107,7 +107,7 @@ namespace ObjectWeb.Asm.Tree
             }
         }
 
-        public override int Type => Frame;
+        public override int Type => Frame_Insn;
 
         public override void Accept(MethodVisitor methodVisitor)
         {

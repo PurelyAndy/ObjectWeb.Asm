@@ -95,11 +95,11 @@ namespace ObjectWeb.Asm.Tree
 
         /// <summary>
         /// The type of <seealso cref = "FrameNode"/> "instructions". </summary>
-        public const int Frame = 14;
+        public const int Frame_Insn = 14;
 
         /// <summary>
         /// The type of <seealso cref = "LineNumberNode"/> "instructions". </summary>
-        public const int Line = 15;
+        public const int Line_Insn = 15;
 
         /// <summary>
         /// The opcode of this instruction. </summary>
