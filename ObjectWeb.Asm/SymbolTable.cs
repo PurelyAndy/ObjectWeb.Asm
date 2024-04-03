@@ -463,21 +463,23 @@ namespace ObjectWeb.Asm
         /// <returns> a new or already existing Symbol with the given value. </returns>
         public Symbol AddConstant(object value)
         {
-            if (value is int || value is byte) return AddConstantInteger(((int?)value).Value);
+            if (value is int) return AddConstantInteger(((int)value));
 
-            if (value is sbyte) return AddConstantInteger(((sbyte?)value).Value);
+            if (value is byte) return AddConstantInteger(((byte)value));
 
-            if (value is char) return AddConstantInteger(((char?)value).Value);
+            if (value is sbyte) return AddConstantInteger(((sbyte)value));
 
-            if (value is short) return AddConstantInteger(((short?)value).Value);
+            if (value is char) return AddConstantInteger(((char)value));
 
-            if (value is bool) return AddConstantInteger(((bool?)value).Value ? 1 : 0);
+            if (value is short) return AddConstantInteger(((short)value));
 
-            if (value is float) return AddConstantFloat(((float?)value).Value);
+            if (value is bool) return AddConstantInteger(((bool)value) ? 1 : 0);
 
-            if (value is long) return AddConstantLong(((long?)value).Value);
+            if (value is float) return AddConstantFloat(((float)value));
 
-            if (value is double) return AddConstantDouble(((double?)value).Value);
+            if (value is long) return AddConstantLong(((long)value));
+
+            if (value is double) return AddConstantDouble(((double)value));
 
             if (value is string) return AddConstantString((string)value);
 
