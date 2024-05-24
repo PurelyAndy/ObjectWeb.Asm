@@ -26,98 +26,96 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+/// A <see cref="ClassVisitor"/> that merges &lt;clinit&gt; methods into a single one. All the existing
+/// &lt;clinit&gt; methods are renamed, and a new one is created, which calls all the renamed
+/// methods.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class StaticInitMerger : ClassVisitor
 {
     /// <summary>
-    /// A <seealso cref="ClassVisitor"/> that merges &lt;clinit&gt; methods into a single one. All the existing
-    /// &lt;clinit&gt; methods are renamed, and a new one is created, which calls all the renamed
-    /// methods.
-    /// 
-    /// @author Eric Bruneton
+    /// The internal name of the visited class. </summary>
+    private string _owner;
+
+    /// <summary>
+    /// The prefix to use to rename the existing &lt;clinit&gt; methods. </summary>
+    private readonly string _renamedClinitMethodPrefix;
+
+    /// <summary>
+    /// The number of &lt;clinit&gt; methods visited so far. </summary>
+    private int _numClinitMethods;
+
+    /// <summary>
+    /// The MethodVisitor for the merged &lt;clinit&gt; method. </summary>
+    private MethodVisitor _mergedClinitVisitor;
+
+    /// <summary>
+    /// Constructs a new <see cref="StaticInitMerger"/>. <i>Subclasses must not use this constructor</i>.
+    /// Instead, they must use the <see cref="StaticInitMerger(int, String, ClassVisitor)"/> version.
     /// </summary>
-    public class StaticInitMerger : ClassVisitor
+    /// <param name="prefix"> the prefix to use to rename the existing &lt;clinit&gt; methods. </param>
+    /// <param name="classVisitor"> the class visitor to which this visitor must delegate method calls. May be
+    ///     null. </param>
+    public StaticInitMerger(string prefix, ClassVisitor classVisitor) : this(Opcodes.Asm9, prefix, classVisitor)
     {
-        /// <summary>
-        /// The internal name of the visited class. </summary>
-        private string _owner;
+    }
 
-        /// <summary>
-        /// The prefix to use to rename the existing &lt;clinit&gt; methods. </summary>
-        private readonly string _renamedClinitMethodPrefix;
+    /// <summary>
+    /// Constructs a new <see cref="StaticInitMerger"/>.
+    /// </summary>
+    /// <param name="api"> the ASM API version implemented by this visitor. Must be one of the <c>ASM</c><i>x</i> values in <see cref="Opcodes"/>. </param>
+    /// <param name="prefix"> the prefix to use to rename the existing &lt;clinit&gt; methods. </param>
+    /// <param name="classVisitor"> the class visitor to which this visitor must delegate method calls. May be
+    ///     null. </param>
+    public StaticInitMerger(int api, string prefix, ClassVisitor classVisitor) : base(api, classVisitor)
+    {
+        this._renamedClinitMethodPrefix = prefix;
+    }
 
-        /// <summary>
-        /// The number of &lt;clinit&gt; methods visited so far. </summary>
-        private int _numClinitMethods;
+    public override void Visit(int version, int access, string name, string signature, string superName,
+        string[] interfaces)
+    {
+        base.Visit(version, access, name, signature, superName, interfaces);
+        this._owner = name;
+    }
 
-        /// <summary>
-        /// The MethodVisitor for the merged &lt;clinit&gt; method. </summary>
-        private MethodVisitor _mergedClinitVisitor;
-
-        /// <summary>
-        /// Constructs a new <seealso cref="StaticInitMerger"/>. <i>Subclasses must not use this constructor</i>.
-        /// Instead, they must use the <seealso cref="StaticInitMerger(int, String, ClassVisitor)"/> version.
-        /// </summary>
-        /// <param name="prefix"> the prefix to use to rename the existing &lt;clinit&gt; methods. </param>
-        /// <param name="classVisitor"> the class visitor to which this visitor must delegate method calls. May be
-        ///     null. </param>
-        public StaticInitMerger(string prefix, ClassVisitor classVisitor) : this(Opcodes.Asm9, prefix, classVisitor)
+    public override MethodVisitor VisitMethod(int access, string name, string descriptor, string signature,
+        string[] exceptions)
+    {
+        MethodVisitor methodVisitor;
+        if ("<clinit>".Equals(name))
         {
-        }
+            int newAccess = Opcodes.Acc_Private + Opcodes.Acc_Static;
+            string newName = _renamedClinitMethodPrefix + _numClinitMethods++;
+            methodVisitor = base.VisitMethod(newAccess, newName, descriptor, signature, exceptions);
 
-        /// <summary>
-        /// Constructs a new <seealso cref="StaticInitMerger"/>.
-        /// </summary>
-        /// <param name="api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="Opcodes"/>. </param>
-        /// <param name="prefix"> the prefix to use to rename the existing &lt;clinit&gt; methods. </param>
-        /// <param name="classVisitor"> the class visitor to which this visitor must delegate method calls. May be
-        ///     null. </param>
-        public StaticInitMerger(int api, string prefix, ClassVisitor classVisitor) : base(api, classVisitor)
-        {
-            this._renamedClinitMethodPrefix = prefix;
-        }
-
-        public override void Visit(int version, int access, string name, string signature, string superName,
-            string[] interfaces)
-        {
-            base.Visit(version, access, name, signature, superName, interfaces);
-            this._owner = name;
-        }
-
-        public override MethodVisitor VisitMethod(int access, string name, string descriptor, string signature,
-            string[] exceptions)
-        {
-            MethodVisitor methodVisitor;
-            if ("<clinit>".Equals(name))
+            if (_mergedClinitVisitor == null)
             {
-                int newAccess = Opcodes.Acc_Private + Opcodes.Acc_Static;
-                string newName = _renamedClinitMethodPrefix + _numClinitMethods++;
-                methodVisitor = base.VisitMethod(newAccess, newName, descriptor, signature, exceptions);
-
-                if (_mergedClinitVisitor == null)
-                {
-                    _mergedClinitVisitor = base.VisitMethod(newAccess, name, descriptor, null, null);
-                }
-
-                _mergedClinitVisitor.VisitMethodInsn(Opcodes.Invokestatic, _owner, newName, descriptor, false);
-            }
-            else
-            {
-                methodVisitor = base.VisitMethod(access, name, descriptor, signature, exceptions);
+                _mergedClinitVisitor = base.VisitMethod(newAccess, name, descriptor, null, null);
             }
 
-            return methodVisitor;
+            _mergedClinitVisitor.VisitMethodInsn(Opcodes.Invokestatic, _owner, newName, descriptor, false);
         }
-
-        public override void VisitEnd()
+        else
         {
-            if (_mergedClinitVisitor != null)
-            {
-                _mergedClinitVisitor.VisitInsn(Opcodes.Return);
-                _mergedClinitVisitor.VisitMaxs(0, 0);
-            }
-
-            base.VisitEnd();
+            methodVisitor = base.VisitMethod(access, name, descriptor, signature, exceptions);
         }
+
+        return methodVisitor;
+    }
+
+    public override void VisitEnd()
+    {
+        if (_mergedClinitVisitor != null)
+        {
+            _mergedClinitVisitor.VisitInsn(Opcodes.Return);
+            _mergedClinitVisitor.VisitMaxs(0, 0);
+        }
+
+        base.VisitEnd();
     }
 }

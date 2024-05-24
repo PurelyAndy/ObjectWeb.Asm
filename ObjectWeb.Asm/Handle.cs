@@ -28,149 +28,139 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm
+namespace ObjectWeb.Asm;
+
+/// <summary>
+/// A reference to a field or a method.
+/// 
+/// @author Remi Forax
+/// @author Eric Bruneton
+/// </summary>
+public sealed class Handle
 {
     /// <summary>
-    /// A reference to a field or a method.
-    /// 
-    /// @author Remi Forax
-    /// @author Eric Bruneton
+    /// The kind of field or method designated by this Handle. Should be <see cref="Opcodes.H_Getfield/>,
+    /// <see cref="Opcodes.H_Getstatic/>, <see cref="Opcodes.H_Putfield/>, <see cref="Opcodes.H_Putstatic/>, <see cref="Opcodes.H_Invokevirtual"/>, <see cref="Opcodes.H_Invokestatic/>, <see cref="Opcodes.H_Invokespecial/>,
+    /// <see cref="Opcodes.H_Newinvokespecial/> or <see cref="Opcodes.H_Invokeinterface/>.
     /// </summary>
-    public sealed class Handle
+    private readonly int _tag;
+
+    /// <summary>
+    /// The internal name of the class that owns the field or method designated by this handle. </summary>
+    private readonly string _owner;
+
+    /// <summary>
+    /// The name of the field or method designated by this handle. </summary>
+    private readonly string _name;
+
+    /// <summary>
+    /// The descriptor of the field or method designated by this handle. </summary>
+    private readonly string _descriptor;
+
+    /// <summary>
+    /// Whether the owner is an interface or not. </summary>
+    private readonly bool _isInterface;
+
+    /// <summary>
+    /// Constructs a new field or method handle.
+    /// </summary>
+    /// <param name="tag"> the kind of field or method designated by this Handle. Must be <see cref="Opcodes.H_Getfield"/>, <see cref="Opcodes.H_Getstatic/>, <see cref="Opcodes.H_Putfield/>, <see cref="Opcodes.H_Putstatic"/>, <see cref="Opcodes.H_Invokevirtual/>, <see cref="Opcodes.H_Invokestatic/>,
+    ///     <see cref="Opcodes.H_Invokespecial/>, <see cref="Opcodes.H_Newinvokespecial/> or <see cref="Opcodes.H_INVOKEINTERFACE"/>. </param>
+    /// <param name="owner"> the internal name of the class that owns the field or method designated by this
+    ///     handle. </param>
+    /// <param name="name"> the name of the field or method designated by this handle (see <see cref="JType.InternalName"/>). </param>
+    /// <param name="descriptor"> the descriptor of the field or method designated by this handle. </param>
+    /// @deprecated this constructor has been superseded by <see cref=" #Handle(int, String, String, String,
+    ///     boolean)"/>. 
+    [Obsolete("this constructor has been superseded by Handle(int, String, String, String, bool)")]
+    public Handle(int tag, string owner, string name, string descriptor) : this(tag, owner, name, descriptor,
+        tag == Opcodes.H_Invokeinterface)
     {
-        /// <summary>
-        /// The kind of field or method designated by this Handle. Should be <seealso cref="IIOpcodes.H_Getfield/>,
-        /// <seealso cref="IIOpcodes.H_Getstatic/>, <seealso cref="IIOpcodes.H_Putfield/>, <seealso cref="IIOpcodes.H_Putstatic/>, {@link
-        /// Opcodes#H_INVOKEVIRTUAL}, <seealso cref="IIOpcodes.H_Invokestatic/>, <seealso cref="IIOpcodes.H_Invokespecial/>,
-        /// <seealso cref="IIOpcodes.H_Newinvokespecial/> or <seealso cref="IIOpcodes.H_Invokeinterface/>.
-        /// </summary>
-        private readonly int _tag;
+    }
 
-        /// <summary>
-        /// The internal name of the class that owns the field or method designated by this handle. </summary>
-        private readonly string _owner;
+    /// <summary>
+    /// Constructs a new field or method handle.
+    /// </summary>
+    /// <param name="tag"> the kind of field or method designated by this Handle. Must be <see cref="Opcodes.H_Getfield"/>, <see cref="Opcodes.H_Getstatic/>, <see cref="Opcodes.H_Putfield/>, <see cref="Opcodes.H_Putstatic"/>, <see cref="Opcodes.H_Invokevirtual/>, <see cref="Opcodes.H_Invokestatic/>,
+    ///     <see cref="Opcodes.H_Invokespecial/>, <see cref="Opcodes.H_Newinvokespecial/> or <see cref="Opcodes.H_INVOKEINTERFACE"/>. </param>
+    /// <param name="owner"> the internal name of the class that owns the field or method designated by this
+    ///     handle. </param>
+    /// <param name="name"> the name of the field or method designated by this handle (see <see cref="JType.InternalName"/>). </param>
+    /// <param name="descriptor"> the descriptor of the field or method designated by this handle. </param>
+    /// <param name="isInterface"> whether the owner is an interface or not. </param>
+    public Handle(int tag, string owner, string name, string descriptor, bool isInterface)
+    {
+        this._tag = tag;
+        this._owner = owner;
+        this._name = name;
+        this._descriptor = descriptor;
+        this._isInterface = isInterface;
+    }
 
-        /// <summary>
-        /// The name of the field or method designated by this handle. </summary>
-        private readonly string _name;
+    /// <summary>
+    /// Returns the kind of field or method designated by this handle.
+    /// </summary>
+    /// <returns> <see cref="Opcodes.H_Getfield/>, <see cref="Opcodes.H_Getstatic/>, <see cref="Opcodes.H_Putfield/>,
+    ///     <see cref="Opcodes.H_Putstatic/>, <see cref="Opcodes.H_Invokevirtual/>, <see cref="Opcodes.H_INVOKESTATIC"/>, <see cref="Opcodes.H_Invokespecial/>, <see cref="Opcodes.H_NEWINVOKESPECIAL"/> or <see cref="Opcodes.H_Invokeinterface/>. </returns>
+    public int Tag => _tag;
 
-        /// <summary>
-        /// The descriptor of the field or method designated by this handle. </summary>
-        private readonly string _descriptor;
+    /// <summary>
+    /// Returns the internal name of the class that owns the field or method designated by this handle.
+    /// </summary>
+    /// <returns> the internal name of the class that owns the field or method designated by this handle (see <see cref="JType.InternalName"/>). </returns>
+    public string Owner => _owner;
 
-        /// <summary>
-        /// Whether the owner is an interface or not. </summary>
-        private readonly bool _isInterface;
+    /// <summary>
+    /// Returns the name of the field or method designated by this handle.
+    /// </summary>
+    /// <returns> the name of the field or method designated by this handle. </returns>
+    public string Name => _name;
 
-        /// <summary>
-        /// Constructs a new field or method handle.
-        /// </summary>
-        /// <param name="tag"> the kind of field or method designated by this Handle. Must be {@link
-        ///     Opcodes#H_GETFIELD}, <seealso cref="IIOpcodes.H_Getstatic/>, <seealso cref="IIOpcodes.H_Putfield/>, {@link
-        ///     Opcodes#H_PUTSTATIC}, <seealso cref="IIOpcodes.H_Invokevirtual/>, <seealso cref="IIOpcodes.H_Invokestatic/>,
-        ///     <seealso cref="IIOpcodes.H_Invokespecial/>, <seealso cref="IIOpcodes.H_Newinvokespecial/> or {@link
-        ///     Opcodes#H_INVOKEINTERFACE}. </param>
-        /// <param name="owner"> the internal name of the class that owns the field or method designated by this
-        ///     handle. </param>
-        /// <param name="name"> the name of the field or method designated by this handle. </param>
-        /// <param name="descriptor"> the descriptor of the field or method designated by this handle. </param>
-        /// @deprecated this constructor has been superseded by {@link #Handle(int, String, String, String,
-        ///     boolean)}. 
-        [Obsolete("this constructor has been superseded by {@link #Handle(int, String, String, String,")]
-        public Handle(int tag, string owner, string name, string descriptor) : this(tag, owner, name, descriptor,
-            tag == Opcodes.H_Invokeinterface)
+    /// <summary>
+    /// Returns the descriptor of the field or method designated by this handle.
+    /// </summary>
+    /// <returns> the descriptor of the field or method designated by this handle. </returns>
+    public string Desc => _descriptor;
+
+    /// <summary>
+    /// Returns true if the owner of the field or method designated by this handle is an interface.
+    /// </summary>
+    /// <returns> true if the owner of the field or method designated by this handle is an interface. </returns>
+    public bool Interface => _isInterface;
+
+    public override bool Equals(object @object)
+    {
+        if (@object == this)
         {
+            return true;
         }
 
-        /// <summary>
-        /// Constructs a new field or method handle.
-        /// </summary>
-        /// <param name="tag"> the kind of field or method designated by this Handle. Must be {@link
-        ///     Opcodes#H_GETFIELD}, <seealso cref="IIOpcodes.H_Getstatic/>, <seealso cref="IIOpcodes.H_Putfield/>, {@link
-        ///     Opcodes#H_PUTSTATIC}, <seealso cref="IIOpcodes.H_Invokevirtual/>, <seealso cref="IIOpcodes.H_Invokestatic/>,
-        ///     <seealso cref="IIOpcodes.H_Invokespecial/>, <seealso cref="IIOpcodes.H_Newinvokespecial/> or {@link
-        ///     Opcodes#H_INVOKEINTERFACE}. </param>
-        /// <param name="owner"> the internal name of the class that owns the field or method designated by this
-        ///     handle. </param>
-        /// <param name="name"> the name of the field or method designated by this handle. </param>
-        /// <param name="descriptor"> the descriptor of the field or method designated by this handle. </param>
-        /// <param name="isInterface"> whether the owner is an interface or not. </param>
-        public Handle(int tag, string owner, string name, string descriptor, bool isInterface)
+        if (!(@object is Handle))
         {
-            this._tag = tag;
-            this._owner = owner;
-            this._name = name;
-            this._descriptor = descriptor;
-            this._isInterface = isInterface;
+            return false;
         }
 
-        /// <summary>
-        /// Returns the kind of field or method designated by this handle.
-        /// </summary>
-        /// <returns> <seealso cref="IIOpcodes.H_Getfield/>, <seealso cref="IIOpcodes.H_Getstatic/>, <seealso cref="IIOpcodes.H_Putfield/>,
-        ///     <seealso cref="IIOpcodes.H_Putstatic/>, <seealso cref="IIOpcodes.H_Invokevirtual/>, {@link
-        ///     Opcodes#H_INVOKESTATIC}, <seealso cref="IIOpcodes.H_Invokespecial/>, {@link
-        ///     Opcodes#H_NEWINVOKESPECIAL} or <seealso cref="IIOpcodes.H_Invokeinterface/>. </returns>
-        public int Tag => _tag;
+        Handle handle = (Handle)@object;
+        return _tag == handle._tag && _isInterface == handle._isInterface && _owner.Equals(handle._owner) &&
+               _name.Equals(handle._name) && _descriptor.Equals(handle._descriptor);
+    }
 
-        /// <summary>
-        /// Returns the internal name of the class that owns the field or method designated by this handle.
-        /// </summary>
-        /// <returns> the internal name of the class that owns the field or method designated by this handle. </returns>
-        public string Owner => _owner;
+    public override int GetHashCode()
+    {
+        return _tag + (_isInterface ? 64 : 0) +
+               _owner.GetHashCode() * _name.GetHashCode() * _descriptor.GetHashCode();
+    }
 
-        /// <summary>
-        /// Returns the name of the field or method designated by this handle.
-        /// </summary>
-        /// <returns> the name of the field or method designated by this handle. </returns>
-        public string Name => _name;
-
-        /// <summary>
-        /// Returns the descriptor of the field or method designated by this handle.
-        /// </summary>
-        /// <returns> the descriptor of the field or method designated by this handle. </returns>
-        public string Desc => _descriptor;
-
-        /// <summary>
-        /// Returns true if the owner of the field or method designated by this handle is an interface.
-        /// </summary>
-        /// <returns> true if the owner of the field or method designated by this handle is an interface. </returns>
-        public bool Interface => _isInterface;
-
-        public override bool Equals(object @object)
-        {
-            if (@object == this)
-            {
-                return true;
-            }
-
-            if (!(@object is Handle))
-            {
-                return false;
-            }
-
-            Handle handle = (Handle)@object;
-            return _tag == handle._tag && _isInterface == handle._isInterface && _owner.Equals(handle._owner) &&
-                   _name.Equals(handle._name) && _descriptor.Equals(handle._descriptor);
-        }
-
-        public override int GetHashCode()
-        {
-            return _tag + (_isInterface ? 64 : 0) +
-                   _owner.GetHashCode() * _name.GetHashCode() * _descriptor.GetHashCode();
-        }
-
-        /// <summary>
-        /// Returns the textual representation of this handle. The textual representation is:
-        /// 
-        /// <ul>
-        ///   <li>for a reference to a class: owner "." name descriptor " (" tag ")",
-        ///   <li>for a reference to an interface: owner "." name descriptor " (" tag " itf)".
-        /// </ul>
-        /// </summary>
-        public override string ToString()
-        {
-            return _owner + '.' + _name + _descriptor + " (" + _tag + (_isInterface ? " itf" : "") + ')';
-        }
+    /// <summary>
+    /// Returns the textual representation of this handle. The textual representation is:
+    /// 
+    /// <ul>
+    ///   <li>for a reference to a class: owner "." name descriptor " (" tag ")",
+    ///   <li>for a reference to an interface: owner "." name descriptor " (" tag " itf)".
+    /// </ul>
+    /// </summary>
+    public override string ToString()
+    {
+        return _owner + '.' + _name + _descriptor + " (" + _tag + (_isInterface ? " itf" : "") + ')';
     }
 }

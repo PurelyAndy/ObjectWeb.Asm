@@ -27,67 +27,64 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a field instruction. A field instruction is an instruction that loads or
+/// stores the value of a field of an object.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class FieldInsnNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents a field instruction. A field instruction is an instruction that loads or
-    /// stores the value of a field of an object.
-    /// 
-    /// @author Eric Bruneton
+    /// The internal name of the field's owner class (see <see cref="JType.InternalName"/>).
     /// </summary>
-    public class FieldInsnNode : AbstractInsnNode
+    public string Owner { get; set; }
+
+    /// <summary>
+    /// The field's name. </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The field's descriptor (see <see cref="JType"/>). </summary>
+    public string Desc { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "FieldInsnNode"/>.
+    /// </summary>
+    /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be
+    ///     GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD. </param>
+    /// <param name = "owner"> the internal name of the field's owner class (see <see cref="JType.InternalName"/>). </param>
+    /// <param name = "name"> the field's name. </param>
+    /// <param name = "descriptor"> the field's descriptor (see <see cref="JType"/>). </param>
+    public FieldInsnNode(int opcode, string owner, string name, string descriptor) : base(opcode)
     {
-        /// <summary>
-        /// The internal name of the field's owner class (see {@link
-        /// org.objectweb.asm.Type#getInternalName}).
-        /// </summary>
-        public string Owner { get; set; }
+        this.Owner = owner;
+        this.Name = name;
+        this.Desc = descriptor;
+    }
 
-        /// <summary>
-        /// The field's name. </summary>
-        public string Name { get; set; }
+    /// <summary>
+    /// Sets the opcode of this instruction.
+    /// </summary>
+    /// <param name = "opcode"> the new instruction opcode. This opcode must be GETSTATIC, PUTSTATIC, GETFIELD or
+    ///     PUTFIELD. </param>
+    public virtual int Opcode
+    {
+        set => this.opcode = value;
+    }
 
-        /// <summary>
-        /// The field's descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </summary>
-        public string Desc { get; set; }
+    public override int Type => Field_Insn;
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "FieldInsnNode"/>.
-        /// </summary>
-        /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be
-        ///     GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD. </param>
-        /// <param name = "owner"> the internal name of the field's owner class (see {@link
-        ///     org.objectweb.asm.Type#getInternalName}). </param>
-        /// <param name = "name"> the field's name. </param>
-        /// <param name = "descriptor"> the field's descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
-        public FieldInsnNode(int opcode, string owner, string name, string descriptor) : base(opcode)
-        {
-            this.Owner = owner;
-            this.Name = name;
-            this.Desc = descriptor;
-        }
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitFieldInsn(opcode, Owner, Name, Desc);
+        AcceptAnnotations(methodVisitor);
+    }
 
-        /// <summary>
-        /// Sets the opcode of this instruction.
-        /// </summary>
-        /// <param name = "opcode"> the new instruction opcode. This opcode must be GETSTATIC, PUTSTATIC, GETFIELD or
-        ///     PUTFIELD. </param>
-        public virtual int Opcode
-        {
-            set => this.opcode = value;
-        }
-
-        public override int Type => Field_Insn;
-
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitFieldInsn(opcode, Owner, Name, Desc);
-            AcceptAnnotations(methodVisitor);
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            return (new FieldInsnNode(opcode, Owner, Name, Desc)).CloneAnnotations(this);
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        return (new FieldInsnNode(opcode, Owner, Name, Desc)).CloneAnnotations(this);
     }
 }

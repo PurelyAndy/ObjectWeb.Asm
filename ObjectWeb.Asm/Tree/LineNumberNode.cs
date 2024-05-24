@@ -27,46 +27,45 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a line number declaration. These nodes are pseudo instruction nodes in
+/// order to be inserted in an instruction list.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class LineNumberNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents a line number declaration. These nodes are pseudo instruction nodes in
-    /// order to be inserted in an instruction list.
-    /// 
-    /// @author Eric Bruneton
+    /// A line number. This number refers to the source file from which the class was compiled. </summary>
+    public int Line { get; set; }
+
+    /// <summary>
+    /// The first instruction corresponding to this line number. </summary>
+    public LabelNode Start { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "LineNumberNode"/>.
     /// </summary>
-    public class LineNumberNode : AbstractInsnNode
+    /// <param name = "line"> a line number. This number refers to the source file from which the class was
+    ///     compiled. </param>
+    /// <param name = "start"> the first instruction corresponding to this line number. </param>
+    public LineNumberNode(int line, LabelNode start) : base(-1)
     {
-        /// <summary>
-        /// A line number. This number refers to the source file from which the class was compiled. </summary>
-        public int Line { get; set; }
+        this.Line = line;
+        this.Start = start;
+    }
 
-        /// <summary>
-        /// The first instruction corresponding to this line number. </summary>
-        public LabelNode Start { get; set; }
+    public override int Type => Line_Insn;
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "LineNumberNode"/>.
-        /// </summary>
-        /// <param name = "line"> a line number. This number refers to the source file from which the class was
-        ///     compiled. </param>
-        /// <param name = "start"> the first instruction corresponding to this line number. </param>
-        public LineNumberNode(int line, LabelNode start) : base(-1)
-        {
-            this.Line = line;
-            this.Start = start;
-        }
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitLineNumber(Line, Start.Label);
+    }
 
-        public override int Type => Line_Insn;
-
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitLineNumber(Line, Start.Label);
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            return new LineNumberNode(Line, Clone(Start, clonedLabels));
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        return new LineNumberNode(Line, Clone(Start, clonedLabels));
     }
 }

@@ -27,98 +27,96 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a type annotation on a local or resource variable.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class LocalVariableAnnotationNode : TypeAnnotationNode
 {
     /// <summary>
-    /// A node that represents a type annotation on a local or resource variable.
-    /// 
-    /// @author Eric Bruneton
+    /// The fist instructions corresponding to the continuous ranges that make the scope of this local
+    /// variable (inclusive). Must not be null.
     /// </summary>
-    public class LocalVariableAnnotationNode : TypeAnnotationNode
+    public List<LabelNode> Start { get; set; }
+
+    /// <summary>
+    /// The last instructions corresponding to the continuous ranges that make the scope of this local
+    /// variable (exclusive). This list must have the same size as the 'start' list. Must not be
+    /// null.
+    /// </summary>
+    public List<LabelNode> End { get; set; }
+
+    /// <summary>
+    /// The local variable's index in each range. This list must have the same size as the 'start'
+    /// list. Must not be null.
+    /// </summary>
+    public List<int> Index { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "LocalVariableAnnotationNode"/>. <i>Subclasses must not use this
+    /// constructor</i>. Instead, they must use the <see cref=" #LocalVariableAnnotationNode(int, TypePath,
+    /// LabelNode[], LabelNode[], int[], String)"/> version.
+    /// </summary>
+    /// <param name = "typeRef"> a reference to the annotated type. See <seealso cref = "TypeReference"/>. </param>
+    /// <param name = "typePath"> the path to the annotated type argument, wildcard bound, array element type, or
+    ///     static inner type within 'typeRef'. May be null if the annotation targets
+    ///     'typeRef' as a whole. </param>
+    /// <param name = "start"> the fist instructions corresponding to the continuous ranges that make the scope
+    ///     of this local variable (inclusive). </param>
+    /// <param name = "end"> the last instructions corresponding to the continuous ranges that make the scope of
+    ///     this local variable (exclusive). This array must have the same size as the 'start' array. </param>
+    /// <param name = "index"> the local variable's index in each range. This array must have the same size as
+    ///     the 'start' array. </param>
+    /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
+    public LocalVariableAnnotationNode(int typeRef, TypePath typePath, LabelNode[] start, LabelNode[] end,
+        int[] index, string descriptor) : this(Opcodes.Asm9, typeRef, typePath, start, end, index, descriptor)
     {
-        /// <summary>
-        /// The fist instructions corresponding to the continuous ranges that make the scope of this local
-        /// variable (inclusive). Must not be {@literal null}.
-        /// </summary>
-        public List<LabelNode> Start { get; set; }
+    }
 
-        /// <summary>
-        /// The last instructions corresponding to the continuous ranges that make the scope of this local
-        /// variable (exclusive). This list must have the same size as the 'start' list. Must not be
-        /// {@literal null}.
-        /// </summary>
-        public List<LabelNode> End { get; set; }
+    /// <summary>
+    /// Constructs a new <seealso cref = "LocalVariableAnnotationNode"/>.
+    /// </summary>
+    /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the <c>ASM</c><i>x</i> values in <seealso cref = "Opcodes"/>. </param>
+    /// <param name = "typeRef"> a reference to the annotated type. See <seealso cref = "TypeReference"/>. </param>
+    /// <param name = "start"> the fist instructions corresponding to the continuous ranges that make the scope
+    ///     of this local variable (inclusive). </param>
+    /// <param name = "end"> the last instructions corresponding to the continuous ranges that make the scope of
+    ///     this local variable (exclusive). This array must have the same size as the 'start' array. </param>
+    /// <param name = "index"> the local variable's index in each range. This array must have the same size as
+    ///     the 'start' array. </param>
+    /// <param name = "typePath"> the path to the annotated type argument, wildcard bound, array element type, or
+    ///     static inner type within 'typeRef'. May be null if the annotation targets
+    ///     'typeRef' as a whole. </param>
+    /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
+    public LocalVariableAnnotationNode(int api, int typeRef, TypePath typePath, LabelNode[] start, LabelNode[] end,
+        int[] index, string descriptor) : base(api, typeRef, typePath, descriptor)
+    {
+        this.Start = Util.AsArrayList(start);
+        this.End = Util.AsArrayList(end);
+        this.Index = Util.AsArrayList(index);
+    }
 
-        /// <summary>
-        /// The local variable's index in each range. This list must have the same size as the 'start'
-        /// list. Must not be {@literal null}.
-        /// </summary>
-        public List<int> Index { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "LocalVariableAnnotationNode"/>. <i>Subclasses must not use this
-        /// constructor</i>. Instead, they must use the {@link #LocalVariableAnnotationNode(int, TypePath,
-        /// LabelNode[], LabelNode[], int[], String)} version.
-        /// </summary>
-        /// <param name = "typeRef"> a reference to the annotated type. See <seealso cref = "TypeReference"/>. </param>
-        /// <param name = "typePath"> the path to the annotated type argument, wildcard bound, array element type, or
-        ///     static inner type within 'typeRef'. May be {@literal null} if the annotation targets
-        ///     'typeRef' as a whole. </param>
-        /// <param name = "start"> the fist instructions corresponding to the continuous ranges that make the scope
-        ///     of this local variable (inclusive). </param>
-        /// <param name = "end"> the last instructions corresponding to the continuous ranges that make the scope of
-        ///     this local variable (exclusive). This array must have the same size as the 'start' array. </param>
-        /// <param name = "index"> the local variable's index in each range. This array must have the same size as
-        ///     the 'start' array. </param>
-        /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
-        public LocalVariableAnnotationNode(int typeRef, TypePath typePath, LabelNode[] start, LabelNode[] end,
-            int[] index, string descriptor) : this(Opcodes.Asm9, typeRef, typePath, start, end, index, descriptor)
+    /// <summary>
+    /// Makes the given visitor visit this type annotation.
+    /// </summary>
+    /// <param name = "methodVisitor"> the visitor that must visit this annotation. </param>
+    /// <param name = "visible"> <c>true</c> if the annotation is visible at runtime. </param>
+    public virtual void Accept(MethodVisitor methodVisitor, bool visible)
+    {
+        Label[] startLabels = new Label[this.Start.Count];
+        Label[] endLabels = new Label[this.End.Count];
+        int[] indices = new int[this.Index.Count];
+        for (int i = 0, n = startLabels.Length; i < n; ++i)
         {
+            startLabels[i] = this.Start[i].Label;
+            endLabels[i] = this.End[i].Label;
+            indices[i] = this.Index[i];
         }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "LocalVariableAnnotationNode"/>.
-        /// </summary>
-        /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref = "Opcodes"/>. </param>
-        /// <param name = "typeRef"> a reference to the annotated type. See <seealso cref = "TypeReference"/>. </param>
-        /// <param name = "start"> the fist instructions corresponding to the continuous ranges that make the scope
-        ///     of this local variable (inclusive). </param>
-        /// <param name = "end"> the last instructions corresponding to the continuous ranges that make the scope of
-        ///     this local variable (exclusive). This array must have the same size as the 'start' array. </param>
-        /// <param name = "index"> the local variable's index in each range. This array must have the same size as
-        ///     the 'start' array. </param>
-        /// <param name = "typePath"> the path to the annotated type argument, wildcard bound, array element type, or
-        ///     static inner type within 'typeRef'. May be {@literal null} if the annotation targets
-        ///     'typeRef' as a whole. </param>
-        /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
-        public LocalVariableAnnotationNode(int api, int typeRef, TypePath typePath, LabelNode[] start, LabelNode[] end,
-            int[] index, string descriptor) : base(api, typeRef, typePath, descriptor)
-        {
-            this.Start = Util.AsArrayList(start);
-            this.End = Util.AsArrayList(end);
-            this.Index = Util.AsArrayList(index);
-        }
-
-        /// <summary>
-        /// Makes the given visitor visit this type annotation.
-        /// </summary>
-        /// <param name = "methodVisitor"> the visitor that must visit this annotation. </param>
-        /// <param name = "visible"> {@literal true} if the annotation is visible at runtime. </param>
-        public virtual void Accept(MethodVisitor methodVisitor, bool visible)
-        {
-            Label[] startLabels = new Label[this.Start.Count];
-            Label[] endLabels = new Label[this.End.Count];
-            int[] indices = new int[this.Index.Count];
-            for (int i = 0, n = startLabels.Length; i < n; ++i)
-            {
-                startLabels[i] = this.Start[i].Label;
-                endLabels[i] = this.End[i].Label;
-                indices[i] = this.Index[i];
-            }
-
-            Accept(methodVisitor.VisitLocalVariableAnnotation(TypeRef, TypePath, startLabels, endLabels, indices, Desc,
-                visible));
-        }
+        Accept(methodVisitor.VisitLocalVariableAnnotation(TypeRef, TypePath, startLabels, endLabels, indices, Desc,
+            visible));
     }
 }

@@ -26,52 +26,52 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a local variable declaration.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class LocalVariableNode
 {
     /// <summary>
-    /// A node that represents a local variable declaration.
-    /// 
-    /// @author Eric Bruneton
+    /// The name of a local variable. </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The type descriptor of this local variable. </summary>
+    public string Desc { get; set; }
+
+    /// <summary>
+    /// The signature of this local variable. May be null. </summary>
+    public string Signature { get; set; }
+
+    /// <summary>
+    /// The first instruction corresponding to the scope of this local variable (inclusive). </summary>
+    public LabelNode Start { get; set; }
+
+    /// <summary>
+    /// The last instruction corresponding to the scope of this local variable (exclusive). </summary>
+    public LabelNode End { get; set; }
+
+    /// <summary>
+    /// The local variable's index. </summary>
+    public int Index { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "LocalVariableNode"/>.
     /// </summary>
-    public class LocalVariableNode
+    /// <param name = "name"> the name of a local variable. </param>
+    /// <param name = "descriptor"> the type descriptor of this local variable. </param>
+    /// <param name = "signature"> the signature of this local variable. May be null. </param>
+    /// <param name = "start"> the first instruction corresponding to the scope of this local variable
+    ///     (inclusive). </param>
+    /// <param name = "end"> the last instruction corresponding to the scope of this local variable (exclusive). </param>
+    /// <param name = "index"> the local variable's index. </param>
+    public LocalVariableNode(string name, string descriptor, string signature, LabelNode start, LabelNode end,
+        int index)
     {
-        /// <summary>
-        /// The name of a local variable. </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// The type descriptor of this local variable. </summary>
-        public string Desc { get; set; }
-
-        /// <summary>
-        /// The signature of this local variable. May be {@literal null}. </summary>
-        public string Signature { get; set; }
-
-        /// <summary>
-        /// The first instruction corresponding to the scope of this local variable (inclusive). </summary>
-        public LabelNode Start { get; set; }
-
-        /// <summary>
-        /// The last instruction corresponding to the scope of this local variable (exclusive). </summary>
-        public LabelNode End { get; set; }
-
-        /// <summary>
-        /// The local variable's index. </summary>
-        public int Index { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "LocalVariableNode"/>.
-        /// </summary>
-        /// <param name = "name"> the name of a local variable. </param>
-        /// <param name = "descriptor"> the type descriptor of this local variable. </param>
-        /// <param name = "signature"> the signature of this local variable. May be {@literal null}. </param>
-        /// <param name = "start"> the first instruction corresponding to the scope of this local variable
-        ///     (inclusive). </param>
-        /// <param name = "end"> the last instruction corresponding to the scope of this local variable (exclusive). </param>
-        /// <param name = "index"> the local variable's index. </param>
-        public LocalVariableNode(string name, string descriptor, string signature, LabelNode start, LabelNode end,
-            int index)
-        {
             this.Name = name;
             this.Desc = descriptor;
             this.Signature = signature;
@@ -80,13 +80,12 @@ namespace ObjectWeb.Asm.Tree
             this.Index = index;
         }
 
-        /// <summary>
-        /// Makes the given visitor visit this local variable declaration.
-        /// </summary>
-        /// <param name = "methodVisitor"> a method visitor. </param>
-        public virtual void Accept(MethodVisitor methodVisitor)
-        {
+    /// <summary>
+    /// Makes the given visitor visit this local variable declaration.
+    /// </summary>
+    /// <param name = "methodVisitor"> a method visitor. </param>
+    public virtual void Accept(MethodVisitor methodVisitor)
+    {
             methodVisitor.VisitLocalVariable(Name, Desc, Signature, Start.Label, End.Label, Index);
         }
-    }
 }

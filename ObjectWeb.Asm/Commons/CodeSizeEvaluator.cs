@@ -26,189 +26,188 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+///     A <see cref="MethodVisitor" /> that approximates the size of the methods it visits.
+///     @author Eugene Kuleshov
+/// </summary>
+public class CodeSizeEvaluator : MethodVisitor
 {
     /// <summary>
-    ///     A <seealso cref="MethodVisitor" /> that approximates the size of the methods it visits.
-    ///     @author Eugene Kuleshov
+    ///     The maximum size in bytes of the visited method.
     /// </summary>
-    public class CodeSizeEvaluator : MethodVisitor
+    private int _maxSize;
+
+    /// <summary>
+    ///     The minimum size in bytes of the visited method.
+    /// </summary>
+    private int _minSize;
+
+    public CodeSizeEvaluator(MethodVisitor methodVisitor) : this(Opcodes.Asm9, methodVisitor)
     {
-        /// <summary>
-        ///     The maximum size in bytes of the visited method.
-        /// </summary>
-        private int _maxSize;
+    }
 
-        /// <summary>
-        ///     The minimum size in bytes of the visited method.
-        /// </summary>
-        private int _minSize;
+    public CodeSizeEvaluator(int api, MethodVisitor methodVisitor) : base(api, methodVisitor)
+    {
+    }
 
-        public CodeSizeEvaluator(MethodVisitor methodVisitor) : this(Opcodes.Asm9, methodVisitor)
+    public virtual int MinSize => _minSize;
+
+    public virtual int MaxSize => _maxSize;
+
+    public override void VisitInsn(int opcode)
+    {
+        _minSize += 1;
+        _maxSize += 1;
+        base.VisitInsn(opcode);
+    }
+
+    public override void VisitIntInsn(int opcode, int operand)
+    {
+        if (opcode == Opcodes.Sipush)
         {
+            _minSize += 3;
+            _maxSize += 3;
+        }
+        else
+        {
+            _minSize += 2;
+            _maxSize += 2;
         }
 
-        public CodeSizeEvaluator(int api, MethodVisitor methodVisitor) : base(api, methodVisitor)
-        {
-        }
+        base.VisitIntInsn(opcode, operand);
+    }
 
-        public virtual int MinSize => _minSize;
-
-        public virtual int MaxSize => _maxSize;
-
-        public override void VisitInsn(int opcode)
+    public override void VisitVarInsn(int opcode, int varIndex)
+    {
+        if (varIndex < 4 && opcode != Opcodes.Ret)
         {
             _minSize += 1;
             _maxSize += 1;
-            base.VisitInsn(opcode);
         }
-
-        public override void VisitIntInsn(int opcode, int operand)
-        {
-            if (opcode == Opcodes.Sipush)
-            {
-                _minSize += 3;
-                _maxSize += 3;
-            }
-            else
-            {
-                _minSize += 2;
-                _maxSize += 2;
-            }
-
-            base.VisitIntInsn(opcode, operand);
-        }
-
-        public override void VisitVarInsn(int opcode, int varIndex)
-        {
-            if (varIndex < 4 && opcode != Opcodes.Ret)
-            {
-                _minSize += 1;
-                _maxSize += 1;
-            }
-            else if (varIndex >= 256)
-            {
-                _minSize += 4;
-                _maxSize += 4;
-            }
-            else
-            {
-                _minSize += 2;
-                _maxSize += 2;
-            }
-
-            base.VisitVarInsn(opcode, varIndex);
-        }
-
-        public override void VisitTypeInsn(int opcode, string type)
-        {
-            _minSize += 3;
-            _maxSize += 3;
-            base.VisitTypeInsn(opcode, type);
-        }
-
-        public override void VisitFieldInsn(int opcode, string owner, string name, string descriptor)
-        {
-            _minSize += 3;
-            _maxSize += 3;
-            base.VisitFieldInsn(opcode, owner, name, descriptor);
-        }
-
-        public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
-            bool isInterface)
-        {
-            if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
-            {
-                // Redirect the call to the deprecated version of this method.
-                base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
-                return;
-            }
-
-            int opcode = opcodeAndSource & ~Opcodes.Source_Mask;
-
-            if (opcode == Opcodes.Invokeinterface)
-            {
-                _minSize += 5;
-                _maxSize += 5;
-            }
-            else
-            {
-                _minSize += 3;
-                _maxSize += 3;
-            }
-
-            base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
-        }
-
-        public override void VisitInvokeDynamicInsn(string name, string descriptor, Handle bootstrapMethodHandle,
-            params object[] bootstrapMethodArguments)
-        {
-            _minSize += 5;
-            _maxSize += 5;
-            base.VisitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
-        }
-
-        public override void VisitJumpInsn(int opcode, Label label)
-        {
-            _minSize += 3;
-            if (opcode == Opcodes.Goto || opcode == Opcodes.Jsr)
-                _maxSize += 5;
-            else
-                _maxSize += 8;
-            base.VisitJumpInsn(opcode, label);
-        }
-
-        public override void VisitLdcInsn(object value)
-        {
-            if (value is long? || value is double? || value is ConstantDynamic && ((ConstantDynamic)value).Size == 2)
-            {
-                _minSize += 3;
-                _maxSize += 3;
-            }
-            else
-            {
-                _minSize += 2;
-                _maxSize += 3;
-            }
-
-            base.VisitLdcInsn(value);
-        }
-
-        public override void VisitIincInsn(int varIndex, int increment)
-        {
-            if (varIndex > 255 || increment > 127 || increment < -128)
-            {
-                _minSize += 6;
-                _maxSize += 6;
-            }
-            else
-            {
-                _minSize += 3;
-                _maxSize += 3;
-            }
-
-            base.VisitIincInsn(varIndex, increment);
-        }
-
-        public override void VisitTableSwitchInsn(int min, int max, Label dflt, params Label[] labels)
-        {
-            _minSize += 13 + labels.Length * 4;
-            _maxSize += 16 + labels.Length * 4;
-            base.VisitTableSwitchInsn(min, max, dflt, labels);
-        }
-
-        public override void VisitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels)
-        {
-            _minSize += 9 + keys.Length * 8;
-            _maxSize += 12 + keys.Length * 8;
-            base.VisitLookupSwitchInsn(dflt, keys, labels);
-        }
-
-        public override void VisitMultiANewArrayInsn(string descriptor, int numDimensions)
+        else if (varIndex >= 256)
         {
             _minSize += 4;
             _maxSize += 4;
-            base.VisitMultiANewArrayInsn(descriptor, numDimensions);
         }
+        else
+        {
+            _minSize += 2;
+            _maxSize += 2;
+        }
+
+        base.VisitVarInsn(opcode, varIndex);
+    }
+
+    public override void VisitTypeInsn(int opcode, string type)
+    {
+        _minSize += 3;
+        _maxSize += 3;
+        base.VisitTypeInsn(opcode, type);
+    }
+
+    public override void VisitFieldInsn(int opcode, string owner, string name, string descriptor)
+    {
+        _minSize += 3;
+        _maxSize += 3;
+        base.VisitFieldInsn(opcode, owner, name, descriptor);
+    }
+
+    public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
+        bool isInterface)
+    {
+        if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
+        {
+            // Redirect the call to the deprecated version of this method.
+            base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
+            return;
+        }
+
+        int opcode = opcodeAndSource & ~Opcodes.Source_Mask;
+
+        if (opcode == Opcodes.Invokeinterface)
+        {
+            _minSize += 5;
+            _maxSize += 5;
+        }
+        else
+        {
+            _minSize += 3;
+            _maxSize += 3;
+        }
+
+        base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
+    }
+
+    public override void VisitInvokeDynamicInsn(string name, string descriptor, Handle bootstrapMethodHandle,
+        params object[] bootstrapMethodArguments)
+    {
+        _minSize += 5;
+        _maxSize += 5;
+        base.VisitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+    }
+
+    public override void VisitJumpInsn(int opcode, Label label)
+    {
+        _minSize += 3;
+        if (opcode == Opcodes.Goto || opcode == Opcodes.Jsr)
+            _maxSize += 5;
+        else
+            _maxSize += 8;
+        base.VisitJumpInsn(opcode, label);
+    }
+
+    public override void VisitLdcInsn(object value)
+    {
+        if (value is long? || value is double? || value is ConstantDynamic && ((ConstantDynamic)value).Size == 2)
+        {
+            _minSize += 3;
+            _maxSize += 3;
+        }
+        else
+        {
+            _minSize += 2;
+            _maxSize += 3;
+        }
+
+        base.VisitLdcInsn(value);
+    }
+
+    public override void VisitIincInsn(int varIndex, int increment)
+    {
+        if (varIndex > 255 || increment > 127 || increment < -128)
+        {
+            _minSize += 6;
+            _maxSize += 6;
+        }
+        else
+        {
+            _minSize += 3;
+            _maxSize += 3;
+        }
+
+        base.VisitIincInsn(varIndex, increment);
+    }
+
+    public override void VisitTableSwitchInsn(int min, int max, Label dflt, params Label[] labels)
+    {
+        _minSize += 13 + labels.Length * 4;
+        _maxSize += 16 + labels.Length * 4;
+        base.VisitTableSwitchInsn(min, max, dflt, labels);
+    }
+
+    public override void VisitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels)
+    {
+        _minSize += 9 + keys.Length * 8;
+        _maxSize += 12 + keys.Length * 8;
+        base.VisitLookupSwitchInsn(dflt, keys, labels);
+    }
+
+    public override void VisitMultiANewArrayInsn(string descriptor, int numDimensions)
+    {
+        _minSize += 4;
+        _maxSize += 4;
+        base.VisitMultiANewArrayInsn(descriptor, numDimensions);
     }
 }

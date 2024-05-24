@@ -27,57 +27,56 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// An <see cref="AbstractInsnNode"/> that encapsulates a <see cref="Label"/>. </summary>
+public class LabelNode : AbstractInsnNode
 {
-    /// <summary>
-    /// An <seealso cref="AbstractInsnNode"/> that encapsulates a <seealso cref="Label"/>. </summary>
-    public class LabelNode : AbstractInsnNode
+    private Label _value;
+
+    public LabelNode() : base(-1)
     {
-        private Label _value;
+    }
 
-        public LabelNode() : base(-1)
+    public LabelNode(Label label) : base(-1)
+    {
+        this._value = label;
+    }
+
+    public override int Type => AbstractInsnNode.Label_Insn;
+
+    /// <summary>
+    /// Returns the label encapsulated by this node. A new label is created and associated with this
+    /// node if it was created without an encapsulated label.
+    /// </summary>
+    /// <returns> the label encapsulated by this node. </returns>
+    public virtual Label Label
+    {
+        get
         {
-        }
-
-        public LabelNode(Label label) : base(-1)
-        {
-            this._value = label;
-        }
-
-        public override int Type => AbstractInsnNode.Label_Insn;
-
-        /// <summary>
-        /// Returns the label encapsulated by this node. A new label is created and associated with this
-        /// node if it was created without an encapsulated label.
-        /// </summary>
-        /// <returns> the label encapsulated by this node. </returns>
-        public virtual Label Label
-        {
-            get
+            if (_value == null)
             {
-                if (_value == null)
-                {
-                    _value = new Label();
-                }
-
-                return _value;
+                _value = new Label();
             }
-        }
 
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitLabel(Label);
+            return _value;
         }
+    }
 
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            clonedLabels.TryGetValue(this, out LabelNode ret);
-            return ret;
-        }
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitLabel(Label);
+    }
 
-        public virtual void ResetLabel()
-        {
-            _value = null;
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        clonedLabels.TryGetValue(this, out LabelNode ret);
+        return ret;
+    }
+
+    public virtual void ResetLabel()
+    {
+        _value = null;
     }
 }

@@ -27,66 +27,65 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a TABLESWITCH instruction.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class TableSwitchInsnNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents a TABLESWITCH instruction.
-    /// 
-    /// @author Eric Bruneton
+    /// The minimum key value. </summary>
+    public int Min { get; set; }
+
+    /// <summary>
+    /// The maximum key value. </summary>
+    public int Max { get; set; }
+
+    /// <summary>
+    /// Beginning of the default handler block. </summary>
+    public LabelNode Dflt { get; set; }
+
+    /// <summary>
+    /// Beginnings of the handler blocks. This list is a list of <seealso cref = "LabelNode"/> objects. </summary>
+    public List<LabelNode> Labels { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "TableSwitchInsnNode"/>.
     /// </summary>
-    public class TableSwitchInsnNode : AbstractInsnNode
+    /// <param name = "min"> the minimum key value. </param>
+    /// <param name = "max"> the maximum key value. </param>
+    /// <param name = "dflt"> beginning of the default handler block. </param>
+    /// <param name = "labels"> beginnings of the handler blocks. <c>labels[i]</c> is the beginning of the
+    ///     handler block for the <c>min + i</c> key. </param>
+    public TableSwitchInsnNode(int min, int max, LabelNode dflt, params LabelNode[] labels) : base(
+        Opcodes.Tableswitch)
     {
-        /// <summary>
-        /// The minimum key value. </summary>
-        public int Min { get; set; }
+        this.Min = min;
+        this.Max = max;
+        this.Dflt = dflt;
+        this.Labels = Util.AsArrayList(labels);
+    }
 
-        /// <summary>
-        /// The maximum key value. </summary>
-        public int Max { get; set; }
+    public override int Type => Tableswitch_Insn;
 
-        /// <summary>
-        /// Beginning of the default handler block. </summary>
-        public LabelNode Dflt { get; set; }
-
-        /// <summary>
-        /// Beginnings of the handler blocks. This list is a list of <seealso cref = "LabelNode"/> objects. </summary>
-        public List<LabelNode> Labels { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "TableSwitchInsnNode"/>.
-        /// </summary>
-        /// <param name = "min"> the minimum key value. </param>
-        /// <param name = "max"> the maximum key value. </param>
-        /// <param name = "dflt"> beginning of the default handler block. </param>
-        /// <param name = "labels"> beginnings of the handler blocks. {@code labels[i]} is the beginning of the
-        ///     handler block for the {@code min + i} key. </param>
-        public TableSwitchInsnNode(int min, int max, LabelNode dflt, params LabelNode[] labels) : base(
-            Opcodes.Tableswitch)
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        Label[] labelsArray = new Label[this.Labels.Count];
+        for (int i = 0, n = labelsArray.Length; i < n; ++i)
         {
-            this.Min = min;
-            this.Max = max;
-            this.Dflt = dflt;
-            this.Labels = Util.AsArrayList(labels);
+            labelsArray[i] = this.Labels[i].Label;
         }
 
-        public override int Type => Tableswitch_Insn;
+        methodVisitor.VisitTableSwitchInsn(Min, Max, Dflt.Label, labelsArray);
+        AcceptAnnotations(methodVisitor);
+    }
 
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            Label[] labelsArray = new Label[this.Labels.Count];
-            for (int i = 0, n = labelsArray.Length; i < n; ++i)
-            {
-                labelsArray[i] = this.Labels[i].Label;
-            }
-
-            methodVisitor.VisitTableSwitchInsn(Min, Max, Dflt.Label, labelsArray);
-            AcceptAnnotations(methodVisitor);
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            return (new TableSwitchInsnNode(Min, Max, Clone(Dflt, clonedLabels), Clone(Labels, clonedLabels)))
-                .CloneAnnotations(this);
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        return (new TableSwitchInsnNode(Min, Max, Clone(Dflt, clonedLabels), Clone(Labels, clonedLabels)))
+            .CloneAnnotations(this);
     }
 }

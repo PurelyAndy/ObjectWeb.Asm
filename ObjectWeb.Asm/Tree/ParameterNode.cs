@@ -26,44 +26,41 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a parameter of a method.
+/// 
+/// @author Remi Forax
+/// </summary>
+public class ParameterNode
 {
     /// <summary>
-    /// A node that represents a parameter of a method.
-    /// 
-    /// @author Remi Forax
+    /// The parameter's name. </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The parameter's access flags (see <seealso cref = "Opcodes"/>). Valid values are <c>ACC_FINAL</c>, <c>ACC_SYNTHETIC</c> and <c>ACC_MANDATED</c>.
     /// </summary>
-    public class ParameterNode
+    public int Access { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "ParameterNode"/>.
+    /// </summary>
+    /// <param name = "access"> The parameter's access flags. Valid values are <c>ACC_FINAL</c>, <c>ACC_SYNTHETIC</c> or/and <c>ACC_MANDATED</c> (see <seealso cref = "Opcodes"/>). </param>
+    /// <param name = "name"> the parameter's name. </param>
+    public ParameterNode(string name, int access)
     {
-        /// <summary>
-        /// The parameter's name. </summary>
-        public string Name { get; set; }
+        this.Name = name;
+        this.Access = access;
+    }
 
-        /// <summary>
-        /// The parameter's access flags (see <seealso cref = "Opcodes"/>). Valid values are {@code
-        /// ACC_FINAL}, {@code ACC_SYNTHETIC} and {@code ACC_MANDATED}.
-        /// </summary>
-        public int Access { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "ParameterNode"/>.
-        /// </summary>
-        /// <param name = "access"> The parameter's access flags. Valid values are {@code ACC_FINAL}, {@code
-        ///     ACC_SYNTHETIC} or/and {@code ACC_MANDATED} (see <seealso cref = "Opcodes"/>). </param>
-        /// <param name = "name"> the parameter's name. </param>
-        public ParameterNode(string name, int access)
-        {
-            this.Name = name;
-            this.Access = access;
-        }
-
-        /// <summary>
-        /// Makes the given visitor visit this parameter declaration.
-        /// </summary>
-        /// <param name = "methodVisitor"> a method visitor. </param>
-        public virtual void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitParameter(Name, Access);
-        }
+    /// <summary>
+    /// Makes the given visitor visit this parameter declaration.
+    /// </summary>
+    /// <param name = "methodVisitor"> a method visitor. </param>
+    public virtual void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitParameter(Name, Access);
     }
 }

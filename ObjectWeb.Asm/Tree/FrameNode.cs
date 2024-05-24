@@ -27,167 +27,165 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a stack map frame. These nodes are pseudo instruction nodes in order to be
+/// inserted in an instruction list. In fact these nodes must(*) be inserted <i>just before</i> any
+/// instruction node <b>i</b> that follows an unconditionnal branch instruction such as GOTO or
+/// THROW, that is the target of a jump instruction, or that starts an exception handler block. The
+/// stack map frame types must describe the values of the local variables and of the operand stack
+/// elements <i>just before</i> <b>i</b> is executed. <br>
+/// <br>
+/// (*) this is mandatory only for classes whose version is greater than or equal to <see cref="Opcodes.V1_6"/>.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class FrameNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents a stack map frame. These nodes are pseudo instruction nodes in order to be
-    /// inserted in an instruction list. In fact these nodes must(*) be inserted <i>just before</i> any
-    /// instruction node <b>i</b> that follows an unconditionnal branch instruction such as GOTO or
-    /// THROW, that is the target of a jump instruction, or that starts an exception handler block. The
-    /// stack map frame types must describe the values of the local variables and of the operand stack
-    /// elements <i>just before</i> <b>i</b> is executed. <br>
-    /// <br>
-    /// (*) this is mandatory only for classes whose version is greater than or equal to {@link
-    /// Opcodes#V1_6}.
-    /// 
-    /// @author Eric Bruneton
+    /// The type of this frame. Must be <see cref="Opcodes.F_New"/> for  expanded  frames ,  or { @link  ///Opcodes # F_Full } , <see cref="Opcodes.F_Append"/> , <see cref="Opcodes.F_Chop"/> , <see cref="Opcodes.F_Same"/> or
+    /// <see cref="Opcodes.F_Append"/> , <see cref="Opcodes.F_Same1"/> for  compressed  frames .
     /// </summary>
-    public class FrameNode : AbstractInsnNode
+    public int FrameType { get; set; }
+
+    /// <summary>
+    /// The types of the local variables of this stack map frame. Elements of this list can be Integer,
+    /// String or LabelNode objects (for primitive, reference and uninitialized types respectively -
+    /// see <seealso cref = "MethodVisitor"/>).
+    /// </summary>
+    public List<object> Local { get; set; }
+
+    /// <summary>
+    /// The types of the operand stack elements of this stack map frame. Elements of this list can be
+    /// Integer, String or LabelNode objects (for primitive, reference and uninitialized types
+    /// respectively - see <seealso cref = "MethodVisitor"/>).
+    /// </summary>
+    public List<object> Stack { get; set; }
+
+    private FrameNode() : base(-1)
     {
-        /// <summary>
-        /// The type of this frame. Must be <seealso cref = "IIOpcodes.F_New / > for  expanded  frames ,  or { @link  ///Opcodes # F_FULL } , <seealso cref = "IIOpcodes.F_Append / > , <seealso cref = "IIOpcodes.F_Chop / > , <seealso cref = "IIOpcodes.F_Same / > or
-        /// <seealso cref = "IIOpcodes.F_Append / > , <seealso cref = "IIOpcodes.F_Same1 / > for  compressed  frames .
-        /// </summary>
-        public int FrameType { get; set; }
+    }
 
-        /// <summary>
-        /// The types of the local variables of this stack map frame. Elements of this list can be Integer,
-        /// String or LabelNode objects (for primitive, reference and uninitialized types respectively -
-        /// see <seealso cref = "MethodVisitor"/>).
-        /// </summary>
-        public List<object> Local { get; set; }
-
-        /// <summary>
-        /// The types of the operand stack elements of this stack map frame. Elements of this list can be
-        /// Integer, String or LabelNode objects (for primitive, reference and uninitialized types
-        /// respectively - see <seealso cref = "MethodVisitor"/>).
-        /// </summary>
-        public List<object> Stack { get; set; }
-
-        private FrameNode() : base(-1)
+    /// <summary>
+    /// Constructs a new <seealso cref = "FrameNode"/>.
+    /// </summary>
+    /// <param name = "type"> the type of this frame. Must be <see cref="Opcodes.F_New"/> for  expanded  frames ,  or
+    ///     <see cref="Opcodes.F_Full"/> , <see cref="Opcodes.F_Append"/> , <see cref="Opcodes.F_Chop"/> ,  { @link  ///Opcodes # F_SAME } or <see cref="Opcodes.F_Append"/> , <see cref="Opcodes.F_Same1"/> for  compressed  frames . </param>
+    /// <param name = "numLocal"> number of local variables of this stack map frame. </param>
+    /// <param name = "local"> the types of the local variables of this stack map frame. Elements of this list
+    ///     can be Integer, String or LabelNode objects (for primitive, reference and uninitialized
+    ///     types respectively - see <seealso cref = "MethodVisitor"/>). </param>
+    /// <param name = "numStack"> number of operand stack elements of this stack map frame. </param>
+    /// <param name = "stack"> the types of the operand stack elements of this stack map frame. Elements of this
+    ///     list can be Integer, String or LabelNode objects (for primitive, reference and
+    ///     uninitialized types respectively - see <seealso cref = "MethodVisitor"/>). </param>
+    public FrameNode(int type, int numLocal, object[] local, int numStack, object[] stack) : base(-1)
+    {
+        this.FrameType = type;
+        switch (type)
         {
+            case Opcodes.F_New:
+            case Opcodes.F_Full:
+                this.Local = Util.AsArrayList(numLocal, local);
+                this.Stack = Util.AsArrayList(numStack, stack);
+                break;
+            case Opcodes.F_Append:
+                this.Local = Util.AsArrayList(numLocal, local);
+                break;
+            case Opcodes.F_Chop:
+                this.Local = Util.AsArrayList<object>(numLocal);
+                break;
+            case Opcodes.F_Same:
+                break;
+            case Opcodes.F_Same1:
+                this.Stack = Util.AsArrayList(1, stack);
+                break;
+            default:
+                throw new System.ArgumentException();
         }
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "FrameNode"/>.
-        /// </summary>
-        /// <param name = "type"> the type of this frame. Must be <seealso cref = "IIOpcodes.F_New / > for  expanded  frames ,  or
-        ///     <seealso cref = "IIOpcodes.F_Full / > , <seealso cref = "IIOpcodes.F_Append / > , <seealso cref = "IIOpcodes.F_Chop / > ,  { @link  ///Opcodes # F_SAME } or <seealso cref = "IIOpcodes.F_Append / > , <seealso cref = "IIOpcodes.F_Same1 / > for  compressed  frames . </param>
-        /// <param name = "numLocal"> number of local variables of this stack map frame. </param>
-        /// <param name = "local"> the types of the local variables of this stack map frame. Elements of this list
-        ///     can be Integer, String or LabelNode objects (for primitive, reference and uninitialized
-        ///     types respectively - see <seealso cref = "MethodVisitor"/>). </param>
-        /// <param name = "numStack"> number of operand stack elements of this stack map frame. </param>
-        /// <param name = "stack"> the types of the operand stack elements of this stack map frame. Elements of this
-        ///     list can be Integer, String or LabelNode objects (for primitive, reference and
-        ///     uninitialized types respectively - see <seealso cref = "MethodVisitor"/>). </param>
-        public FrameNode(int type, int numLocal, object[] local, int numStack, object[] stack) : base(-1)
+    public override int Type => Frame_Insn;
+
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        switch (FrameType)
         {
-            this.FrameType = type;
-            switch (type)
-            {
-                case Opcodes.F_New:
-                case Opcodes.F_Full:
-                    this.Local = Util.AsArrayList(numLocal, local);
-                    this.Stack = Util.AsArrayList(numStack, stack);
-                    break;
-                case Opcodes.F_Append:
-                    this.Local = Util.AsArrayList(numLocal, local);
-                    break;
-                case Opcodes.F_Chop:
-                    this.Local = Util.AsArrayList<object>(numLocal);
-                    break;
-                case Opcodes.F_Same:
-                    break;
-                case Opcodes.F_Same1:
-                    this.Stack = Util.AsArrayList(1, stack);
-                    break;
-                default:
-                    throw new System.ArgumentException();
-            }
+            case Opcodes.F_New:
+            case Opcodes.F_Full:
+                methodVisitor.VisitFrame(FrameType, Local.Count, AsArray(Local), Stack.Count, AsArray(Stack));
+                break;
+            case Opcodes.F_Append:
+                methodVisitor.VisitFrame(FrameType, Local.Count, AsArray(Local), 0, null);
+                break;
+            case Opcodes.F_Chop:
+                methodVisitor.VisitFrame(FrameType, Local.Count, null, 0, null);
+                break;
+            case Opcodes.F_Same:
+                methodVisitor.VisitFrame(FrameType, 0, null, 0, null);
+                break;
+            case Opcodes.F_Same1:
+                methodVisitor.VisitFrame(FrameType, 0, null, 1, AsArray(Stack));
+                break;
+            default:
+                throw new System.ArgumentException();
         }
+    }
 
-        public override int Type => Frame_Insn;
-
-        public override void Accept(MethodVisitor methodVisitor)
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        FrameNode clone = new FrameNode();
+        clone.FrameType = FrameType;
+        if (Local != null)
         {
-            switch (FrameType)
+            clone.Local = new List<object>();
+            for (int i = 0, n = Local.Count; i < n; ++i)
             {
-                case Opcodes.F_New:
-                case Opcodes.F_Full:
-                    methodVisitor.VisitFrame(FrameType, Local.Count, AsArray(Local), Stack.Count, AsArray(Stack));
-                    break;
-                case Opcodes.F_Append:
-                    methodVisitor.VisitFrame(FrameType, Local.Count, AsArray(Local), 0, null);
-                    break;
-                case Opcodes.F_Chop:
-                    methodVisitor.VisitFrame(FrameType, Local.Count, null, 0, null);
-                    break;
-                case Opcodes.F_Same:
-                    methodVisitor.VisitFrame(FrameType, 0, null, 0, null);
-                    break;
-                case Opcodes.F_Same1:
-                    methodVisitor.VisitFrame(FrameType, 0, null, 1, AsArray(Stack));
-                    break;
-                default:
-                    throw new System.ArgumentException();
-            }
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            FrameNode clone = new FrameNode();
-            clone.FrameType = FrameType;
-            if (Local != null)
-            {
-                clone.Local = new List<object>();
-                for (int i = 0, n = Local.Count; i < n; ++i)
+                object localElement = Local[i];
+                if (localElement is LabelNode)
                 {
-                    object localElement = Local[i];
-                    if (localElement is LabelNode)
-                    {
-                        clonedLabels.TryGetValue((LabelNode)localElement, out LabelNode ret);
-                        localElement = ret;
-                    }
-
-                    clone.Local.Add(localElement);
-                }
-            }
-
-            if (Stack != null)
-            {
-                clone.Stack = new List<object>();
-                for (int i = 0, n = Stack.Count; i < n; ++i)
-                {
-                    object stackElement = Stack[i];
-                    if (stackElement is LabelNode)
-                    {
-                        clonedLabels.TryGetValue((LabelNode)stackElement, out LabelNode ret);
-                        stackElement = ret;
-                    }
-
-                    clone.Stack.Add(stackElement);
-                }
-            }
-
-            return clone;
-        }
-
-        private static object[] AsArray(List<object> list)
-        {
-            object[] array = new object[list.Count];
-            for (int i = 0, n = array.Length; i < n; ++i)
-            {
-                object o = list[i];
-                if (o is LabelNode)
-                {
-                    o = ((LabelNode)o).Label;
+                    clonedLabels.TryGetValue((LabelNode)localElement, out LabelNode ret);
+                    localElement = ret;
                 }
 
-                array[i] = o;
+                clone.Local.Add(localElement);
+            }
+        }
+
+        if (Stack != null)
+        {
+            clone.Stack = new List<object>();
+            for (int i = 0, n = Stack.Count; i < n; ++i)
+            {
+                object stackElement = Stack[i];
+                if (stackElement is LabelNode)
+                {
+                    clonedLabels.TryGetValue((LabelNode)stackElement, out LabelNode ret);
+                    stackElement = ret;
+                }
+
+                clone.Stack.Add(stackElement);
+            }
+        }
+
+        return clone;
+    }
+
+    private static object[] AsArray(List<object> list)
+    {
+        object[] array = new object[list.Count];
+        for (int i = 0, n = array.Length; i < n; ++i)
+        {
+            object o = list[i];
+            if (o is LabelNode)
+            {
+                o = ((LabelNode)o).Label;
             }
 
-            return array;
+            array[i] = o;
         }
+
+        return array;
     }
 }

@@ -27,45 +27,44 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents an IINC instruction.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class IincInsnNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents an IINC instruction.
-    /// 
-    /// @author Eric Bruneton
+    /// Index of the local variable to be incremented. </summary>
+    public int Var { get; set; }
+
+    /// <summary>
+    /// Amount to increment the local variable by. </summary>
+    public int Incr { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "IincInsnNode"/>.
     /// </summary>
-    public class IincInsnNode : AbstractInsnNode
+    /// <param name = "var"> index of the local variable to be incremented. </param>
+    /// <param name = "incr"> increment amount to increment the local variable by. </param>
+    public IincInsnNode(int var, int incr) : base(Opcodes.Iinc)
     {
-        /// <summary>
-        /// Index of the local variable to be incremented. </summary>
-        public int Var { get; set; }
+        this.Var = var;
+        this.Incr = incr;
+    }
 
-        /// <summary>
-        /// Amount to increment the local variable by. </summary>
-        public int Incr { get; set; }
+    public override int Type => Iinc_Insn;
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "IincInsnNode"/>.
-        /// </summary>
-        /// <param name = "var"> index of the local variable to be incremented. </param>
-        /// <param name = "incr"> increment amount to increment the local variable by. </param>
-        public IincInsnNode(int var, int incr) : base(Opcodes.Iinc)
-        {
-            this.Var = var;
-            this.Incr = incr;
-        }
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitIincInsn(Var, Incr);
+        AcceptAnnotations(methodVisitor);
+    }
 
-        public override int Type => Iinc_Insn;
-
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitIincInsn(Var, Incr);
-            AcceptAnnotations(methodVisitor);
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            return (new IincInsnNode(Var, Incr)).CloneAnnotations(this);
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        return (new IincInsnNode(Var, Incr)).CloneAnnotations(this);
     }
 }

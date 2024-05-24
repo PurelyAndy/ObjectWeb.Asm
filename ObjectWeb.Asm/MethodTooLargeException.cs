@@ -28,55 +28,54 @@
 
 using System;
 
-namespace ObjectWeb.Asm
+namespace ObjectWeb.Asm;
+
+/// <summary>
+///     Exception thrown when the Code attribute of a method produced by a <see cref="ClassWriter" /> is too
+///     large.
+///     @author Jason Zaugg
+/// </summary>
+public sealed class MethodTooLargeException : Exception
 {
+    private const long SerialVersionUid = 6807380416709738314L;
+
     /// <summary>
-    ///     Exception thrown when the Code attribute of a method produced by a <seealso cref="ClassWriter" /> is too
-    ///     large.
-    ///     @author Jason Zaugg
+    ///     Constructs a new <see cref="MethodTooLargeException" />.
     /// </summary>
-    public sealed class MethodTooLargeException : Exception
+    /// <param name="className"> the internal name of the owner class (see <see cref="JType.InternalName"/>). </param>
+    /// <param name="methodName"> the name of the method. </param>
+    /// <param name="descriptor"> the descriptor of the method. </param>
+    /// <param name="codeSize"> the size of the method's Code attribute, in bytes. </param>
+    public MethodTooLargeException(string className, string methodName, string descriptor, int codeSize) : base(
+        "Method too large: " + className + "." + methodName + " " + descriptor)
     {
-        private const long SerialVersionUid = 6807380416709738314L;
-
-        /// <summary>
-        ///     Constructs a new <seealso cref="MethodTooLargeException" />.
-        /// </summary>
-        /// <param name="className"> the internal name of the owner class. </param>
-        /// <param name="methodName"> the name of the method. </param>
-        /// <param name="descriptor"> the descriptor of the method. </param>
-        /// <param name="codeSize"> the size of the method's Code attribute, in bytes. </param>
-        public MethodTooLargeException(string className, string methodName, string descriptor, int codeSize) : base(
-            "Method too large: " + className + "." + methodName + " " + descriptor)
-        {
-            this.ClassName = className;
-            this.MethodName = methodName;
-            this.Descriptor = descriptor;
-            this.CodeSize = codeSize;
-        }
-
-        /// <summary>
-        ///     Returns the internal name of the owner class.
-        /// </summary>
-        /// <returns> the internal name of the owner class. </returns>
-        public string ClassName { get; }
-
-        /// <summary>
-        ///     Returns the name of the method.
-        /// </summary>
-        /// <returns> the name of the method. </returns>
-        public string MethodName { get; }
-
-        /// <summary>
-        ///     Returns the descriptor of the method.
-        /// </summary>
-        /// <returns> the descriptor of the method. </returns>
-        public string Descriptor { get; }
-
-        /// <summary>
-        ///     Returns the size of the method's Code attribute, in bytes.
-        /// </summary>
-        /// <returns> the size of the method's Code attribute, in bytes. </returns>
-        public int CodeSize { get; }
+        this.ClassName = className;
+        this.MethodName = methodName;
+        this.Descriptor = descriptor;
+        this.CodeSize = codeSize;
     }
+
+    /// <summary>
+    ///     Returns the internal name of the owner class.
+    /// </summary>
+    /// <returns> the internal name of the owner class (see <see cref="JType.InternalName"/>). </returns>
+    public string ClassName { get; }
+
+    /// <summary>
+    ///     Returns the name of the method.
+    /// </summary>
+    /// <returns> the name of the method. </returns>
+    public string MethodName { get; }
+
+    /// <summary>
+    ///     Returns the descriptor of the method.
+    /// </summary>
+    /// <returns> the descriptor of the method. </returns>
+    public string Descriptor { get; }
+
+    /// <summary>
+    ///     Returns the size of the method's Code attribute, in bytes.
+    /// </summary>
+    /// <returns> the size of the method's Code attribute, in bytes. </returns>
+    public int CodeSize { get; }
 }

@@ -27,55 +27,53 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a type instruction. A type instruction is an instruction that takes an
+/// internal name as parameter (see <see cref="JType.InternalName"/>).
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class TypeInsnNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents a type instruction. A type instruction is an instruction that takes a type
-    /// descriptor as parameter.
-    /// 
-    /// @author Eric Bruneton
+    /// The operand of this instruction. This operand is an internal name (see <see cref="JType.InternalName"/>).
     /// </summary>
-    public class TypeInsnNode : AbstractInsnNode
+    public string Desc { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "TypeInsnNode"/>.
+    /// </summary>
+    /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be NEW,
+    ///     ANEWARRAY, CHECKCAST or INSTANCEOF. </param>
+    /// <param name = "descriptor"> the operand of the instruction to be constructed. This operand is an internal
+    ///     name (see <see cref="JType.InternalName"/>). </param>
+    public TypeInsnNode(int opcode, string descriptor) : base(opcode)
     {
-        /// <summary>
-        /// The operand of this instruction. This operand is an internal name (see {@link
-        /// org.objectweb.asm.Type}).
-        /// </summary>
-        public string Desc { get; set; }
+        this.Desc = descriptor;
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "TypeInsnNode"/>.
-        /// </summary>
-        /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be NEW,
-        ///     ANEWARRAY, CHECKCAST or INSTANCEOF. </param>
-        /// <param name = "descriptor"> the operand of the instruction to be constructed. This operand is an internal
-        ///     name (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
-        public TypeInsnNode(int opcode, string descriptor) : base(opcode)
-        {
-            this.Desc = descriptor;
-        }
+    /// <summary>
+    /// Sets the opcode of this instruction.
+    /// </summary>
+    /// <param name = "opcode"> the new instruction opcode. This opcode must be NEW, ANEWARRAY, CHECKCAST or
+    ///     INSTANCEOF. </param>
+    public virtual int Opcode
+    {
+        set => this.opcode = value;
+    }
 
-        /// <summary>
-        /// Sets the opcode of this instruction.
-        /// </summary>
-        /// <param name = "opcode"> the new instruction opcode. This opcode must be NEW, ANEWARRAY, CHECKCAST or
-        ///     INSTANCEOF. </param>
-        public virtual int Opcode
-        {
-            set => this.opcode = value;
-        }
+    public override int Type => Type_Insn;
 
-        public override int Type => Type_Insn;
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitTypeInsn(opcode, Desc);
+        AcceptAnnotations(methodVisitor);
+    }
 
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitTypeInsn(opcode, Desc);
-            AcceptAnnotations(methodVisitor);
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            return (new TypeInsnNode(opcode, Desc)).CloneAnnotations(this);
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        return (new TypeInsnNode(opcode, Desc)).CloneAnnotations(this);
     }
 }

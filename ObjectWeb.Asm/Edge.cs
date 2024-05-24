@@ -26,68 +26,64 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm
+namespace ObjectWeb.Asm;
+
+/// <summary>
+/// An edge in the control flow graph of a method. Each node of this graph is a basic block,
+/// represented with the Label corresponding to its first instruction. Each edge goes from one node
+/// to another, i.e. from one basic block to another (called the predecessor and successor blocks,
+/// respectively). An edge corresponds either to a jump or ret instruction or to an exception
+/// handler.
+/// </summary>
+/// <seealso cref= Label
+/// @author Eric Bruneton </seealso>
+internal sealed class Edge
 {
     /// <summary>
-    /// An edge in the control flow graph of a method. Each node of this graph is a basic block,
-    /// represented with the Label corresponding to its first instruction. Each edge goes from one node
-    /// to another, i.e. from one basic block to another (called the predecessor and successor blocks,
-    /// respectively). An edge corresponds either to a jump or ret instruction or to an exception
-    /// handler.
+    /// A control flow graph edge corresponding to a jump or ret instruction. Only used with <see cref="ClassWriter.COMPUTE_FRAMES"/>.
     /// </summary>
-    /// <seealso cref= Label
-    /// @author Eric Bruneton </seealso>
-    internal sealed class Edge
+    internal const int Jump = 0;
+
+    /// <summary>
+    /// A control flow graph edge corresponding to an exception handler. Only used with <see cref="ClassWriter.COMPUTE_MAXS"/>.
+    /// </summary>
+    internal const int Exception = 0x7FFFFFFF;
+
+    /// <summary>
+    /// Information about this control flow graph edge.
+    /// 
+    /// <ul>
+    ///   <li>If <see cref="ClassWriter.Compute_Maxs"/> is used, this field contains either a stack size
+    ///       delta (for an edge corresponding to a jump instruction), or the value EXCEPTION (for an
+    ///       edge corresponding to an exception handler). The stack size delta is the stack size just
+    ///       after the jump instruction, minus the stack size at the beginning of the predecessor
+    ///       basic block, i.e. the one containing the jump instruction.
+    ///   <li>If <see cref="ClassWriter.Compute_Frames"/> is used, this field contains either the value JUMP
+    ///       (for an edge corresponding to a jump instruction), or the index, in the <see cref="ClassWriter"/> type table, of the exception type that is handled (for an edge corresponding
+    ///       to an exception handler).
+    /// </ul>
+    /// </summary>
+    internal readonly int info;
+
+    /// <summary>
+    /// The successor block of this control flow graph edge. </summary>
+    internal readonly Label successor;
+
+    /// <summary>
+    /// The next edge in the list of outgoing edges of a basic block. See <see cref="Label.outgoingEdges"/>.
+    /// </summary>
+    internal Edge nextEdge;
+
+    /// <summary>
+    /// Constructs a new Edge.
+    /// </summary>
+    /// <param name="info"> see <see cref="info"/>. </param>
+    /// <param name="successor"> see <see cref="successor"/>. </param>
+    /// <param name="nextEdge"> see <see cref="nextEdge"/>. </param>
+    public Edge(int info, Label successor, Edge nextEdge)
     {
-        /// <summary>
-        /// A control flow graph edge corresponding to a jump or ret instruction. Only used with {@link
-        /// ClassWriter#COMPUTE_FRAMES}.
-        /// </summary>
-        internal const int Jump = 0;
-
-        /// <summary>
-        /// A control flow graph edge corresponding to an exception handler. Only used with {@link
-        /// ClassWriter#COMPUTE_MAXS}.
-        /// </summary>
-        internal const int Exception = 0x7FFFFFFF;
-
-        /// <summary>
-        /// Information about this control flow graph edge.
-        /// 
-        /// <ul>
-        ///   <li>If <seealso cref="ClassWriter.Compute_Maxs"/> is used, this field contains either a stack size
-        ///       delta (for an edge corresponding to a jump instruction), or the value EXCEPTION (for an
-        ///       edge corresponding to an exception handler). The stack size delta is the stack size just
-        ///       after the jump instruction, minus the stack size at the beginning of the predecessor
-        ///       basic block, i.e. the one containing the jump instruction.
-        ///   <li>If <seealso cref="ClassWriter.Compute_Frames"/> is used, this field contains either the value JUMP
-        ///       (for an edge corresponding to a jump instruction), or the index, in the {@link
-        ///       ClassWriter} type table, of the exception type that is handled (for an edge corresponding
-        ///       to an exception handler).
-        /// </ul>
-        /// </summary>
-        internal readonly int info;
-
-        /// <summary>
-        /// The successor block of this control flow graph edge. </summary>
-        internal readonly Label successor;
-
-        /// <summary>
-        /// The next edge in the list of outgoing edges of a basic block. See <seealso cref="Label.outgoingEdges"/>.
-        /// </summary>
-        internal Edge nextEdge;
-
-        /// <summary>
-        /// Constructs a new Edge.
-        /// </summary>
-        /// <param name="info"> see <seealso cref="info"/>. </param>
-        /// <param name="successor"> see <seealso cref="successor"/>. </param>
-        /// <param name="nextEdge"> see <seealso cref="nextEdge"/>. </param>
-        public Edge(int info, Label successor, Edge nextEdge)
-        {
-            this.info = info;
-            this.successor = successor;
-            this.nextEdge = nextEdge;
-        }
+        this.info = info;
+        this.successor = successor;
+        this.nextEdge = nextEdge;
     }
 }

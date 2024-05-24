@@ -30,144 +30,142 @@ using SignatureVisitor = ObjectWeb.Asm.Signature.SignatureVisitor;
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+/// A <see cref="SignatureVisitor"/> that remaps types with a <see cref="Remapper"/>.
+/// 
+/// @author Eugene Kuleshov
+/// </summary>
+public class SignatureRemapper : Signature.SignatureVisitor
 {
+    private readonly SignatureVisitor _signatureVisitor;
+
+    private readonly Remapper _remapper;
+
+    private List<string> _classNames = new List<string>();
+
     /// <summary>
-    /// A <seealso cref="SignatureVisitor"/> that remaps types with a <seealso cref="Remapper"/>.
-    /// 
-    /// @author Eugene Kuleshov
+    /// Constructs a new <see cref="SignatureRemapper"/>. <i>Subclasses must not use this constructor</i>.
+    /// Instead, they must use the <see cref="SignatureRemapper(int,SignatureVisitor,Remapper)"/> version.
     /// </summary>
-    public class SignatureRemapper : Signature.SignatureVisitor
+    /// <param name="signatureVisitor"> the signature visitor this remapper must delegate to. </param>
+    /// <param name="remapper"> the remapper to use to remap the types in the visited signature. </param>
+    public SignatureRemapper(SignatureVisitor signatureVisitor, Remapper remapper) : this(Opcodes.Asm9,
+        signatureVisitor, remapper)
     {
-        private readonly SignatureVisitor _signatureVisitor;
+    }
 
-        private readonly Remapper _remapper;
+    /// <summary>
+    /// Constructs a new <see cref="SignatureRemapper"/>.
+    /// </summary>
+    /// <param name="api"> the ASM API version supported by this remapper. Must be one of the <c>ASM</c><i>x</i> values in <see cref="Opcodes"/>. </param>
+    /// <param name="signatureVisitor"> the signature visitor this remapper must delegate to. </param>
+    /// <param name="remapper"> the remapper to use to remap the types in the visited signature. </param>
+    public SignatureRemapper(int api, SignatureVisitor signatureVisitor, Remapper remapper) : base(api)
+    {
+        this._signatureVisitor = signatureVisitor;
+        this._remapper = remapper;
+    }
 
-        private List<string> _classNames = new List<string>();
+    public override void VisitClassType(string name)
+    {
+        _classNames.Add(name);
+        _signatureVisitor.VisitClassType(_remapper.MapType(name));
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref="SignatureRemapper"/>. <i>Subclasses must not use this constructor</i>.
-        /// Instead, they must use the <seealso cref="SignatureRemapper(int,SignatureVisitor,Remapper)"/> version.
-        /// </summary>
-        /// <param name="signatureVisitor"> the signature visitor this remapper must delegate to. </param>
-        /// <param name="remapper"> the remapper to use to remap the types in the visited signature. </param>
-        public SignatureRemapper(SignatureVisitor signatureVisitor, Remapper remapper) : this(Opcodes.Asm9,
-            signatureVisitor, remapper)
-        {
-        }
+    public override void VisitInnerClassType(string name)
+    {
+        int classNameIndex = _classNames.Count - 1;
+        string outerClassName = _classNames[classNameIndex];
+        _classNames.RemoveAt(classNameIndex);
+        string className = outerClassName + '$' + name;
+        _classNames.Add(className);
+        string remappedOuter = _remapper.MapType(outerClassName) + '$';
+        string remappedName = _remapper.MapType(className);
+        int index = remappedName.StartsWith(remappedOuter, StringComparison.Ordinal)
+            ? remappedOuter.Length
+            : remappedName.LastIndexOf('$') + 1;
+        _signatureVisitor.VisitInnerClassType(remappedName.Substring(index));
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref="SignatureRemapper"/>.
-        /// </summary>
-        /// <param name="api"> the ASM API version supported by this remapper. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="Opcodes"/>. </param>
-        /// <param name="signatureVisitor"> the signature visitor this remapper must delegate to. </param>
-        /// <param name="remapper"> the remapper to use to remap the types in the visited signature. </param>
-        public SignatureRemapper(int api, SignatureVisitor signatureVisitor, Remapper remapper) : base(api)
-        {
-            this._signatureVisitor = signatureVisitor;
-            this._remapper = remapper;
-        }
+    public override void VisitFormalTypeParameter(string name)
+    {
+        _signatureVisitor.VisitFormalTypeParameter(name);
+    }
 
-        public override void VisitClassType(string name)
-        {
-            _classNames.Add(name);
-            _signatureVisitor.VisitClassType(_remapper.MapType(name));
-        }
+    public override void VisitTypeVariable(string name)
+    {
+        _signatureVisitor.VisitTypeVariable(name);
+    }
 
-        public override void VisitInnerClassType(string name)
-        {
-            int classNameIndex = _classNames.Count - 1;
-            string outerClassName = _classNames[classNameIndex];
-            _classNames.RemoveAt(classNameIndex);
-            string className = outerClassName + '$' + name;
-            _classNames.Add(className);
-            string remappedOuter = _remapper.MapType(outerClassName) + '$';
-            string remappedName = _remapper.MapType(className);
-            int index = remappedName.StartsWith(remappedOuter, StringComparison.Ordinal)
-                ? remappedOuter.Length
-                : remappedName.LastIndexOf('$') + 1;
-            _signatureVisitor.VisitInnerClassType(remappedName.Substring(index));
-        }
+    public override SignatureVisitor VisitArrayType()
+    {
+        _signatureVisitor.VisitArrayType();
+        return this;
+    }
 
-        public override void VisitFormalTypeParameter(string name)
-        {
-            _signatureVisitor.VisitFormalTypeParameter(name);
-        }
+    public override void VisitBaseType(char descriptor)
+    {
+        _signatureVisitor.VisitBaseType(descriptor);
+    }
 
-        public override void VisitTypeVariable(string name)
-        {
-            _signatureVisitor.VisitTypeVariable(name);
-        }
+    public override SignatureVisitor VisitClassBound()
+    {
+        _signatureVisitor.VisitClassBound();
+        return this;
+    }
 
-        public override SignatureVisitor VisitArrayType()
-        {
-            _signatureVisitor.VisitArrayType();
-            return this;
-        }
+    public override SignatureVisitor VisitExceptionType()
+    {
+        _signatureVisitor.VisitExceptionType();
+        return this;
+    }
 
-        public override void VisitBaseType(char descriptor)
-        {
-            _signatureVisitor.VisitBaseType(descriptor);
-        }
+    public override SignatureVisitor VisitInterface()
+    {
+        _signatureVisitor.VisitInterface();
+        return this;
+    }
 
-        public override SignatureVisitor VisitClassBound()
-        {
-            _signatureVisitor.VisitClassBound();
-            return this;
-        }
+    public override SignatureVisitor VisitInterfaceBound()
+    {
+        _signatureVisitor.VisitInterfaceBound();
+        return this;
+    }
 
-        public override SignatureVisitor VisitExceptionType()
-        {
-            _signatureVisitor.VisitExceptionType();
-            return this;
-        }
+    public override SignatureVisitor VisitParameterType()
+    {
+        _signatureVisitor.VisitParameterType();
+        return this;
+    }
 
-        public override SignatureVisitor VisitInterface()
-        {
-            _signatureVisitor.VisitInterface();
-            return this;
-        }
+    public override SignatureVisitor VisitReturnType()
+    {
+        _signatureVisitor.VisitReturnType();
+        return this;
+    }
 
-        public override SignatureVisitor VisitInterfaceBound()
-        {
-            _signatureVisitor.VisitInterfaceBound();
-            return this;
-        }
+    public override SignatureVisitor VisitSuperclass()
+    {
+        _signatureVisitor.VisitSuperclass();
+        return this;
+    }
 
-        public override SignatureVisitor VisitParameterType()
-        {
-            _signatureVisitor.VisitParameterType();
-            return this;
-        }
+    public override void VisitTypeArgument()
+    {
+        _signatureVisitor.VisitTypeArgument();
+    }
 
-        public override SignatureVisitor VisitReturnType()
-        {
-            _signatureVisitor.VisitReturnType();
-            return this;
-        }
+    public override SignatureVisitor VisitTypeArgument(char wildcard)
+    {
+        _signatureVisitor.VisitTypeArgument(wildcard);
+        return this;
+    }
 
-        public override SignatureVisitor VisitSuperclass()
-        {
-            _signatureVisitor.VisitSuperclass();
-            return this;
-        }
-
-        public override void VisitTypeArgument()
-        {
-            _signatureVisitor.VisitTypeArgument();
-        }
-
-        public override SignatureVisitor VisitTypeArgument(char wildcard)
-        {
-            _signatureVisitor.VisitTypeArgument(wildcard);
-            return this;
-        }
-
-        public override void VisitEnd()
-        {
-            _signatureVisitor.VisitEnd();
-            _classNames.RemoveAt(_classNames.Count - 1);
-        }
+    public override void VisitEnd()
+    {
+        _signatureVisitor.VisitEnd();
+        _classNames.RemoveAt(_classNames.Count - 1);
     }
 }

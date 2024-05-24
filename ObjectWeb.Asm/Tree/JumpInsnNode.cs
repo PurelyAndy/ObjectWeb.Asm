@@ -27,57 +27,56 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a jump instruction. A jump instruction is an instruction that may jump to
+/// another instruction.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class JumpInsnNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents a jump instruction. A jump instruction is an instruction that may jump to
-    /// another instruction.
-    /// 
-    /// @author Eric Bruneton
+    /// The operand of this instruction. This operand is a label that designates the instruction to
+    /// which this instruction may jump.
     /// </summary>
-    public class JumpInsnNode : AbstractInsnNode
+    public LabelNode Label { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "JumpInsnNode"/>.
+    /// </summary>
+    /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be IFEQ,
+    ///     IFNE, IFLT, IFGE, IFGT, IFLE, IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT,
+    ///     IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE, GOTO, JSR, IFNULL or IFNONNULL. </param>
+    /// <param name = "label"> the operand of the instruction to be constructed. This operand is a label that
+    ///     designates the instruction to which the jump instruction may jump. </param>
+    public JumpInsnNode(int opcode, LabelNode label) : base(opcode)
     {
-        /// <summary>
-        /// The operand of this instruction. This operand is a label that designates the instruction to
-        /// which this instruction may jump.
-        /// </summary>
-        public LabelNode Label { get; set; }
+        this.Label = label;
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "JumpInsnNode"/>.
-        /// </summary>
-        /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be IFEQ,
-        ///     IFNE, IFLT, IFGE, IFGT, IFLE, IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT,
-        ///     IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE, GOTO, JSR, IFNULL or IFNONNULL. </param>
-        /// <param name = "label"> the operand of the instruction to be constructed. This operand is a label that
-        ///     designates the instruction to which the jump instruction may jump. </param>
-        public JumpInsnNode(int opcode, LabelNode label) : base(opcode)
-        {
-            this.Label = label;
-        }
+    /// <summary>
+    /// Sets the opcode of this instruction.
+    /// </summary>
+    /// <param name = "opcode"> the new instruction opcode. This opcode must be IFEQ, IFNE, IFLT, IFGE, IFGT,
+    ///     IFLE, IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ,
+    ///     IF_ACMPNE, GOTO, JSR, IFNULL or IFNONNULL. </param>
+    public virtual int Opcode
+    {
+        set => this.opcode = value;
+    }
 
-        /// <summary>
-        /// Sets the opcode of this instruction.
-        /// </summary>
-        /// <param name = "opcode"> the new instruction opcode. This opcode must be IFEQ, IFNE, IFLT, IFGE, IFGT,
-        ///     IFLE, IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ,
-        ///     IF_ACMPNE, GOTO, JSR, IFNULL or IFNONNULL. </param>
-        public virtual int Opcode
-        {
-            set => this.opcode = value;
-        }
+    public override int Type => Jump_Insn;
 
-        public override int Type => Jump_Insn;
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitJumpInsn(opcode, Label.Label);
+        AcceptAnnotations(methodVisitor);
+    }
 
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitJumpInsn(opcode, Label.Label);
-            AcceptAnnotations(methodVisitor);
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            return (new JumpInsnNode(opcode, Clone(Label, clonedLabels))).CloneAnnotations(this);
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        return (new JumpInsnNode(opcode, Clone(Label, clonedLabels))).CloneAnnotations(this);
     }
 }

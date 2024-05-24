@@ -28,214 +28,212 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+///     A <see cref="MethodVisitor" /> that remaps types with a <see cref="Remapper" />.
+///     @author Eugene Kuleshov
+/// </summary>
+public class MethodRemapper : MethodVisitor
 {
     /// <summary>
-    ///     A <seealso cref="MethodVisitor" /> that remaps types with a <seealso cref="Remapper" />.
-    ///     @author Eugene Kuleshov
+    ///     The remapper used to remap the types in the visited field.
     /// </summary>
-    public class MethodRemapper : MethodVisitor
+    protected internal readonly Remapper remapper;
+
+    /// <summary>
+    ///     Constructs a new <see cref="MethodRemapper" />. <i>Subclasses must not use this constructor</i>.
+    ///     Instead, they must use the <see cref="MethodRemapper(int,MethodVisitor,Remapper)" /> version.
+    /// </summary>
+    /// <param name="methodVisitor"> the method visitor this remapper must delegate to. </param>
+    /// <param name="remapper"> the remapper to use to remap the types in the visited method. </param>
+    public MethodRemapper(MethodVisitor methodVisitor, Remapper remapper) : this(Opcodes.Asm9, methodVisitor,
+        remapper)
     {
-        /// <summary>
-        ///     The remapper used to remap the types in the visited field.
-        /// </summary>
-        protected internal readonly Remapper remapper;
+    }
 
-        /// <summary>
-        ///     Constructs a new <seealso cref="MethodRemapper" />. <i>Subclasses must not use this constructor</i>.
-        ///     Instead, they must use the <seealso cref="MethodRemapper(int,MethodVisitor,Remapper)" /> version.
-        /// </summary>
-        /// <param name="methodVisitor"> the method visitor this remapper must delegate to. </param>
-        /// <param name="remapper"> the remapper to use to remap the types in the visited method. </param>
-        public MethodRemapper(MethodVisitor methodVisitor, Remapper remapper) : this(Opcodes.Asm9, methodVisitor,
-            remapper)
-        {
-        }
+    /// <summary>
+    ///     Constructs a new <see cref="MethodRemapper" />.
+    /// </summary>
+    /// <param name="api">
+    ///     the ASM API version supported by this remapper. Must be one of the <c>ASM</c><i>x</i> values in <see cref="Opcodes" />.
+    /// </param>
+    /// <param name="methodVisitor"> the method visitor this remapper must delegate to. </param>
+    /// <param name="remapper"> the remapper to use to remap the types in the visited method. </param>
+    public MethodRemapper(int api, MethodVisitor methodVisitor, Remapper remapper) : base(api, methodVisitor)
+    {
+        this.remapper = remapper;
+    }
 
-        /// <summary>
-        ///     Constructs a new <seealso cref="MethodRemapper" />.
-        /// </summary>
-        /// <param name="api">
-        ///     the ASM API version supported by this remapper. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="Opcodes" />.
-        /// </param>
-        /// <param name="methodVisitor"> the method visitor this remapper must delegate to. </param>
-        /// <param name="remapper"> the remapper to use to remap the types in the visited method. </param>
-        public MethodRemapper(int api, MethodVisitor methodVisitor, Remapper remapper) : base(api, methodVisitor)
-        {
-            this.remapper = remapper;
-        }
+    public override AnnotationVisitor VisitAnnotationDefault()
+    {
+        AnnotationVisitor annotationVisitor = base.VisitAnnotationDefault();
+        return annotationVisitor == null ? annotationVisitor : CreateAnnotationRemapper(null, annotationVisitor);
+    }
 
-        public override AnnotationVisitor VisitAnnotationDefault()
-        {
-            AnnotationVisitor annotationVisitor = base.VisitAnnotationDefault();
-            return annotationVisitor == null ? annotationVisitor : CreateAnnotationRemapper(null, annotationVisitor);
-        }
+    public override AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
+    {
+        AnnotationVisitor annotationVisitor = base.VisitAnnotation(remapper.MapDesc(descriptor), visible);
+        return annotationVisitor == null
+            ? annotationVisitor
+            : CreateAnnotationRemapper(descriptor, annotationVisitor);
+    }
 
-        public override AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
-        {
-            AnnotationVisitor annotationVisitor = base.VisitAnnotation(remapper.MapDesc(descriptor), visible);
-            return annotationVisitor == null
-                ? annotationVisitor
-                : CreateAnnotationRemapper(descriptor, annotationVisitor);
-        }
+    public override AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
+        bool visible)
+    {
+        AnnotationVisitor annotationVisitor = base.VisitTypeAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
+        return annotationVisitor == null
+            ? annotationVisitor
+            : CreateAnnotationRemapper(descriptor, annotationVisitor);
+    }
 
-        public override AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
-            bool visible)
-        {
-            AnnotationVisitor annotationVisitor = base.VisitTypeAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
-            return annotationVisitor == null
-                ? annotationVisitor
-                : CreateAnnotationRemapper(descriptor, annotationVisitor);
-        }
+    public override AnnotationVisitor VisitParameterAnnotation(int parameter, string descriptor, bool visible)
+    {
+        AnnotationVisitor annotationVisitor = base.VisitParameterAnnotation(parameter, remapper.MapDesc(descriptor), visible);
+        return annotationVisitor == null
+            ? annotationVisitor
+            : CreateAnnotationRemapper(descriptor, annotationVisitor);
+    }
 
-        public override AnnotationVisitor VisitParameterAnnotation(int parameter, string descriptor, bool visible)
-        {
-            AnnotationVisitor annotationVisitor = base.VisitParameterAnnotation(parameter, remapper.MapDesc(descriptor), visible);
-            return annotationVisitor == null
-                ? annotationVisitor
-                : CreateAnnotationRemapper(descriptor, annotationVisitor);
-        }
+    public override void VisitFrame(int type, int numLocal, object[] local, int numStack, object[] stack)
+    {
+        base.VisitFrame(type, numLocal, RemapFrameTypes(numLocal, local), numStack,
+            RemapFrameTypes(numStack, stack));
+    }
 
-        public override void VisitFrame(int type, int numLocal, object[] local, int numStack, object[] stack)
-        {
-            base.VisitFrame(type, numLocal, RemapFrameTypes(numLocal, local), numStack,
-                RemapFrameTypes(numStack, stack));
-        }
-
-        private object[] RemapFrameTypes(int numTypes, object[] frameTypes)
-        {
-            if (frameTypes == null) return frameTypes;
-            object[] remappedFrameTypes = null;
-            for (int i = 0; i < numTypes; ++i)
-                if (frameTypes[i] is string)
+    private object[] RemapFrameTypes(int numTypes, object[] frameTypes)
+    {
+        if (frameTypes == null) return frameTypes;
+        object[] remappedFrameTypes = null;
+        for (int i = 0; i < numTypes; ++i)
+            if (frameTypes[i] is string)
+            {
+                if (remappedFrameTypes == null)
                 {
-                    if (remappedFrameTypes == null)
-                    {
-                        remappedFrameTypes = new object[numTypes];
-                        Array.Copy(frameTypes, 0, remappedFrameTypes, 0, numTypes);
-                    }
-
-                    remappedFrameTypes[i] = remapper.MapType((string)frameTypes[i]);
+                    remappedFrameTypes = new object[numTypes];
+                    Array.Copy(frameTypes, 0, remappedFrameTypes, 0, numTypes);
                 }
 
-            return remappedFrameTypes == null ? frameTypes : remappedFrameTypes;
-        }
-
-        public override void VisitFieldInsn(int opcode, string owner, string name, string descriptor)
-        {
-            base.VisitFieldInsn(opcode, remapper.MapType(owner), remapper.MapFieldName(owner, name, descriptor),
-                remapper.MapDesc(descriptor));
-        }
-
-        public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
-            bool isInterface)
-        {
-            if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
-            {
-                // Redirect the call to the deprecated version of this method.
-                base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
-                return;
+                remappedFrameTypes[i] = remapper.MapType((string)frameTypes[i]);
             }
 
-            base.VisitMethodInsn(opcodeAndSource, remapper.MapType(owner),
-                remapper.MapMethodName(owner, name, descriptor), remapper.MapMethodDesc(descriptor), isInterface);
+        return remappedFrameTypes == null ? frameTypes : remappedFrameTypes;
+    }
+
+    public override void VisitFieldInsn(int opcode, string owner, string name, string descriptor)
+    {
+        base.VisitFieldInsn(opcode, remapper.MapType(owner), remapper.MapFieldName(owner, name, descriptor),
+            remapper.MapDesc(descriptor));
+    }
+
+    public override void VisitMethodInsn(int opcodeAndSource, string owner, string name, string descriptor,
+        bool isInterface)
+    {
+        if (api < Opcodes.Asm5 && (opcodeAndSource & Opcodes.Source_Deprecated) == 0)
+        {
+            // Redirect the call to the deprecated version of this method.
+            base.VisitMethodInsn(opcodeAndSource, owner, name, descriptor, isInterface);
+            return;
         }
 
-        public override void VisitInvokeDynamicInsn(string name, string descriptor, Handle bootstrapMethodHandle,
-            params object[] bootstrapMethodArguments)
-        {
-            object[] remappedBootstrapMethodArguments = new object[bootstrapMethodArguments.Length];
-            for (int i = 0; i < bootstrapMethodArguments.Length; ++i)
-                remappedBootstrapMethodArguments[i] = remapper.MapValue(bootstrapMethodArguments[i]);
-            base.VisitInvokeDynamicInsn(remapper.MapInvokeDynamicMethodName(name, descriptor),
-                remapper.MapMethodDesc(descriptor), (Handle)remapper.MapValue(bootstrapMethodHandle),
-                remappedBootstrapMethodArguments);
-        }
+        base.VisitMethodInsn(opcodeAndSource, remapper.MapType(owner),
+            remapper.MapMethodName(owner, name, descriptor), remapper.MapMethodDesc(descriptor), isInterface);
+    }
 
-        public override void VisitTypeInsn(int opcode, string type)
-        {
-            base.VisitTypeInsn(opcode, remapper.MapType(type));
-        }
+    public override void VisitInvokeDynamicInsn(string name, string descriptor, Handle bootstrapMethodHandle,
+        params object[] bootstrapMethodArguments)
+    {
+        object[] remappedBootstrapMethodArguments = new object[bootstrapMethodArguments.Length];
+        for (int i = 0; i < bootstrapMethodArguments.Length; ++i)
+            remappedBootstrapMethodArguments[i] = remapper.MapValue(bootstrapMethodArguments[i]);
+        base.VisitInvokeDynamicInsn(remapper.MapInvokeDynamicMethodName(name, descriptor),
+            remapper.MapMethodDesc(descriptor), (Handle)remapper.MapValue(bootstrapMethodHandle),
+            remappedBootstrapMethodArguments);
+    }
 
-        public override void VisitLdcInsn(object value)
-        {
-            base.VisitLdcInsn(remapper.MapValue(value));
-        }
+    public override void VisitTypeInsn(int opcode, string type)
+    {
+        base.VisitTypeInsn(opcode, remapper.MapType(type));
+    }
 
-        public override void VisitMultiANewArrayInsn(string descriptor, int numDimensions)
-        {
-            base.VisitMultiANewArrayInsn(remapper.MapDesc(descriptor), numDimensions);
-        }
+    public override void VisitLdcInsn(object value)
+    {
+        base.VisitLdcInsn(remapper.MapValue(value));
+    }
 
-        public override AnnotationVisitor VisitInsnAnnotation(int typeRef, TypePath typePath, string descriptor,
-            bool visible)
-        {
-            AnnotationVisitor annotationVisitor = base.VisitInsnAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
-            return annotationVisitor == null
-                ? annotationVisitor
-                : CreateAnnotationRemapper(descriptor, annotationVisitor);
-        }
+    public override void VisitMultiANewArrayInsn(string descriptor, int numDimensions)
+    {
+        base.VisitMultiANewArrayInsn(remapper.MapDesc(descriptor), numDimensions);
+    }
 
-        public override void VisitTryCatchBlock(Label start, Label end, Label handler, string type)
-        {
-            base.VisitTryCatchBlock(start, end, handler, ReferenceEquals(type, null) ? null : remapper.MapType(type));
-        }
+    public override AnnotationVisitor VisitInsnAnnotation(int typeRef, TypePath typePath, string descriptor,
+        bool visible)
+    {
+        AnnotationVisitor annotationVisitor = base.VisitInsnAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
+        return annotationVisitor == null
+            ? annotationVisitor
+            : CreateAnnotationRemapper(descriptor, annotationVisitor);
+    }
 
-        public override AnnotationVisitor VisitTryCatchAnnotation(int typeRef, TypePath typePath, string descriptor,
-            bool visible)
-        {
-            AnnotationVisitor annotationVisitor =
-                base.VisitTryCatchAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
-            return annotationVisitor == null
-                ? annotationVisitor
-                : CreateAnnotationRemapper(descriptor, annotationVisitor);
-        }
+    public override void VisitTryCatchBlock(Label start, Label end, Label handler, string type)
+    {
+        base.VisitTryCatchBlock(start, end, handler, ReferenceEquals(type, null) ? null : remapper.MapType(type));
+    }
 
-        public override void VisitLocalVariable(string name, string descriptor, string signature, Label start,
-            Label end, int index)
-        {
-            base.VisitLocalVariable(name, remapper.MapDesc(descriptor), remapper.MapSignature(signature, true), start,
-                end, index);
-        }
+    public override AnnotationVisitor VisitTryCatchAnnotation(int typeRef, TypePath typePath, string descriptor,
+        bool visible)
+    {
+        AnnotationVisitor annotationVisitor =
+            base.VisitTryCatchAnnotation(typeRef, typePath, remapper.MapDesc(descriptor), visible);
+        return annotationVisitor == null
+            ? annotationVisitor
+            : CreateAnnotationRemapper(descriptor, annotationVisitor);
+    }
 
-        public override AnnotationVisitor VisitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start,
-            Label[] end, int[] index, string descriptor, bool visible)
-        {
-            AnnotationVisitor annotationVisitor = base.VisitLocalVariableAnnotation(typeRef, typePath, start, end, index,
-                remapper.MapDesc(descriptor), visible);
-            return annotationVisitor == null
-                ? annotationVisitor
-                : CreateAnnotationRemapper(descriptor, annotationVisitor);
-        }
+    public override void VisitLocalVariable(string name, string descriptor, string signature, Label start,
+        Label end, int index)
+    {
+        base.VisitLocalVariable(name, remapper.MapDesc(descriptor), remapper.MapSignature(signature, true), start,
+            end, index);
+    }
 
-        /// <summary>
-        ///     Constructs a new remapper for annotations. The default implementation of this method returns a
-        ///     new <seealso cref="AnnotationRemapper" />.
-        /// </summary>
-        /// <param name="annotationVisitor"> the AnnotationVisitor the remapper must delegate to. </param>
-        /// <returns> the newly created remapper. </returns>
-        /// @deprecated use
-        /// <seealso cref="CreateAnnotationRemapper(string,ObjectWeb.Asm.AnnotationVisitor)" />
-        /// instead.
-        [Obsolete("use <seealso cref=\"createAnnotationRemapper(String, AnnotationVisitor)\"/> instead.")]
-        public virtual AnnotationVisitor CreateAnnotationRemapper(AnnotationVisitor annotationVisitor)
-        {
-            return new AnnotationRemapper(api, null, annotationVisitor, remapper);
-        }
+    public override AnnotationVisitor VisitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start,
+        Label[] end, int[] index, string descriptor, bool visible)
+    {
+        AnnotationVisitor annotationVisitor = base.VisitLocalVariableAnnotation(typeRef, typePath, start, end, index,
+            remapper.MapDesc(descriptor), visible);
+        return annotationVisitor == null
+            ? annotationVisitor
+            : CreateAnnotationRemapper(descriptor, annotationVisitor);
+    }
 
-        /// <summary>
-        ///     Constructs a new remapper for annotations. The default implementation of this method returns a
-        ///     new <seealso cref="AnnotationRemapper" />.
-        /// </summary>
-        /// <param name="descriptor"> the descriptor of the visited annotation. </param>
-        /// <param name="annotationVisitor"> the AnnotationVisitor the remapper must delegate to. </param>
-        /// <returns> the newly created remapper. </returns>
-        public virtual AnnotationVisitor CreateAnnotationRemapper(string descriptor,
-            AnnotationVisitor annotationVisitor)
-        {
-            return new AnnotationRemapper(api, descriptor, annotationVisitor, remapper).OrDeprecatedValue(
-                CreateAnnotationRemapper(annotationVisitor));
-        }
+    /// <summary>
+    ///     Constructs a new remapper for annotations. The default implementation of this method returns a
+    ///     new <see cref="AnnotationRemapper" />.
+    /// </summary>
+    /// <param name="annotationVisitor"> the AnnotationVisitor the remapper must delegate to. </param>
+    /// <returns> the newly created remapper. </returns>
+    /// @deprecated use
+    /// <see cref="CreateAnnotationRemapper(string,ObjectWeb.Asm.AnnotationVisitor)" />
+    /// instead.
+    [Obsolete("use <seealso cref=\"createAnnotationRemapper(String, AnnotationVisitor)\"/> instead.")]
+    public virtual AnnotationVisitor CreateAnnotationRemapper(AnnotationVisitor annotationVisitor)
+    {
+        return new AnnotationRemapper(api, null, annotationVisitor, remapper);
+    }
+
+    /// <summary>
+    ///     Constructs a new remapper for annotations. The default implementation of this method returns a
+    ///     new <see cref="AnnotationRemapper" />.
+    /// </summary>
+    /// <param name="descriptor"> the descriptor of the visited annotation. </param>
+    /// <param name="annotationVisitor"> the AnnotationVisitor the remapper must delegate to. </param>
+    /// <returns> the newly created remapper. </returns>
+    public virtual AnnotationVisitor CreateAnnotationRemapper(string descriptor,
+        AnnotationVisitor annotationVisitor)
+    {
+        return new AnnotationRemapper(api, descriptor, annotationVisitor, remapper).OrDeprecatedValue(
+            CreateAnnotationRemapper(annotationVisitor));
     }
 }

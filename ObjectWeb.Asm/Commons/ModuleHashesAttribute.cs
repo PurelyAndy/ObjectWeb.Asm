@@ -27,101 +27,100 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+/// A ModuleHashes attribute. This attribute is specific to the OpenJDK and may change in the future.
+/// 
+/// @author Remi Forax
+/// </summary>
+public sealed class ModuleHashesAttribute : Attribute
 {
     /// <summary>
-    /// A ModuleHashes attribute. This attribute is specific to the OpenJDK and may change in the future.
-    /// 
-    /// @author Remi Forax
+    /// The name of the hashing algorithm. </summary>
+    public string Algorithm { get; set; }
+
+    /// <summary>
+    /// A list of module names. </summary>
+    public List<string> Modules { get; set; }
+
+    /// <summary>
+    /// The hash of the modules in <seealso cref = "modules"/>. The two lists must have the same size. </summary>
+    public List<sbyte[]> Hashes { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "ModuleHashesAttribute"/>.
     /// </summary>
-    public sealed class ModuleHashesAttribute : Attribute
+    /// <param name = "algorithm"> the name of the hashing algorithm. </param>
+    /// <param name = "modules"> a list of module names. </param>
+    /// <param name = "hashes"> the hash of the modules in 'modules'. The two lists must have the same size. </param>
+    public ModuleHashesAttribute(string algorithm, List<string> modules, List<sbyte[]> hashes) : base("ModuleHashes")
     {
-        /// <summary>
-        /// The name of the hashing algorithm. </summary>
-        public string Algorithm { get; set; }
+        this.Algorithm = algorithm;
+        this.Modules = modules;
+        this.Hashes = hashes;
+    }
 
-        /// <summary>
-        /// A list of module names. </summary>
-        public List<string> Modules { get; set; }
+    /// <summary>
+    /// Constructs an empty <seealso cref = "ModuleHashesAttribute"/>. This object can be passed as a prototype to
+    /// the <seealso cref = "ClassReader.Accept(ObjectWeb.Asm.ClassVisitor, ObjectWeb.Asm.Attribute[], int)"/> method.
+    /// </summary>
+    public ModuleHashesAttribute() : this(null, null, null)
+    {
+    }
 
-        /// <summary>
-        /// The hash of the modules in <seealso cref = "modules"/>. The two lists must have the same size. </summary>
-        public List<sbyte[]> Hashes { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "ModuleHashesAttribute"/>.
-        /// </summary>
-        /// <param name = "algorithm"> the name of the hashing algorithm. </param>
-        /// <param name = "modules"> a list of module names. </param>
-        /// <param name = "hashes"> the hash of the modules in 'modules'. The two lists must have the same size. </param>
-        public ModuleHashesAttribute(string algorithm, List<string> modules, List<sbyte[]> hashes) : base("ModuleHashes")
+    public override Attribute Read(ClassReader classReader, int offset, int length, char[] charBuffer,
+        int codeAttributeOffset, Label[] labels)
+    {
+        int currentOffset = offset;
+        string hashAlgorithm = classReader.ReadUtf8(currentOffset, charBuffer);
+        currentOffset += 2;
+        int numModules = classReader.ReadUnsignedShort(currentOffset);
+        currentOffset += 2;
+        List<string> moduleList = new List<string>(numModules);
+        List<sbyte[]> hashList = new List<sbyte[]>(numModules);
+        for (int i = 0; i < numModules; ++i)
         {
-            this.Algorithm = algorithm;
-            this.Modules = modules;
-            this.Hashes = hashes;
+            string module = classReader.ReadModule(currentOffset, charBuffer);
+            currentOffset += 2;
+            moduleList.Add(module);
+            int hashLength = classReader.ReadUnsignedShort(currentOffset);
+            currentOffset += 2;
+            sbyte[] hash = new sbyte[hashLength];
+            for (int j = 0; j < hashLength; ++j)
+            {
+                hash[j] = (sbyte)classReader.ReadByte(currentOffset);
+                currentOffset += 1;
+            }
+
+            hashList.Add(hash);
         }
 
-        /// <summary>
-        /// Constructs an empty <seealso cref = "ModuleHashesAttribute"/>. This object can be passed as a prototype to
-        /// the <seealso cref = "ClassReader.Accept(ObjectWeb.Asm.ClassVisitor, ObjectWeb.Asm.Attribute[], int)"/> method.
-        /// </summary>
-        public ModuleHashesAttribute() : this(null, null, null)
-        {
-        }
+        return new ModuleHashesAttribute(hashAlgorithm, moduleList, hashList);
+    }
 
-        public override Attribute Read(ClassReader classReader, int offset, int length, char[] charBuffer,
-            int codeAttributeOffset, Label[] labels)
+    public override ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
+        int maxLocals)
+    {
+        ByteVector byteVector = new ByteVector();
+        byteVector.PutShort(classWriter.NewUtf8(Algorithm));
+        if (Modules == null)
         {
-            int currentOffset = offset;
-            string hashAlgorithm = classReader.ReadUtf8(currentOffset, charBuffer);
-            currentOffset += 2;
-            int numModules = classReader.ReadUnsignedShort(currentOffset);
-            currentOffset += 2;
-            List<string> moduleList = new List<string>(numModules);
-            List<sbyte[]> hashList = new List<sbyte[]>(numModules);
+            byteVector.PutShort(0);
+        }
+        else
+        {
+            int numModules = Modules.Count;
+            byteVector.PutShort(numModules);
             for (int i = 0; i < numModules; ++i)
             {
-                string module = classReader.ReadModule(currentOffset, charBuffer);
-                currentOffset += 2;
-                moduleList.Add(module);
-                int hashLength = classReader.ReadUnsignedShort(currentOffset);
-                currentOffset += 2;
-                sbyte[] hash = new sbyte[hashLength];
-                for (int j = 0; j < hashLength; ++j)
-                {
-                    hash[j] = (sbyte)classReader.ReadByte(currentOffset);
-                    currentOffset += 1;
-                }
-
-                hashList.Add(hash);
+                string module = Modules[i];
+                sbyte[] hash = Hashes[i];
+                byteVector.PutShort(classWriter.NewModule(module)).PutShort(hash.Length)
+                    .PutByteArray(hash, 0, hash.Length);
             }
-
-            return new ModuleHashesAttribute(hashAlgorithm, moduleList, hashList);
         }
 
-        public override ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
-            int maxLocals)
-        {
-            ByteVector byteVector = new ByteVector();
-            byteVector.PutShort(classWriter.NewUtf8(Algorithm));
-            if (Modules == null)
-            {
-                byteVector.PutShort(0);
-            }
-            else
-            {
-                int numModules = Modules.Count;
-                byteVector.PutShort(numModules);
-                for (int i = 0; i < numModules; ++i)
-                {
-                    string module = Modules[i];
-                    sbyte[] hash = Hashes[i];
-                    byteVector.PutShort(classWriter.NewModule(module)).PutShort(hash.Length)
-                        .PutByteArray(hash, 0, hash.Length);
-                }
-            }
-
-            return byteVector;
-        }
+        return byteVector;
     }
 }

@@ -27,90 +27,86 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a method instruction. A method instruction is an instruction that invokes
+/// a method.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class MethodInsnNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents a method instruction. A method instruction is an instruction that invokes
-    /// a method.
+    /// The internal name of the method's owner class (see <see cref="org.objectweb.asm.JType"/>).
     /// 
-    /// @author Eric Bruneton
+    /// <para>For methods of arrays, e.g., <c>clone()</c>, the array type descriptor.
+    /// </para>
     /// </summary>
-    public class MethodInsnNode : AbstractInsnNode
+    public string Owner { get; set; }
+
+    /// <summary>
+    /// The method's name. </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The method's descriptor (see <seealso cref = "org.objectweb.asm.JType"/>). </summary>
+    public string Desc { get; set; }
+
+    /// <summary>
+    /// Whether the method's owner class if an interface. </summary>
+    public bool Itf { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "MethodInsnNode"/>.
+    /// </summary>
+    /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be
+    ///     INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC or INVOKEINTERFACE. </param>
+    /// <param name = "owner"> the internal name of the method's owner class (see <see cref="org.objectweb.asm.JType"/>). </param>
+    /// <param name = "name"> the method's name. </param>
+    /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "org.objectweb.asm.JType"/>). </param>
+    public MethodInsnNode(int opcode, string owner, string name, string descriptor) : this(opcode, owner, name,
+        descriptor, opcode == Opcodes.Invokeinterface)
     {
-        /// <summary>
-        /// The internal name of the method's owner class (see {@link
-        /// org.objectweb.asm.Type#getInternalName()}).
-        /// 
-        /// <para>For methods of arrays, e.g., {@code clone()}, the array type descriptor.
-        /// </para>
-        /// </summary>
-        public string Owner { get; set; }
+    }
 
-        /// <summary>
-        /// The method's name. </summary>
-        public string Name { get; set; }
+    /// <summary>
+    /// Constructs a new <seealso cref = "MethodInsnNode"/>.
+    /// </summary>
+    /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be
+    ///     INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC or INVOKEINTERFACE. </param>
+    /// <param name = "owner"> the internal name of the method's owner class (see <see cref="org.objectweb.asm.JType"/>). </param>
+    /// <param name = "name"> the method's name. </param>
+    /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "org.objectweb.asm.JType"/>). </param>
+    /// <param name = "isInterface"> if the method's owner class is an interface. </param>
+    public MethodInsnNode(int opcode, string owner, string name, string descriptor, bool isInterface) : base(opcode)
+    {
+        this.Owner = owner;
+        this.Name = name;
+        this.Desc = descriptor;
+        this.Itf = isInterface;
+    }
 
-        /// <summary>
-        /// The method's descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </summary>
-        public string Desc { get; set; }
+    /// <summary>
+    /// Sets the opcode of this instruction.
+    /// </summary>
+    /// <param name = "opcode"> the new instruction opcode. This opcode must be INVOKEVIRTUAL, INVOKESPECIAL,
+    ///     INVOKESTATIC or INVOKEINTERFACE. </param>
+    public virtual int Opcode
+    {
+        set => this.opcode = value;
+    }
 
-        /// <summary>
-        /// Whether the method's owner class if an interface. </summary>
-        public bool Itf { get; set; }
+    public override int Type => Method_Insn;
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "MethodInsnNode"/>.
-        /// </summary>
-        /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be
-        ///     INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC or INVOKEINTERFACE. </param>
-        /// <param name = "owner"> the internal name of the method's owner class (see {@link
-        ///     org.objectweb.asm.Type#getInternalName()}). </param>
-        /// <param name = "name"> the method's name. </param>
-        /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
-        public MethodInsnNode(int opcode, string owner, string name, string descriptor) : this(opcode, owner, name,
-            descriptor, opcode == Opcodes.Invokeinterface)
-        {
-        }
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitMethodInsn(opcode, Owner, Name, Desc, Itf);
+        AcceptAnnotations(methodVisitor);
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "MethodInsnNode"/>.
-        /// </summary>
-        /// <param name = "opcode"> the opcode of the type instruction to be constructed. This opcode must be
-        ///     INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC or INVOKEINTERFACE. </param>
-        /// <param name = "owner"> the internal name of the method's owner class (see {@link
-        ///     org.objectweb.asm.Type#getInternalName()}). </param>
-        /// <param name = "name"> the method's name. </param>
-        /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
-        /// <param name = "isInterface"> if the method's owner class is an interface. </param>
-        public MethodInsnNode(int opcode, string owner, string name, string descriptor, bool isInterface) : base(opcode)
-        {
-            this.Owner = owner;
-            this.Name = name;
-            this.Desc = descriptor;
-            this.Itf = isInterface;
-        }
-
-        /// <summary>
-        /// Sets the opcode of this instruction.
-        /// </summary>
-        /// <param name = "opcode"> the new instruction opcode. This opcode must be INVOKEVIRTUAL, INVOKESPECIAL,
-        ///     INVOKESTATIC or INVOKEINTERFACE. </param>
-        public virtual int Opcode
-        {
-            set => this.opcode = value;
-        }
-
-        public override int Type => Method_Insn;
-
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitMethodInsn(opcode, Owner, Name, Desc, Itf);
-            AcceptAnnotations(methodVisitor);
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            return (new MethodInsnNode(opcode, Owner, Name, Desc, Itf)).CloneAnnotations(this);
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        return (new MethodInsnNode(opcode, Owner, Name, Desc, Itf)).CloneAnnotations(this);
     }
 }

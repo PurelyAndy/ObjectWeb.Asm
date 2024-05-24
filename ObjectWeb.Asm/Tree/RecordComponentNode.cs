@@ -27,200 +27,199 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a record component.
+/// 
+/// @author Remi Forax
+/// </summary>
+public class RecordComponentNode : RecordComponentVisitor
 {
     /// <summary>
-    /// A node that represents a record component.
-    /// 
-    /// @author Remi Forax
+    /// The record component name. </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The record component descriptor (see <seealso cref = "org.objectweb.asm.JType"/>). </summary>
+    public string Descriptor { get; set; }
+
+    /// <summary>
+    /// The record component signature. May be <c>null</c>. </summary>
+    public string Signature { get; set; }
+
+    /// <summary>
+    /// The runtime visible annotations of this record component. May be <c>null</c>. </summary>
+    public List<AnnotationNode> VisibleAnnotations { get; set; }
+
+    /// <summary>
+    /// The runtime invisible annotations of this record component. May be <c>null</c>. </summary>
+    public List<AnnotationNode> InvisibleAnnotations { get; set; }
+
+    /// <summary>
+    /// The runtime visible type annotations of this record component. May be <c>null</c>. </summary>
+    public List<TypeAnnotationNode> VisibleTypeAnnotations { get; set; }
+
+    /// <summary>
+    /// The runtime invisible type annotations of this record component. May be <c>null</c>. </summary>
+    public List<TypeAnnotationNode> InvisibleTypeAnnotations { get; set; }
+
+    /// <summary>
+    /// The non standard attributes of this record component. * May be <c>null</c>. </summary>
+    public List<Attribute> Attrs { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "RecordComponentNode"/>. <i>Subclasses must not use this constructor</i>.
+    /// Instead, they must use the <seealso cref = "RecordComponentNode(int, String, String, String)"/> version.
     /// </summary>
-    public class RecordComponentNode : RecordComponentVisitor
+    /// <param name = "name"> the record component name. </param>
+    /// <param name = "descriptor"> the record component descriptor (see <seealso cref = "org.objectweb.asm.JType"/>). </param>
+    /// <param name = "signature"> the record component signature. </param>
+    /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
+    public RecordComponentNode(string name, string descriptor, string signature) : this(Opcodes.Asm9, name,
+        descriptor, signature)
     {
-        /// <summary>
-        /// The record component name. </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// The record component descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </summary>
-        public string Descriptor { get; set; }
-
-        /// <summary>
-        /// The record component signature. May be {@literal null}. </summary>
-        public string Signature { get; set; }
-
-        /// <summary>
-        /// The runtime visible annotations of this record component. May be {@literal null}. </summary>
-        public List<AnnotationNode> VisibleAnnotations { get; set; }
-
-        /// <summary>
-        /// The runtime invisible annotations of this record component. May be {@literal null}. </summary>
-        public List<AnnotationNode> InvisibleAnnotations { get; set; }
-
-        /// <summary>
-        /// The runtime visible type annotations of this record component. May be {@literal null}. </summary>
-        public List<TypeAnnotationNode> VisibleTypeAnnotations { get; set; }
-
-        /// <summary>
-        /// The runtime invisible type annotations of this record component. May be {@literal null}. </summary>
-        public List<TypeAnnotationNode> InvisibleTypeAnnotations { get; set; }
-
-        /// <summary>
-        /// The non standard attributes of this record component. * May be {@literal null}. </summary>
-        public List<Attribute> Attrs { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "RecordComponentNode"/>. <i>Subclasses must not use this constructor</i>.
-        /// Instead, they must use the <seealso cref = "RecordComponentNode(int, String, String, String)"/> version.
-        /// </summary>
-        /// <param name = "name"> the record component name. </param>
-        /// <param name = "descriptor"> the record component descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
-        /// <param name = "signature"> the record component signature. </param>
-        /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
-        public RecordComponentNode(string name, string descriptor, string signature) : this(Opcodes.Asm9, name,
-            descriptor, signature)
+        if (this.GetType() != typeof(RecordComponentNode))
         {
-            if (this.GetType() != typeof(RecordComponentNode))
+            throw new System.InvalidOperationException();
+        }
+    }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "RecordComponentNode"/>.
+    /// </summary>
+    /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of <see cref="Opcodes.Asm8"/> ///or <see cref="Opcodes.Asm9"/> . </param>
+    /// <param name = "name"> the record component name. </param>
+    /// <param name = "descriptor"> the record component descriptor (see <seealso cref = "org.objectweb.asm.JType"/>). </param>
+    /// <param name = "signature"> the record component signature. </param>
+    public RecordComponentNode(int api, string name, string descriptor, string signature) : base(api)
+    {
+        this.Name = name;
+        this.Descriptor = descriptor;
+        this.Signature = signature;
+    }
+
+    // -----------------------------------------------------------------------------------------------
+    // Implementation of the FieldVisitor abstract class
+    // -----------------------------------------------------------------------------------------------
+    public override AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
+    {
+        AnnotationNode annotation = new AnnotationNode(descriptor);
+        if (visible)
+        {
+            VisibleAnnotations = Util.Add(VisibleAnnotations, annotation);
+        }
+        else
+        {
+            InvisibleAnnotations = Util.Add(InvisibleAnnotations, annotation);
+        }
+
+        return annotation;
+    }
+
+    public override AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
+        bool visible)
+    {
+        TypeAnnotationNode typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
+        if (visible)
+        {
+            VisibleTypeAnnotations = Util.Add(VisibleTypeAnnotations, typeAnnotation);
+        }
+        else
+        {
+            InvisibleTypeAnnotations = Util.Add(InvisibleTypeAnnotations, typeAnnotation);
+        }
+
+        return typeAnnotation;
+    }
+
+    public override void VisitAttribute(Attribute attribute)
+    {
+        Attrs = Util.Add(Attrs, attribute);
+    }
+
+    public override void VisitEnd()
+    {
+        // Nothing to do.
+    }
+
+    // -----------------------------------------------------------------------------------------------
+    // Accept methods
+    // -----------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Checks that this record component node is compatible with the given ASM API version. This
+    /// method checks that this node, and all its children recursively, do not contain elements that
+    /// were introduced in more recent versions of the ASM API than the given version.
+    /// </summary>
+    /// <param name = "api"> an ASM API version. Must be one of <see cref="Opcodes.Asm8"/> or <see cref="Opcodes.Asm9"/> . </param>
+    public virtual void Check(int api)
+    {
+        if (api < Opcodes.Asm8)
+        {
+            throw new UnsupportedClassVersionException();
+        }
+    }
+
+    /// <summary>
+    /// Makes the given class visitor visit this record component.
+    /// </summary>
+    /// <param name = "classVisitor"> a class visitor. </param>
+    public virtual void Accept(ClassVisitor classVisitor)
+    {
+        RecordComponentVisitor recordComponentVisitor = classVisitor.VisitRecordComponent(Name, Descriptor, Signature);
+        if (recordComponentVisitor == null)
+        {
+            return;
+        }
+
+        // Visit the annotations.
+        if (VisibleAnnotations != null)
+        {
+            for (int i = 0, n = VisibleAnnotations.Count; i < n; ++i)
             {
-                throw new System.InvalidOperationException();
+                AnnotationNode annotation = VisibleAnnotations[i];
+                annotation.Accept(recordComponentVisitor.VisitAnnotation(annotation.Desc, true));
             }
         }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "RecordComponentNode"/>.
-        /// </summary>
-        /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of <seealso cref = "IIOpcodes.Asm8 / > ///or <seealso cref = "IIOpcodes.Asm9 / > . </param>
-        /// <param name = "name"> the record component name. </param>
-        /// <param name = "descriptor"> the record component descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
-        /// <param name = "signature"> the record component signature. </param>
-        public RecordComponentNode(int api, string name, string descriptor, string signature) : base(api)
+        if (InvisibleAnnotations != null)
         {
-            this.Name = name;
-            this.Descriptor = descriptor;
-            this.Signature = signature;
-        }
-
-        // -----------------------------------------------------------------------------------------------
-        // Implementation of the FieldVisitor abstract class
-        // -----------------------------------------------------------------------------------------------
-        public override AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
-        {
-            AnnotationNode annotation = new AnnotationNode(descriptor);
-            if (visible)
+            for (int i = 0, n = InvisibleAnnotations.Count; i < n; ++i)
             {
-                VisibleAnnotations = Util.Add(VisibleAnnotations, annotation);
-            }
-            else
-            {
-                InvisibleAnnotations = Util.Add(InvisibleAnnotations, annotation);
-            }
-
-            return annotation;
-        }
-
-        public override AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
-            bool visible)
-        {
-            TypeAnnotationNode typeAnnotation = new TypeAnnotationNode(typeRef, typePath, descriptor);
-            if (visible)
-            {
-                VisibleTypeAnnotations = Util.Add(VisibleTypeAnnotations, typeAnnotation);
-            }
-            else
-            {
-                InvisibleTypeAnnotations = Util.Add(InvisibleTypeAnnotations, typeAnnotation);
-            }
-
-            return typeAnnotation;
-        }
-
-        public override void VisitAttribute(Attribute attribute)
-        {
-            Attrs = Util.Add(Attrs, attribute);
-        }
-
-        public override void VisitEnd()
-        {
-            // Nothing to do.
-        }
-
-        // -----------------------------------------------------------------------------------------------
-        // Accept methods
-        // -----------------------------------------------------------------------------------------------
-        /// <summary>
-        /// Checks that this record component node is compatible with the given ASM API version. This
-        /// method checks that this node, and all its children recursively, do not contain elements that
-        /// were introduced in more recent versions of the ASM API than the given version.
-        /// </summary>
-        /// <param name = "api"> an ASM API version. Must be one of <seealso cref = "IIOpcodes.Asm8 / > or <seealso cref = "IIOpcodes.Asm9 / > . </param>
-        public virtual void Check(int api)
-        {
-            if (api < Opcodes.Asm8)
-            {
-                throw new UnsupportedClassVersionException();
+                AnnotationNode annotation = InvisibleAnnotations[i];
+                annotation.Accept(recordComponentVisitor.VisitAnnotation(annotation.Desc, false));
             }
         }
 
-        /// <summary>
-        /// Makes the given class visitor visit this record component.
-        /// </summary>
-        /// <param name = "classVisitor"> a class visitor. </param>
-        public virtual void Accept(ClassVisitor classVisitor)
+        if (VisibleTypeAnnotations != null)
         {
-            RecordComponentVisitor recordComponentVisitor = classVisitor.VisitRecordComponent(Name, Descriptor, Signature);
-            if (recordComponentVisitor == null)
+            for (int i = 0, n = VisibleTypeAnnotations.Count; i < n; ++i)
             {
-                return;
+                TypeAnnotationNode typeAnnotation = VisibleTypeAnnotations[i];
+                typeAnnotation.Accept(recordComponentVisitor.VisitTypeAnnotation(typeAnnotation.TypeRef,
+                    typeAnnotation.TypePath, typeAnnotation.Desc, true));
             }
-
-            // Visit the annotations.
-            if (VisibleAnnotations != null)
-            {
-                for (int i = 0, n = VisibleAnnotations.Count; i < n; ++i)
-                {
-                    AnnotationNode annotation = VisibleAnnotations[i];
-                    annotation.Accept(recordComponentVisitor.VisitAnnotation(annotation.Desc, true));
-                }
-            }
-
-            if (InvisibleAnnotations != null)
-            {
-                for (int i = 0, n = InvisibleAnnotations.Count; i < n; ++i)
-                {
-                    AnnotationNode annotation = InvisibleAnnotations[i];
-                    annotation.Accept(recordComponentVisitor.VisitAnnotation(annotation.Desc, false));
-                }
-            }
-
-            if (VisibleTypeAnnotations != null)
-            {
-                for (int i = 0, n = VisibleTypeAnnotations.Count; i < n; ++i)
-                {
-                    TypeAnnotationNode typeAnnotation = VisibleTypeAnnotations[i];
-                    typeAnnotation.Accept(recordComponentVisitor.VisitTypeAnnotation(typeAnnotation.TypeRef,
-                        typeAnnotation.TypePath, typeAnnotation.Desc, true));
-                }
-            }
-
-            if (InvisibleTypeAnnotations != null)
-            {
-                for (int i = 0, n = InvisibleTypeAnnotations.Count; i < n; ++i)
-                {
-                    TypeAnnotationNode typeAnnotation = InvisibleTypeAnnotations[i];
-                    typeAnnotation.Accept(recordComponentVisitor.VisitTypeAnnotation(typeAnnotation.TypeRef,
-                        typeAnnotation.TypePath, typeAnnotation.Desc, false));
-                }
-            }
-
-            // Visit the non standard attributes.
-            if (Attrs != null)
-            {
-                for (int i = 0, n = Attrs.Count; i < n; ++i)
-                {
-                    recordComponentVisitor.VisitAttribute(Attrs[i]);
-                }
-            }
-
-            recordComponentVisitor.VisitEnd();
         }
+
+        if (InvisibleTypeAnnotations != null)
+        {
+            for (int i = 0, n = InvisibleTypeAnnotations.Count; i < n; ++i)
+            {
+                TypeAnnotationNode typeAnnotation = InvisibleTypeAnnotations[i];
+                typeAnnotation.Accept(recordComponentVisitor.VisitTypeAnnotation(typeAnnotation.TypeRef,
+                    typeAnnotation.TypePath, typeAnnotation.Desc, false));
+            }
+        }
+
+        // Visit the non standard attributes.
+        if (Attrs != null)
+        {
+            for (int i = 0, n = Attrs.Count; i < n; ++i)
+            {
+                recordComponentVisitor.VisitAttribute(Attrs[i]);
+            }
+        }
+
+        recordComponentVisitor.VisitEnd();
     }
 }

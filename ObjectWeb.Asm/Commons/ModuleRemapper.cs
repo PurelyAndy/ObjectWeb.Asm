@@ -26,101 +26,99 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+/// A <see cref="ModuleVisitor"/> that remaps types with a <see cref="Remapper"/>.
+/// 
+/// @author Remi Forax
+/// </summary>
+public class ModuleRemapper : ModuleVisitor
 {
     /// <summary>
-    /// A <seealso cref="ModuleVisitor"/> that remaps types with a <seealso cref="Remapper"/>.
-    /// 
-    /// @author Remi Forax
+    /// The remapper used to remap the types in the visited module. </summary>
+    protected internal readonly Remapper remapper;
+
+    /// <summary>
+    /// Constructs a new <see cref="ModuleRemapper"/>. <i>Subclasses must not use this constructor</i>.
+    /// Instead, they must use the <see cref="ModuleRemapper(int,ModuleVisitor,Remapper)"/> version.
     /// </summary>
-    public class ModuleRemapper : ModuleVisitor
+    /// <param name="moduleVisitor"> the module visitor this remapper must delegate to. </param>
+    /// <param name="remapper"> the remapper to use to remap the types in the visited module. </param>
+    public ModuleRemapper(ModuleVisitor moduleVisitor, Remapper remapper) : this(Opcodes.Asm9, moduleVisitor,
+        remapper)
     {
-        /// <summary>
-        /// The remapper used to remap the types in the visited module. </summary>
-        protected internal readonly Remapper remapper;
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref="ModuleRemapper"/>. <i>Subclasses must not use this constructor</i>.
-        /// Instead, they must use the <seealso cref="ModuleRemapper(int,ModuleVisitor,Remapper)"/> version.
-        /// </summary>
-        /// <param name="moduleVisitor"> the module visitor this remapper must delegate to. </param>
-        /// <param name="remapper"> the remapper to use to remap the types in the visited module. </param>
-        public ModuleRemapper(ModuleVisitor moduleVisitor, Remapper remapper) : this(Opcodes.Asm9, moduleVisitor,
-            remapper)
-        {
-        }
+    /// <summary>
+    /// Constructs a new <see cref="ModuleRemapper"/>.
+    /// </summary>
+    /// <param name="api"> the ASM API version supported by this remapper. Must be one of the <c>ASM</c><i>x</i> values in <see cref="Opcodes"/>. </param>
+    /// <param name="moduleVisitor"> the module visitor this remapper must delegate to. </param>
+    /// <param name="remapper"> the remapper to use to remap the types in the visited module. </param>
+    public ModuleRemapper(int api, ModuleVisitor moduleVisitor, Remapper remapper) : base(api, moduleVisitor)
+    {
+        this.remapper = remapper;
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref="ModuleRemapper"/>.
-        /// </summary>
-        /// <param name="api"> the ASM API version supported by this remapper. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref="Opcodes"/>. </param>
-        /// <param name="moduleVisitor"> the module visitor this remapper must delegate to. </param>
-        /// <param name="remapper"> the remapper to use to remap the types in the visited module. </param>
-        public ModuleRemapper(int api, ModuleVisitor moduleVisitor, Remapper remapper) : base(api, moduleVisitor)
-        {
-            this.remapper = remapper;
-        }
+    public override void VisitMainClass(string mainClass)
+    {
+        base.VisitMainClass(remapper.MapType(mainClass));
+    }
 
-        public override void VisitMainClass(string mainClass)
-        {
-            base.VisitMainClass(remapper.MapType(mainClass));
-        }
+    public override void VisitPackage(string packaze)
+    {
+        base.VisitPackage(remapper.MapPackageName(packaze));
+    }
 
-        public override void VisitPackage(string packaze)
-        {
-            base.VisitPackage(remapper.MapPackageName(packaze));
-        }
+    public override void VisitRequire(string module, int access, string version)
+    {
+        base.VisitRequire(remapper.MapModuleName(module), access, version);
+    }
 
-        public override void VisitRequire(string module, int access, string version)
+    public override void VisitExport(string packaze, int access, params string[] modules)
+    {
+        string[] remappedModules = null;
+        if (modules != null)
         {
-            base.VisitRequire(remapper.MapModuleName(module), access, version);
-        }
-
-        public override void VisitExport(string packaze, int access, params string[] modules)
-        {
-            string[] remappedModules = null;
-            if (modules != null)
+            remappedModules = new string[modules.Length];
+            for (int i = 0; i < modules.Length; ++i)
             {
-                remappedModules = new string[modules.Length];
-                for (int i = 0; i < modules.Length; ++i)
-                {
-                    remappedModules[i] = remapper.MapModuleName(modules[i]);
-                }
+                remappedModules[i] = remapper.MapModuleName(modules[i]);
             }
-
-            base.VisitExport(remapper.MapPackageName(packaze), access, remappedModules);
         }
 
-        public override void VisitOpen(string packaze, int access, params string[] modules)
+        base.VisitExport(remapper.MapPackageName(packaze), access, remappedModules);
+    }
+
+    public override void VisitOpen(string packaze, int access, params string[] modules)
+    {
+        string[] remappedModules = null;
+        if (modules != null)
         {
-            string[] remappedModules = null;
-            if (modules != null)
+            remappedModules = new string[modules.Length];
+            for (int i = 0; i < modules.Length; ++i)
             {
-                remappedModules = new string[modules.Length];
-                for (int i = 0; i < modules.Length; ++i)
-                {
-                    remappedModules[i] = remapper.MapModuleName(modules[i]);
-                }
+                remappedModules[i] = remapper.MapModuleName(modules[i]);
             }
-
-            base.VisitOpen(remapper.MapPackageName(packaze), access, remappedModules);
         }
 
-        public override void VisitUse(string service)
+        base.VisitOpen(remapper.MapPackageName(packaze), access, remappedModules);
+    }
+
+    public override void VisitUse(string service)
+    {
+        base.VisitUse(remapper.MapType(service));
+    }
+
+    public override void VisitProvide(string service, params string[] providers)
+    {
+        string[] remappedProviders = new string[providers.Length];
+        for (int i = 0; i < providers.Length; ++i)
         {
-            base.VisitUse(remapper.MapType(service));
+            remappedProviders[i] = remapper.MapType(providers[i]);
         }
 
-        public override void VisitProvide(string service, params string[] providers)
-        {
-            string[] remappedProviders = new string[providers.Length];
-            for (int i = 0; i < providers.Length; ++i)
-            {
-                remappedProviders[i] = remapper.MapType(providers[i]);
-            }
-
-            base.VisitProvide(remapper.MapType(service), remappedProviders);
-        }
+        base.VisitProvide(remapper.MapType(service), remappedProviders);
     }
 }

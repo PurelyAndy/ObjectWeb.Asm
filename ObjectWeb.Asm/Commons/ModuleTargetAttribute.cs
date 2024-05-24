@@ -26,48 +26,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+/// A ModuleTarget attribute. This attribute is specific to the OpenJDK and may change in the future.
+/// 
+/// @author Remi Forax
+/// </summary>
+public sealed class ModuleTargetAttribute : Attribute
 {
     /// <summary>
-    /// A ModuleTarget attribute. This attribute is specific to the OpenJDK and may change in the future.
-    /// 
-    /// @author Remi Forax
-    /// </summary>
-    public sealed class ModuleTargetAttribute : Attribute
-    {
-        /// <summary>
-        /// The name of the platform on which the module can run. </summary>
-        public string Platform { get; set; }
+    /// The name of the platform on which the module can run. </summary>
+    public string Platform { get; set; }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "ModuleTargetAttribute"/>.
-        /// </summary>
-        /// <param name = "platform"> the name of the platform on which the module can run. </param>
-        public ModuleTargetAttribute(string platform) : base("ModuleTarget")
-        {
+    /// <summary>
+    /// Constructs a new <seealso cref = "ModuleTargetAttribute"/>.
+    /// </summary>
+    /// <param name = "platform"> the name of the platform on which the module can run. </param>
+    public ModuleTargetAttribute(string platform) : base("ModuleTarget")
+    {
             this.Platform = platform;
         }
 
-        /// <summary>
-        /// Constructs an empty <seealso cref = "ModuleTargetAttribute"/>. This object can be passed as a prototype to
-        /// the <seealso cref = "ClassReader.Accept(ObjectWeb.Asm.ClassVisitor, ObjectWeb.Asm.Attribute[], int)"/> method.
-        /// </summary>
-        public ModuleTargetAttribute() : this(null)
-        {
+    /// <summary>
+    /// Constructs an empty <seealso cref = "ModuleTargetAttribute"/>. This object can be passed as a prototype to
+    /// the <seealso cref = "ClassReader.Accept(ObjectWeb.Asm.ClassVisitor, ObjectWeb.Asm.Attribute[], int)"/> method.
+    /// </summary>
+    public ModuleTargetAttribute() : this(null)
+    {
         }
 
-        public override Attribute Read(ClassReader classReader, int offset, int length, char[] charBuffer,
-            int codeOffset, Label[] labels)
-        {
+    public override Attribute Read(ClassReader classReader, int offset, int length, char[] charBuffer,
+        int codeOffset, Label[] labels)
+    {
             return new ModuleTargetAttribute(classReader.ReadUtf8(offset, charBuffer));
         }
 
-        public override ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
-            int maxLocals)
-        {
+    public override ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
+        int maxLocals)
+    {
             ByteVector byteVector = new ByteVector();
             byteVector.PutShort(string.ReferenceEquals(Platform, null) ? 0 : classWriter.NewUtf8(Platform));
             return byteVector;
         }
-    }
 }

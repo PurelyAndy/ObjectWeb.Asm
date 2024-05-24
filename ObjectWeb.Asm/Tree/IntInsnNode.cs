@@ -27,50 +27,49 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents an instruction with a single int operand.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class IntInsnNode : AbstractInsnNode
 {
     /// <summary>
-    /// A node that represents an instruction with a single int operand.
-    /// 
-    /// @author Eric Bruneton
+    /// The operand of this instruction. </summary>
+    public int Operand { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "IntInsnNode"/>.
     /// </summary>
-    public class IntInsnNode : AbstractInsnNode
+    /// <param name = "opcode"> the opcode of the instruction to be constructed. This opcode must be BIPUSH,
+    ///     SIPUSH or NEWARRAY. </param>
+    /// <param name = "operand"> the operand of the instruction to be constructed. </param>
+    public IntInsnNode(int opcode, int operand) : base(opcode)
     {
-        /// <summary>
-        /// The operand of this instruction. </summary>
-        public int Operand { get; set; }
+        this.Operand = operand;
+    }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "IntInsnNode"/>.
-        /// </summary>
-        /// <param name = "opcode"> the opcode of the instruction to be constructed. This opcode must be BIPUSH,
-        ///     SIPUSH or NEWARRAY. </param>
-        /// <param name = "operand"> the operand of the instruction to be constructed. </param>
-        public IntInsnNode(int opcode, int operand) : base(opcode)
-        {
-            this.Operand = operand;
-        }
+    /// <summary>
+    /// Sets the opcode of this instruction.
+    /// </summary>
+    /// <param name = "opcode"> the new instruction opcode. This opcode must be BIPUSH, SIPUSH or NEWARRAY. </param>
+    public virtual int Opcode
+    {
+        set => this.opcode = value;
+    }
 
-        /// <summary>
-        /// Sets the opcode of this instruction.
-        /// </summary>
-        /// <param name = "opcode"> the new instruction opcode. This opcode must be BIPUSH, SIPUSH or NEWARRAY. </param>
-        public virtual int Opcode
-        {
-            set => this.opcode = value;
-        }
+    public override int Type => Int_Insn;
 
-        public override int Type => Int_Insn;
+    public override void Accept(MethodVisitor methodVisitor)
+    {
+        methodVisitor.VisitIntInsn(opcode, Operand);
+        AcceptAnnotations(methodVisitor);
+    }
 
-        public override void Accept(MethodVisitor methodVisitor)
-        {
-            methodVisitor.VisitIntInsn(opcode, Operand);
-            AcceptAnnotations(methodVisitor);
-        }
-
-        public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
-        {
-            return (new IntInsnNode(opcode, Operand)).CloneAnnotations(this);
-        }
+    public override AbstractInsnNode Clone(IDictionary<LabelNode, LabelNode> clonedLabels)
+    {
+        return (new IntInsnNode(opcode, Operand)).CloneAnnotations(this);
     }
 }

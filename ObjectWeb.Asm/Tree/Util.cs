@@ -27,191 +27,190 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// Utility methods to convert an array of primitive or object values to a mutable ArrayList, not
+/// baked by the array (unlike <see cref="java.util.Arrays.asList"/>).
+/// 
+/// @author Eric Bruneton
+/// </summary>
+internal sealed class Util
 {
-    /// <summary>
-    /// Utility methods to convert an array of primitive or object values to a mutable ArrayList, not
-    /// baked by the array (unlike <seealso cref="java.util.Arrays.asList"/>).
-    /// 
-    /// @author Eric Bruneton
-    /// </summary>
-    internal sealed class Util
+    private Util()
     {
-        private Util()
+    }
+
+    internal static List<T> Add<T>(List<T> list, T element)
+    {
+        List<T> newList = list == null ? new List<T>(1) : list;
+        newList.Add(element);
+        return newList;
+    }
+
+    internal static List<T> AsArrayList<T>(int length)
+    {
+        List<T> list = new List<T>(length);
+        for (int i = 0; i < length; ++i)
         {
+            list.Add(default(T));
         }
 
-        internal static List<T> Add<T>(List<T> list, T element)
+        return list;
+    }
+
+    internal static List<T> AsArrayList<T>(T[] array)
+    {
+        if (array == null)
         {
-            List<T> newList = list == null ? new List<T>(1) : list;
-            newList.Add(element);
-            return newList;
+            return new List<T>();
         }
 
-        internal static List<T> AsArrayList<T>(int length)
+        List<T> list = new List<T>(array.Length);
+        foreach (T t in array)
         {
-            List<T> list = new List<T>(length);
-            for (int i = 0; i < length; ++i)
-            {
-                list.Add(default(T));
-            }
-
-            return list;
+            list.Add(t);
         }
 
-        internal static List<T> AsArrayList<T>(T[] array)
+        return list;
+    }
+
+    internal static List<sbyte> AsArrayList(sbyte[] byteArray)
+    {
+        if (byteArray == null)
         {
-            if (array == null)
-            {
-                return new List<T>();
-            }
-
-            List<T> list = new List<T>(array.Length);
-            foreach (T t in array)
-            {
-                list.Add(t);
-            }
-
-            return list;
+            return new List<sbyte>();
         }
 
-        internal static List<sbyte> AsArrayList(sbyte[] byteArray)
+        List<sbyte> byteList = new List<sbyte>(byteArray.Length);
+        foreach (sbyte b in byteArray)
         {
-            if (byteArray == null)
-            {
-                return new List<sbyte>();
-            }
-
-            List<sbyte> byteList = new List<sbyte>(byteArray.Length);
-            foreach (sbyte b in byteArray)
-            {
-                byteList.Add(b);
-            }
-
-            return byteList;
+            byteList.Add(b);
         }
 
-        internal static List<bool> AsArrayList(bool[] booleanArray)
+        return byteList;
+    }
+
+    internal static List<bool> AsArrayList(bool[] booleanArray)
+    {
+        if (booleanArray == null)
         {
-            if (booleanArray == null)
-            {
-                return new List<bool>();
-            }
-
-            List<bool> booleanList = new List<bool>(booleanArray.Length);
-            foreach (bool b in booleanArray)
-            {
-                booleanList.Add(b);
-            }
-
-            return booleanList;
+            return new List<bool>();
         }
 
-        internal static List<short> AsArrayList(short[] shortArray)
+        List<bool> booleanList = new List<bool>(booleanArray.Length);
+        foreach (bool b in booleanArray)
         {
-            if (shortArray == null)
-            {
-                return new List<short>();
-            }
-
-            List<short> shortList = new List<short>(shortArray.Length);
-            foreach (short s in shortArray)
-            {
-                shortList.Add(s);
-            }
-
-            return shortList;
+            booleanList.Add(b);
         }
 
-        internal static List<char> AsArrayList(char[] charArray)
+        return booleanList;
+    }
+
+    internal static List<short> AsArrayList(short[] shortArray)
+    {
+        if (shortArray == null)
         {
-            if (charArray == null)
-            {
-                return new List<char>();
-            }
-
-            List<char> charList = new List<char>(charArray.Length);
-            foreach (char c in charArray)
-            {
-                charList.Add(c);
-            }
-
-            return charList;
+            return new List<short>();
         }
 
-        internal static List<int> AsArrayList(int[] intArray)
+        List<short> shortList = new List<short>(shortArray.Length);
+        foreach (short s in shortArray)
         {
-            if (intArray == null)
-            {
-                return new List<int>();
-            }
-
-            List<int> intList = new List<int>(intArray.Length);
-            foreach (int i in intArray)
-            {
-                intList.Add(i);
-            }
-
-            return intList;
+            shortList.Add(s);
         }
 
-        internal static List<float> AsArrayList(float[] floatArray)
+        return shortList;
+    }
+
+    internal static List<char> AsArrayList(char[] charArray)
+    {
+        if (charArray == null)
         {
-            if (floatArray == null)
-            {
-                return new List<float>();
-            }
-
-            List<float> floatList = new List<float>(floatArray.Length);
-            foreach (float f in floatArray)
-            {
-                floatList.Add(f);
-            }
-
-            return floatList;
+            return new List<char>();
         }
 
-        internal static List<long> AsArrayList(long[] longArray)
+        List<char> charList = new List<char>(charArray.Length);
+        foreach (char c in charArray)
         {
-            if (longArray == null)
-            {
-                return new List<long>();
-            }
-
-            List<long> longList = new List<long>(longArray.Length);
-            foreach (long l in longArray)
-            {
-                longList.Add(l);
-            }
-
-            return longList;
+            charList.Add(c);
         }
 
-        internal static List<double> AsArrayList(double[] doubleArray)
+        return charList;
+    }
+
+    internal static List<int> AsArrayList(int[] intArray)
+    {
+        if (intArray == null)
         {
-            if (doubleArray == null)
-            {
-                return new List<double>();
-            }
-
-            List<double> doubleList = new List<double>(doubleArray.Length);
-            foreach (double d in doubleArray)
-            {
-                doubleList.Add(d);
-            }
-
-            return doubleList;
+            return new List<int>();
         }
 
-        internal static List<T> AsArrayList<T>(int length, T[] array)
+        List<int> intList = new List<int>(intArray.Length);
+        foreach (int i in intArray)
         {
-            List<T> list = new List<T>(length);
-            for (int i = 0; i < length; ++i)
-            {
-                list.Add(array[i]); // NOPMD(UseArraysAsList): we convert a part of the array.
-            }
-
-            return list;
+            intList.Add(i);
         }
+
+        return intList;
+    }
+
+    internal static List<float> AsArrayList(float[] floatArray)
+    {
+        if (floatArray == null)
+        {
+            return new List<float>();
+        }
+
+        List<float> floatList = new List<float>(floatArray.Length);
+        foreach (float f in floatArray)
+        {
+            floatList.Add(f);
+        }
+
+        return floatList;
+    }
+
+    internal static List<long> AsArrayList(long[] longArray)
+    {
+        if (longArray == null)
+        {
+            return new List<long>();
+        }
+
+        List<long> longList = new List<long>(longArray.Length);
+        foreach (long l in longArray)
+        {
+            longList.Add(l);
+        }
+
+        return longList;
+    }
+
+    internal static List<double> AsArrayList(double[] doubleArray)
+    {
+        if (doubleArray == null)
+        {
+            return new List<double>();
+        }
+
+        List<double> doubleList = new List<double>(doubleArray.Length);
+        foreach (double d in doubleArray)
+        {
+            doubleList.Add(d);
+        }
+
+        return doubleList;
+    }
+
+    internal static List<T> AsArrayList<T>(int length, T[] array)
+    {
+        List<T> list = new List<T>(length);
+        for (int i = 0; i < length; ++i)
+        {
+            list.Add(array[i]); // NOPMD(UseArraysAsList): we convert a part of the array.
+        }
+
+        return list;
     }
 }

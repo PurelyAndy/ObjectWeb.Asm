@@ -1,4 +1,4 @@
-﻿// ASM: a very small and fast Java bytecode manipulation framework
+// ASM: a very small and fast Java bytecode manipulation framework
 // Copyright (c) 2000-2011 INRIA, France Telecom
 // All rights reserved.
 //
@@ -28,122 +28,121 @@
 
 using System;
 
-namespace ObjectWeb.Asm
+namespace ObjectWeb.Asm;
+
+/// <summary>
+///     A visitor to visit a record component. The methods of this class must be called in the following
+///     order: ( <c>visitAnnotation</c> | <c>visitTypeAnnotation</c> | <c>visitAttribute</c> )* <c>visitEnd</c>.
+///     @author Remi Forax
+///     @author Eric Bruneton
+/// </summary>
+public abstract class RecordComponentVisitor
 {
     /// <summary>
-    ///     A visitor to visit a record component. The methods of this class must be called in the following
-    ///     order: ( {@code visitAnnotation} | {@code visitTypeAnnotation} | {@code visitAttribute} )* {@code
-    ///     visitEnd}.
-    ///     @author Remi Forax
-    ///     @author Eric Bruneton
+    ///     The ASM API version implemented by this visitor. The value of this field must be one of <see cref="Opcodes.ASM8"/> or <see cref="Opcodes.Asm9 />.
     /// </summary>
-    public abstract class RecordComponentVisitor
+    protected internal readonly int api;
+
+    /// <summary>
+    ///     The record visitor to which this visitor must delegate method calls. May be <c>null</c>.
+    /// </summary>
+    protected RecordComponentVisitor @delegate;
+
+    /// <summary>
+    ///     Constructs a new <see cref="RecordComponentVisitor" />.
+    /// </summary>
+    /// <param name="api">
+    ///     the ASM API version implemented by this visitor. Must be one of <see cref="Opcodes.Asm8 />
+    ///     or <see cref="Opcodes.Asm9 />.
+    /// </param>
+    public RecordComponentVisitor(int api) : this(api, null)
     {
-        /// <summary>
-        ///     The ASM API version implemented by this visitor. The value of this field must be one of {@link
-        ///     Opcodes#ASM8} or <seealso cref="IIOpcodes.Asm9 />.
-        /// </summary>
-        protected internal readonly int api;
+    }
 
-        /// <summary>
-        ///     The record visitor to which this visitor must delegate method calls. May be {@literal null}.
-        /// </summary>
-        /*package-private*/
-        internal RecordComponentVisitor @delegate;
+    /// <summary>
+    ///     Constructs a new <see cref="RecordComponentVisitor" />.
+    /// </summary>
+    /// <param name="api"> the ASM API version implemented by this visitor. Must be <see cref="Opcodes.Asm8 />. </param>
+    /// <param name="recordComponentVisitor">
+    ///     the record component visitor to which this visitor must delegate
+    ///     method calls. May be null.
+    /// </param>
+    public RecordComponentVisitor(int api, RecordComponentVisitor recordComponentVisitor)
+    {
+        if (api != Opcodes.Asm9 && api != Opcodes.Asm8 && api != Opcodes.Asm7 && api != Opcodes.Asm6 &&
+            api != Opcodes.Asm5 && api != Opcodes.Asm4 &&
+            api != Opcodes.Asm10_Experimental) throw new ArgumentException("Unsupported api " + api);
+        if (api == Opcodes.Asm10_Experimental) Constants.CheckAsmExperimental(this);
+        this.api = api;
+        @delegate = recordComponentVisitor;
+    }
 
-        /// <summary>
-        ///     Constructs a new <seealso cref="RecordComponentVisitor" />.
-        /// </summary>
-        /// <param name="api">
-        ///     the ASM API version implemented by this visitor. Must be one of <seealso cref="IIOpcodes.Asm8 />
-        ///     or <seealso cref="IIOpcodes.Asm9 />.
-        /// </param>
-        public RecordComponentVisitor(int api) : this(api, null)
-        {
-        }
+    /// <summary>
+    ///     The record visitor to which this visitor must delegate method calls. May be <c>null</c>.
+    /// </summary>
+    /// <returns> the record visitor to which this visitor must delegate method calls, or <c>null</c>. </returns>
+    public virtual RecordComponentVisitor Delegate
+    {
+        get => @delegate;
+        internal set => @delegate = value;
+    }
 
-        /// <summary>
-        ///     Constructs a new <seealso cref="RecordComponentVisitor" />.
-        /// </summary>
-        /// <param name="api"> the ASM API version implemented by this visitor. Must be <seealso cref="IIOpcodes.Asm8 />. </param>
-        /// <param name="recordComponentVisitor">
-        ///     the record component visitor to which this visitor must delegate
-        ///     method calls. May be null.
-        /// </param>
-        public RecordComponentVisitor(int api, RecordComponentVisitor recordComponentVisitor)
-        {
-            if (api != Opcodes.Asm9 && api != Opcodes.Asm8 && api != Opcodes.Asm7 && api != Opcodes.Asm6 &&
-                api != Opcodes.Asm5 && api != Opcodes.Asm4 &&
-                api != Opcodes.Asm10_Experimental) throw new ArgumentException("Unsupported api " + api);
-            if (api == Opcodes.Asm10_Experimental) Constants.CheckAsmExperimental(this);
-            this.api = api;
-            @delegate = recordComponentVisitor;
-        }
+    /// <summary>
+    ///     Visits an annotation of the record component.
+    /// </summary>
+    /// <param name="descriptor"> the class descriptor of the annotation class. </param>
+    /// <param name="visible"> <c>true</c> if the annotation is visible at runtime. </param>
+    /// <returns>
+    ///     a visitor to visit the annotation values, or <c>null</c> if this visitor is not
+    ///     interested in visiting this annotation.
+    /// </returns>
+    public virtual AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
+    {
+        if (@delegate != null) return @delegate.VisitAnnotation(descriptor, visible);
+        return null;
+    }
 
-        /// <summary>
-        ///     The record visitor to which this visitor must delegate method calls. May be {@literal null}.
-        /// </summary>
-        /// <returns> the record visitor to which this visitor must delegate method calls or {@literal null}. </returns>
-        public virtual RecordComponentVisitor Delegate => @delegate;
+    /// <summary>
+    ///     Visits an annotation on a type in the record component signature.
+    /// </summary>
+    /// <param name="typeRef">
+    ///     a reference to the annotated type. The sort of this type reference must be
+    ///     <see cref="TypeReference.Class_Type_Parameter" />, <see cref="TypeReference.Class_Type_Parameter_Bound"/> or <see cref="TypeReference.Class_Extends" />. See
+    ///     <see cref="TypeReference" />.
+    /// </param>
+    /// <param name="typePath">
+    ///     the path to the annotated type argument, wildcard bound, array element type, or
+    ///     static inner type within 'typeRef'. May be <c>null</c> if the annotation targets
+    ///     'typeRef' as a whole.
+    /// </param>
+    /// <param name="descriptor"> the class descriptor of the annotation class. </param>
+    /// <param name="visible"> <c>true</c> if the annotation is visible at runtime. </param>
+    /// <returns>
+    ///     a visitor to visit the annotation values, or <c>null</c> if this visitor is not
+    ///     interested in visiting this annotation.
+    /// </returns>
+    public virtual AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
+        bool visible)
+    {
+        if (@delegate != null) return @delegate.VisitTypeAnnotation(typeRef, typePath, descriptor, visible);
+        return null;
+    }
 
-        /// <summary>
-        ///     Visits an annotation of the record component.
-        /// </summary>
-        /// <param name="descriptor"> the class descriptor of the annotation class. </param>
-        /// <param name="visible"> {@literal true} if the annotation is visible at runtime. </param>
-        /// <returns>
-        ///     a visitor to visit the annotation values, or {@literal null} if this visitor is not
-        ///     interested in visiting this annotation.
-        /// </returns>
-        public virtual AnnotationVisitor VisitAnnotation(string descriptor, bool visible)
-        {
-            if (@delegate != null) return @delegate.VisitAnnotation(descriptor, visible);
-            return null;
-        }
+    /// <summary>
+    ///     Visits a non standard attribute of the record component.
+    /// </summary>
+    /// <param name="attribute"> an attribute. </param>
+    public virtual void VisitAttribute(Attribute attribute)
+    {
+        if (@delegate != null) @delegate.VisitAttribute(attribute);
+    }
 
-        /// <summary>
-        ///     Visits an annotation on a type in the record component signature.
-        /// </summary>
-        /// <param name="typeRef">
-        ///     a reference to the annotated type. The sort of this type reference must be
-        ///     <seealso cref="TypeReference.Class_Type_Parameter" />, {@link
-        ///     TypeReference#CLASS_TYPE_PARAMETER_BOUND} or <seealso cref="TypeReference.Class_Extends" />. See
-        ///     <seealso cref="TypeReference" />.
-        /// </param>
-        /// <param name="typePath">
-        ///     the path to the annotated type argument, wildcard bound, array element type, or
-        ///     static inner type within 'typeRef'. May be {@literal null} if the annotation targets
-        ///     'typeRef' as a whole.
-        /// </param>
-        /// <param name="descriptor"> the class descriptor of the annotation class. </param>
-        /// <param name="visible"> {@literal true} if the annotation is visible at runtime. </param>
-        /// <returns>
-        ///     a visitor to visit the annotation values, or {@literal null} if this visitor is not
-        ///     interested in visiting this annotation.
-        /// </returns>
-        public virtual AnnotationVisitor VisitTypeAnnotation(int typeRef, TypePath typePath, string descriptor,
-            bool visible)
-        {
-            if (@delegate != null) return @delegate.VisitTypeAnnotation(typeRef, typePath, descriptor, visible);
-            return null;
-        }
-
-        /// <summary>
-        ///     Visits a non standard attribute of the record component.
-        /// </summary>
-        /// <param name="attribute"> an attribute. </param>
-        public virtual void VisitAttribute(Attribute attribute)
-        {
-            if (@delegate != null) @delegate.VisitAttribute(attribute);
-        }
-
-        /// <summary>
-        ///     Visits the end of the record component. This method, which is the last one to be called, is
-        ///     used to inform the visitor that everything have been visited.
-        /// </summary>
-        public virtual void VisitEnd()
-        {
-            if (@delegate != null) @delegate.VisitEnd();
-        }
+    /// <summary>
+    ///     Visits the end of the record component. This method, which is the last one to be called, is
+    ///     used to inform the visitor that everything have been visited.
+    /// </summary>
+    public virtual void VisitEnd()
+    {
+        if (@delegate != null) @delegate.VisitEnd();
     }
 }

@@ -29,245 +29,241 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents an annotation.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+public class AnnotationNode : AnnotationVisitor
 {
     /// <summary>
-    /// A node that represents an annotation.
-    /// 
-    /// @author Eric Bruneton
+    /// The class descriptor of the annotation class. </summary>
+    public string Desc { get; set; }
+
+    /// <summary>
+    /// The name value pairs of this annotation. Each name value pair is stored as two consecutive
+    /// elements in the list. The name is a <seealso cref = "string "/>, and the value may be a <seealso cref = "byte "/>, <see cref="Boolean"/>, <seealso cref = "Character"/>, <seealso cref = "Short"/>, <seealso cref = "Integer"/>, <seealso cref = "Long"/>, <seealso cref = "Float"/>,
+    /// <seealso cref = "double "/>, <seealso cref = "string "/> or <seealso cref = "Type"/>, or a two elements String
+    /// array (for enumeration values), an <seealso cref = "AnnotationNode"/>, or a <seealso cref = "System.Collections.IList"/> of values of one
+    /// of the preceding types. The list may be null if there is no name value pair.
     /// </summary>
-    public class AnnotationNode : AnnotationVisitor
+    public List<object> Values { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "AnnotationNode"/>. <i>Subclasses must not use this constructor</i>.
+    /// Instead, they must use the <seealso cref = "AnnotationNode(int, String)"/> version.
+    /// </summary>
+    /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
+    /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
+    public AnnotationNode(string descriptor) : this(Opcodes.Asm9, descriptor)
     {
-        /// <summary>
-        /// The class descriptor of the annotation class. </summary>
-        public string Desc { get; set; }
-
-        /// <summary>
-        /// The name value pairs of this annotation. Each name value pair is stored as two consecutive
-        /// elements in the list. The name is a <seealso cref = "string "/>, and the value may be a <seealso cref = "byte "/>, {@link
-        /// Boolean}, <seealso cref = "Character"/>, <seealso cref = "Short"/>, <seealso cref = "Integer"/>, <seealso cref = "Long"/>, <seealso cref = "Float"/>,
-        /// <seealso cref = "double "/>, <seealso cref = "string "/> or <seealso cref = "Type"/>, or a two elements String
-        /// array (for enumeration values), an <seealso cref = "AnnotationNode"/>, or a <seealso cref = "System.Collections.IList"/> of values of one
-        /// of the preceding types. The list may be {@literal null} if there is no name value pair.
-        /// </summary>
-        public List<object> Values { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "AnnotationNode"/>. <i>Subclasses must not use this constructor</i>.
-        /// Instead, they must use the <seealso cref = "AnnotationNode(int, String)"/> version.
-        /// </summary>
-        /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
-        /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
-        public AnnotationNode(string descriptor) : this(Opcodes.Asm9, descriptor)
+        if (this.GetType() != typeof(AnnotationNode))
         {
-            if (this.GetType() != typeof(AnnotationNode))
-            {
-                throw new System.InvalidOperationException();
-            }
+            throw new System.InvalidOperationException();
+        }
+    }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "AnnotationNode"/>.
+    /// </summary>
+    /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the <c>ASM</c><i>x</i> values in <seealso cref = "Opcodes"/>. </param>
+    /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
+    public AnnotationNode(int api, string descriptor) : base(api)
+    {
+        this.Desc = descriptor;
+    }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "AnnotationNode"/> to visit an array value.
+    /// </summary>
+    /// <param name = "values"> where the visited values must be stored. </param>
+    public AnnotationNode(List<object> values) : base(Opcodes.Asm9)
+    {
+        this.Values = values;
+    }
+
+    // ------------------------------------------------------------------------
+    // Implementation of the AnnotationVisitor abstract class
+    // ------------------------------------------------------------------------
+    public override void Visit(string name, object value)
+    {
+        if (Values == null)
+        {
+            Values = new List<object>(!string.ReferenceEquals(this.Desc, null) ? 2 : 1);
         }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "AnnotationNode"/>.
-        /// </summary>
-        /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of the {@code
-        ///     ASM}<i>x</i> values in <seealso cref = "Opcodes"/>. </param>
-        /// <param name = "descriptor"> the class descriptor of the annotation class. </param>
-        public AnnotationNode(int api, string descriptor) : base(api)
+        if (!string.ReferenceEquals(this.Desc, null))
         {
-            this.Desc = descriptor;
+            Values.Add(name);
         }
 
-        /// <summary>
-        /// Constructs a new <seealso cref = "AnnotationNode"/> to visit an array value.
-        /// </summary>
-        /// <param name = "values"> where the visited values must be stored. </param>
-        public AnnotationNode(List<object> values) : base(Opcodes.Asm9)
+        if (value is sbyte[] || value is byte[])
         {
-            this.Values = values;
+            Values.Add(Util.AsArrayList((sbyte[])value));
+        }
+        else if (value is bool[])
+        {
+            Values.Add(Util.AsArrayList((bool[])value));
+        }
+        else if (value is short[])
+        {
+            Values.Add(Util.AsArrayList((short[])value));
+        }
+        else if (value is char[])
+        {
+            Values.Add(Util.AsArrayList((char[])value));
+        }
+        else if (value is int[])
+        {
+            Values.Add(Util.AsArrayList((int[])value));
+        }
+        else if (value is long[])
+        {
+            Values.Add(Util.AsArrayList((long[])value));
+        }
+        else if (value is float[])
+        {
+            Values.Add(Util.AsArrayList((float[])value));
+        }
+        else if (value is double[])
+        {
+            Values.Add(Util.AsArrayList((double[])value));
+        }
+        else
+        {
+            Values.Add(value);
+        }
+    }
+
+    public override void VisitEnum(string name, string descriptor, string value)
+    {
+        if (Values == null)
+        {
+            Values = new List<object>(!string.ReferenceEquals(this.Desc, null) ? 2 : 1);
         }
 
-        // ------------------------------------------------------------------------
-        // Implementation of the AnnotationVisitor abstract class
-        // ------------------------------------------------------------------------
-        public override void Visit(string name, object value)
+        if (!string.ReferenceEquals(this.Desc, null))
         {
-            if (Values == null)
+            Values.Add(name);
+        }
+
+        Values.Add(new string[] { descriptor, value });
+    }
+
+    public override AnnotationVisitor VisitAnnotation(string name, string descriptor)
+    {
+        if (Values == null)
+        {
+            Values = new List<object>(!string.ReferenceEquals(this.Desc, null) ? 2 : 1);
+        }
+
+        if (!string.ReferenceEquals(this.Desc, null))
+        {
+            Values.Add(name);
+        }
+
+        AnnotationNode annotation = new AnnotationNode(descriptor);
+        Values.Add(annotation);
+        return annotation;
+    }
+
+    public override AnnotationVisitor VisitArray(string name)
+    {
+        if (Values == null)
+        {
+            Values = new List<object>(!string.ReferenceEquals(this.Desc, null) ? 2 : 1);
+        }
+
+        if (!string.ReferenceEquals(this.Desc, null))
+        {
+            Values.Add(name);
+        }
+
+        List<object> array = new List<object>();
+        Values.Add(array);
+        return new AnnotationNode(array);
+    }
+
+    public override void VisitEnd()
+    {
+        // Nothing to do.
+    }
+
+    // ------------------------------------------------------------------------
+    // Accept methods
+    // ------------------------------------------------------------------------
+    /// <summary>
+    /// Checks that this annotation node is compatible with the given ASM API version. This method
+    /// checks that this node, and all its children recursively, do not contain elements that were
+    /// introduced in more recent versions of the ASM API than the given version.
+    /// </summary>
+    /// <param name = "api"> an ASM API version. Must be one of the <c>ASM</c><i>x</i> values in <see cref="Opcodes"/>. </param>
+    public virtual void Check(int api)
+    {
+        // nothing to do
+    }
+
+    /// <summary>
+    /// Makes the given visitor visit this annotation.
+    /// </summary>
+    /// <param name = "annotationVisitor"> an annotation visitor. Maybe null. </param>
+    public virtual void Accept(AnnotationVisitor annotationVisitor)
+    {
+        if (annotationVisitor != null)
+        {
+            if (Values != null)
             {
-                Values = new List<object>(!string.ReferenceEquals(this.Desc, null) ? 2 : 1);
+                for (int i = 0, n = Values.Count; i < n; i += 2)
+                {
+                    string name = (string)Values[i];
+                    object value = Values[i + 1];
+                    Accept(annotationVisitor, name, value);
+                }
             }
 
-            if (!string.ReferenceEquals(this.Desc, null))
-            {
-                Values.Add(name);
-            }
+            annotationVisitor.VisitEnd();
+        }
+    }
 
-            if (value is sbyte[] || value is byte[])
+    /// <summary>
+    /// Makes the given visitor visit a given annotation value.
+    /// </summary>
+    /// <param name = "annotationVisitor"> an annotation visitor. Maybe <c>null</c>. </param>
+    /// <param name = "name"> the value name. </param>
+    /// <param name = "value"> the actual value. </param>
+    internal static void Accept(AnnotationVisitor annotationVisitor, string name, object value)
+    {
+        if (annotationVisitor != null)
+        {
+            if (value is string[])
             {
-                Values.Add(Util.AsArrayList((sbyte[])value));
+                string[] typeValue = (string[])value;
+                annotationVisitor.VisitEnum(name, typeValue[0], typeValue[1]);
             }
-            else if (value is bool[])
+            else if (value is AnnotationNode)
             {
-                Values.Add(Util.AsArrayList((bool[])value));
+                AnnotationNode annotationValue = (AnnotationNode)value;
+                annotationValue.Accept(annotationVisitor.VisitAnnotation(name, annotationValue.Desc));
             }
-            else if (value is short[])
+            else if (value is System.Collections.IList)
             {
-                Values.Add(Util.AsArrayList((short[])value));
-            }
-            else if (value is char[])
-            {
-                Values.Add(Util.AsArrayList((char[])value));
-            }
-            else if (value is int[])
-            {
-                Values.Add(Util.AsArrayList((int[])value));
-            }
-            else if (value is long[])
-            {
-                Values.Add(Util.AsArrayList((long[])value));
-            }
-            else if (value is float[])
-            {
-                Values.Add(Util.AsArrayList((float[])value));
-            }
-            else if (value is double[])
-            {
-                Values.Add(Util.AsArrayList((double[])value));
+                AnnotationVisitor arrayAnnotationVisitor = annotationVisitor.VisitArray(name);
+                if (arrayAnnotationVisitor != null)
+                {
+                    IList arrayValue = (IList)value;
+                    for (int i = 0, n = arrayValue.Count; i < n; ++i)
+                    {
+                        Accept(arrayAnnotationVisitor, null, arrayValue[i]);
+                    }
+
+                    arrayAnnotationVisitor.VisitEnd();
+                }
             }
             else
             {
-                Values.Add(value);
-            }
-        }
-
-        public override void VisitEnum(string name, string descriptor, string value)
-        {
-            if (Values == null)
-            {
-                Values = new List<object>(!string.ReferenceEquals(this.Desc, null) ? 2 : 1);
-            }
-
-            if (!string.ReferenceEquals(this.Desc, null))
-            {
-                Values.Add(name);
-            }
-
-            Values.Add(new string[] { descriptor, value });
-        }
-
-        public override AnnotationVisitor VisitAnnotation(string name, string descriptor)
-        {
-            if (Values == null)
-            {
-                Values = new List<object>(!string.ReferenceEquals(this.Desc, null) ? 2 : 1);
-            }
-
-            if (!string.ReferenceEquals(this.Desc, null))
-            {
-                Values.Add(name);
-            }
-
-            AnnotationNode annotation = new AnnotationNode(descriptor);
-            Values.Add(annotation);
-            return annotation;
-        }
-
-        public override AnnotationVisitor VisitArray(string name)
-        {
-            if (Values == null)
-            {
-                Values = new List<object>(!string.ReferenceEquals(this.Desc, null) ? 2 : 1);
-            }
-
-            if (!string.ReferenceEquals(this.Desc, null))
-            {
-                Values.Add(name);
-            }
-
-            List<object> array = new List<object>();
-            Values.Add(array);
-            return new AnnotationNode(array);
-        }
-
-        public override void VisitEnd()
-        {
-            // Nothing to do.
-        }
-
-        // ------------------------------------------------------------------------
-        // Accept methods
-        // ------------------------------------------------------------------------
-        /// <summary>
-        /// Checks that this annotation node is compatible with the given ASM API version. This method
-        /// checks that this node, and all its children recursively, do not contain elements that were
-        /// introduced in more recent versions of the ASM API than the given version.
-        /// </summary>
-        /// <param name = "api"> an ASM API version. Must be one of the {@code ASM}<i>x</i> values in {@link
-        ///     Opcodes}. </param>
-        public virtual void Check(int api)
-        {
-            // nothing to do
-        }
-
-        /// <summary>
-        /// Makes the given visitor visit this annotation.
-        /// </summary>
-        /// <param name = "annotationVisitor"> an annotation visitor. Maybe {@literal null}. </param>
-        public virtual void Accept(AnnotationVisitor annotationVisitor)
-        {
-            if (annotationVisitor != null)
-            {
-                if (Values != null)
-                {
-                    for (int i = 0, n = Values.Count; i < n; i += 2)
-                    {
-                        string name = (string)Values[i];
-                        object value = Values[i + 1];
-                        Accept(annotationVisitor, name, value);
-                    }
-                }
-
-                annotationVisitor.VisitEnd();
-            }
-        }
-
-        /// <summary>
-        /// Makes the given visitor visit a given annotation value.
-        /// </summary>
-        /// <param name = "annotationVisitor"> an annotation visitor. Maybe {@literal null}. </param>
-        /// <param name = "name"> the value name. </param>
-        /// <param name = "value"> the actual value. </param>
-        internal static void Accept(AnnotationVisitor annotationVisitor, string name, object value)
-        {
-            if (annotationVisitor != null)
-            {
-                if (value is string[])
-                {
-                    string[] typeValue = (string[])value;
-                    annotationVisitor.VisitEnum(name, typeValue[0], typeValue[1]);
-                }
-                else if (value is AnnotationNode)
-                {
-                    AnnotationNode annotationValue = (AnnotationNode)value;
-                    annotationValue.Accept(annotationVisitor.VisitAnnotation(name, annotationValue.Desc));
-                }
-                else if (value is System.Collections.IList)
-                {
-                    AnnotationVisitor arrayAnnotationVisitor = annotationVisitor.VisitArray(name);
-                    if (arrayAnnotationVisitor != null)
-                    {
-                        IList arrayValue = (IList)value;
-                        for (int i = 0, n = arrayValue.Count; i < n; ++i)
-                        {
-                            Accept(arrayAnnotationVisitor, null, arrayValue[i]);
-                        }
-
-                        arrayAnnotationVisitor.VisitEnd();
-                    }
-                }
-                else
-                {
-                    annotationVisitor.Visit(name, value);
-                }
+                annotationVisitor.Visit(name, value);
             }
         }
     }

@@ -27,240 +27,235 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents a module declaration.
+/// 
+/// @author Remi Forax
+/// </summary>
+public class ModuleNode : ModuleVisitor
 {
     /// <summary>
-    /// A node that represents a module declaration.
-    /// 
-    /// @author Remi Forax
+    /// The fully qualified name (using dots) of this module. </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The module's access flags, among <c>ACC_OPEN</c>, <c>ACC_SYNTHETIC</c> and <c>ACC_MANDATED</c>.
     /// </summary>
-    public class ModuleNode : ModuleVisitor
+    public int Access { get; set; }
+
+    /// <summary>
+    /// The version of this module. May be <c>null</c>. </summary>
+    public string Version { get; set; }
+
+    /// <summary>
+    /// The internal name of the main class of this module (see <see cref="JType.InternalName"/>). May be <c>null</c>. </summary>
+    public string MainClass { get; set; }
+
+    /// <summary>
+    /// The internal name of the packages declared by this module (see <see cref="JType.InternalName"/>). May be <c>null</c>. </summary>
+    public List<string> Packages { get; set; }
+
+    /// <summary>
+    /// The dependencies of this module. May be <c>null</c>. </summary>
+    public List<ModuleRequireNode> Requires { get; set; }
+
+    /// <summary>
+    /// The packages exported by this module. May be <c>null</c>. </summary>
+    public List<ModuleExportNode> Exports { get; set; }
+
+    /// <summary>
+    /// The packages opened by this module. May be <c>null</c>. </summary>
+    public List<ModuleOpenNode> Opens { get; set; }
+
+    /// <summary>
+    /// The internal names of the services used by this module (see <see cref="JType.InternalName"/>). May be <c>null</c>. </summary>
+    public List<string> Uses { get; set; }
+
+    /// <summary>
+    /// The services provided by this module. May be <c>null</c>. </summary>
+    public List<ModuleProvideNode> Provides { get; set; }
+
+    /// <summary>
+    /// Constructs a <seealso cref = "ModuleNode"/>. <i>Subclasses must not use this constructor</i>. Instead, they
+    /// must use the <seealso cref = "ModuleNode(int, String, int, String, List, List, List, List, List)"/> version.
+    /// </summary>
+    /// <param name = "name"> the fully qualified name (using dots) of the module. </param>
+    /// <param name = "access"> the module access flags, among <c>ACC_OPEN</c>, <c>ACC_SYNTHETIC</c> and <c>ACC_MANDATED</c>. </param>
+    /// <param name = "version"> the module version, or <c>null</c>. </param>
+    /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
+    public ModuleNode(string name, int access, string version) : base(Opcodes.Asm9)
     {
-        /// <summary>
-        /// The fully qualified name (using dots) of this module. </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// The module's access flags, among {@code ACC_OPEN}, {@code ACC_SYNTHETIC} and {@code
-        /// ACC_MANDATED}.
-        /// </summary>
-        public int Access { get; set; }
-
-        /// <summary>
-        /// The version of this module. May be {@literal null}. </summary>
-        public string Version { get; set; }
-
-        /// <summary>
-        /// The internal name of the main class of this module. May be {@literal null}. </summary>
-        public string MainClass { get; set; }
-
-        /// <summary>
-        /// The internal name of the packages declared by this module. May be {@literal null}. </summary>
-        public List<string> Packages { get; set; }
-
-        /// <summary>
-        /// The dependencies of this module. May be {@literal null}. </summary>
-        public List<ModuleRequireNode> Requires { get; set; }
-
-        /// <summary>
-        /// The packages exported by this module. May be {@literal null}. </summary>
-        public List<ModuleExportNode> Exports { get; set; }
-
-        /// <summary>
-        /// The packages opened by this module. May be {@literal null}. </summary>
-        public List<ModuleOpenNode> Opens { get; set; }
-
-        /// <summary>
-        /// The internal names of the services used by this module. May be {@literal null}. </summary>
-        public List<string> Uses { get; set; }
-
-        /// <summary>
-        /// The services provided by this module. May be {@literal null}. </summary>
-        public List<ModuleProvideNode> Provides { get; set; }
-
-        /// <summary>
-        /// Constructs a <seealso cref = "ModuleNode"/>. <i>Subclasses must not use this constructor</i>. Instead, they
-        /// must use the <seealso cref = "ModuleNode(int, String, int, String, List, List, List, List, List)"/> version.
-        /// </summary>
-        /// <param name = "name"> the fully qualified name (using dots) of the module. </param>
-        /// <param name = "access"> the module access flags, among {@code ACC_OPEN}, {@code ACC_SYNTHETIC} and {@code
-        ///     ACC_MANDATED}. </param>
-        /// <param name = "version"> the module version, or {@literal null}. </param>
-        /// <exception cref = "IllegalStateException"> If a subclass calls this constructor. </exception>
-        public ModuleNode(string name, int access, string version) : base(Opcodes.Asm9)
+        if (this.GetType() != typeof(ModuleNode))
         {
-            if (this.GetType() != typeof(ModuleNode))
-            {
-                throw new System.InvalidOperationException();
-            }
-
-            this.Name = name;
-            this.Access = access;
-            this.Version = version;
+            throw new System.InvalidOperationException();
         }
 
-        // TODO(forax): why is there no 'mainClass' and 'packages' parameters in this constructor?
-        /// <summary>
-        /// Constructs a <seealso cref = "ModuleNode"/>.
-        /// </summary>
-        /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of {@link
-        ///     Opcodes#ASM6}, <seealso cref = "IIOpcodes.Asm7 / > , <seealso cref = "IIOpcodes.Asm8 / > or <seealso cref = "IIOpcodes.Asm9 / > . </param>
-        /// <param name = "name"> the fully qualified name (using dots) of the module. </param>
-        /// <param name = "access"> the module access flags, among {@code ACC_OPEN}, {@code ACC_SYNTHETIC} and {@code
-        ///     ACC_MANDATED}. </param>
-        /// <param name = "version"> the module version, or {@literal null}. </param>
-        /// <param name = "requires"> The dependencies of this module. May be {@literal null}. </param>
-        /// <param name = "exports"> The packages exported by this module. May be {@literal null}. </param>
-        /// <param name = "opens"> The packages opened by this module. May be {@literal null}. </param>
-        /// <param name = "uses"> The internal names of the services used by this module. May be {@literal null}. </param>
-        /// <param name = "provides"> The services provided by this module. May be {@literal null}. </param>
-        public ModuleNode(int api, string name, int access, string version, List<ModuleRequireNode> requires,
-            List<ModuleExportNode> exports, List<ModuleOpenNode> opens, List<string> uses,
-            List<ModuleProvideNode> provides) : base(api)
+        this.Name = name;
+        this.Access = access;
+        this.Version = version;
+    }
+
+    // TODO(forax): why is there no 'mainClass' and 'packages' parameters in this constructor?
+    /// <summary>
+    /// Constructs a <seealso cref = "ModuleNode"/>.
+    /// </summary>
+    /// <param name = "api"> the ASM API version implemented by this visitor. Must be one of <see cref="Opcodes.ASM6"/>, <see cref="Opcodes.Asm7"/> , <see cref="Opcodes.Asm8"/> or <see cref="Opcodes.Asm9"/> . </param>
+    /// <param name = "name"> the fully qualified name (using dots) of the module. </param>
+    /// <param name = "access"> the module access flags, among <c>ACC_OPEN</c>, <c>ACC_SYNTHETIC</c> and <c>ACC_MANDATED</c>. </param>
+    /// <param name = "version"> the module version, or <c>null</c>. </param>
+    /// <param name = "requires"> The dependencies of this module. May be <c>null</c>. </param>
+    /// <param name = "exports"> The packages exported by this module. May be <c>null</c>. </param>
+    /// <param name = "opens"> The packages opened by this module. May be <c>null</c>. </param>
+    /// <param name = "uses"> The internal names of the services used by this module (see <see cref="JType.InternalName"/>). May be <c>null</c>. </param>
+    /// <param name = "provides"> The services provided by this module. May be <c>null</c>. </param>
+    public ModuleNode(int api, string name, int access, string version, List<ModuleRequireNode> requires,
+        List<ModuleExportNode> exports, List<ModuleOpenNode> opens, List<string> uses,
+        List<ModuleProvideNode> provides) : base(api)
+    {
+        this.Name = name;
+        this.Access = access;
+        this.Version = version;
+        this.Requires = requires;
+        this.Exports = exports;
+        this.Opens = opens;
+        this.Uses = uses;
+        this.Provides = provides;
+    }
+
+    public override void VisitMainClass(string mainClass)
+    {
+        this.MainClass = mainClass;
+    }
+
+    public override void VisitPackage(string packaze)
+    {
+        if (Packages == null)
         {
-            this.Name = name;
-            this.Access = access;
-            this.Version = version;
-            this.Requires = requires;
-            this.Exports = exports;
-            this.Opens = opens;
-            this.Uses = uses;
-            this.Provides = provides;
+            Packages = new List<string>(5);
         }
 
-        public override void VisitMainClass(string mainClass)
+        Packages.Add(packaze);
+    }
+
+    public override void VisitRequire(string module, int access, string version)
+    {
+        if (Requires == null)
         {
-            this.MainClass = mainClass;
+            Requires = new List<ModuleRequireNode>(5);
         }
 
-        public override void VisitPackage(string packaze)
-        {
-            if (Packages == null)
-            {
-                Packages = new List<string>(5);
-            }
+        Requires.Add(new ModuleRequireNode(module, access, version));
+    }
 
-            Packages.Add(packaze);
+    public override void VisitExport(string packaze, int access, params string[] modules)
+    {
+        if (Exports == null)
+        {
+            Exports = new List<ModuleExportNode>(5);
         }
 
-        public override void VisitRequire(string module, int access, string version)
-        {
-            if (Requires == null)
-            {
-                Requires = new List<ModuleRequireNode>(5);
-            }
+        Exports.Add(new ModuleExportNode(packaze, access, Util.AsArrayList(modules)));
+    }
 
-            Requires.Add(new ModuleRequireNode(module, access, version));
+    public override void VisitOpen(string packaze, int access, params string[] modules)
+    {
+        if (Opens == null)
+        {
+            Opens = new List<ModuleOpenNode>(5);
         }
 
-        public override void VisitExport(string packaze, int access, params string[] modules)
-        {
-            if (Exports == null)
-            {
-                Exports = new List<ModuleExportNode>(5);
-            }
+        Opens.Add(new ModuleOpenNode(packaze, access, Util.AsArrayList(modules)));
+    }
 
-            Exports.Add(new ModuleExportNode(packaze, access, Util.AsArrayList(modules)));
+    public override void VisitUse(string service)
+    {
+        if (Uses == null)
+        {
+            Uses = new List<string>(5);
         }
 
-        public override void VisitOpen(string packaze, int access, params string[] modules)
-        {
-            if (Opens == null)
-            {
-                Opens = new List<ModuleOpenNode>(5);
-            }
+        Uses.Add(service);
+    }
 
-            Opens.Add(new ModuleOpenNode(packaze, access, Util.AsArrayList(modules)));
+    public override void VisitProvide(string service, params string[] providers)
+    {
+        if (Provides == null)
+        {
+            Provides = new List<ModuleProvideNode>(5);
         }
 
-        public override void VisitUse(string service)
-        {
-            if (Uses == null)
-            {
-                Uses = new List<string>(5);
-            }
+        Provides.Add(new ModuleProvideNode(service, Util.AsArrayList(providers)));
+    }
 
-            Uses.Add(service);
+    public override void VisitEnd()
+    {
+        // Nothing to do.
+    }
+
+    /// <summary>
+    /// Makes the given class visitor visit this module.
+    /// </summary>
+    /// <param name = "classVisitor"> a class visitor. </param>
+    public virtual void Accept(ClassVisitor classVisitor)
+    {
+        ModuleVisitor moduleVisitor = classVisitor.VisitModule(Name, Access, Version);
+        if (moduleVisitor == null)
+        {
+            return;
         }
 
-        public override void VisitProvide(string service, params string[] providers)
+        if (!string.ReferenceEquals(MainClass, null))
         {
-            if (Provides == null)
-            {
-                Provides = new List<ModuleProvideNode>(5);
-            }
-
-            Provides.Add(new ModuleProvideNode(service, Util.AsArrayList(providers)));
+            moduleVisitor.VisitMainClass(MainClass);
         }
 
-        public override void VisitEnd()
+        if (Packages != null)
         {
-            // Nothing to do.
+            for (int i = 0, n = Packages.Count; i < n; i++)
+            {
+                moduleVisitor.VisitPackage(Packages[i]);
+            }
         }
 
-        /// <summary>
-        /// Makes the given class visitor visit this module.
-        /// </summary>
-        /// <param name = "classVisitor"> a class visitor. </param>
-        public virtual void Accept(ClassVisitor classVisitor)
+        if (Requires != null)
         {
-            ModuleVisitor moduleVisitor = classVisitor.VisitModule(Name, Access, Version);
-            if (moduleVisitor == null)
+            for (int i = 0, n = Requires.Count; i < n; i++)
             {
-                return;
+                Requires[i].Accept(moduleVisitor);
             }
+        }
 
-            if (!string.ReferenceEquals(MainClass, null))
+        if (Exports != null)
+        {
+            for (int i = 0, n = Exports.Count; i < n; i++)
             {
-                moduleVisitor.VisitMainClass(MainClass);
+                Exports[i].Accept(moduleVisitor);
             }
+        }
 
-            if (Packages != null)
+        if (Opens != null)
+        {
+            for (int i = 0, n = Opens.Count; i < n; i++)
             {
-                for (int i = 0, n = Packages.Count; i < n; i++)
-                {
-                    moduleVisitor.VisitPackage(Packages[i]);
-                }
+                Opens[i].Accept(moduleVisitor);
             }
+        }
 
-            if (Requires != null)
+        if (Uses != null)
+        {
+            for (int i = 0, n = Uses.Count; i < n; i++)
             {
-                for (int i = 0, n = Requires.Count; i < n; i++)
-                {
-                    Requires[i].Accept(moduleVisitor);
-                }
+                moduleVisitor.VisitUse(Uses[i]);
             }
+        }
 
-            if (Exports != null)
+        if (Provides != null)
+        {
+            for (int i = 0, n = Provides.Count; i < n; i++)
             {
-                for (int i = 0, n = Exports.Count; i < n; i++)
-                {
-                    Exports[i].Accept(moduleVisitor);
-                }
-            }
-
-            if (Opens != null)
-            {
-                for (int i = 0, n = Opens.Count; i < n; i++)
-                {
-                    Opens[i].Accept(moduleVisitor);
-                }
-            }
-
-            if (Uses != null)
-            {
-                for (int i = 0, n = Uses.Count; i < n; i++)
-                {
-                    moduleVisitor.VisitUse(Uses[i]);
-                }
-            }
-
-            if (Provides != null)
-            {
-                for (int i = 0, n = Provides.Count; i < n; i++)
-                {
-                    Provides[i].Accept(moduleVisitor);
-                }
+                Provides[i].Accept(moduleVisitor);
             }
         }
     }

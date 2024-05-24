@@ -27,53 +27,50 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents an exported package with its name and the module that can access to it.
+/// 
+/// @author Remi Forax
+/// </summary>
+public class ModuleExportNode
 {
     /// <summary>
-    /// A node that represents an exported package with its name and the module that can access to it.
-    /// 
-    /// @author Remi Forax
+    /// The internal name of the exported package (see <see cref="JType.InternalName"/>). </summary>
+    public string Packaze { get; set; }
+
+    /// <summary>
+    /// The access flags (see <seealso cref = "Opcodes"/>). Valid values are <c>ACC_SYNTHETIC</c> and <c>ACC_MANDATED</c>.
     /// </summary>
-    public class ModuleExportNode
+    public int Access { get; set; }
+
+    /// <summary>
+    /// The list of modules that can access this exported package, specified with fully qualified names
+    /// (using dots). May be <c>null</c>.
+    /// </summary>
+    public List<string> Modules { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "ModuleExportNode"/>.
+    /// </summary>
+    /// <param name = "packaze"> the internal name of the exported package (see <see cref="JType.InternalName"/>). </param>
+    /// <param name = "access"> the package access flags, one or more of <c>ACC_SYNTHETIC</c> and <c>ACC_MANDATED</c>. </param>
+    /// <param name = "modules"> a list of modules that can access this exported package, specified with fully
+    ///     qualified names (using dots). </param>
+    public ModuleExportNode(string packaze, int access, List<string> modules)
     {
-        /// <summary>
-        /// The internal name of the exported package. </summary>
-        public string Packaze { get; set; }
+        this.Packaze = packaze;
+        this.Access = access;
+        this.Modules = modules;
+    }
 
-        /// <summary>
-        /// The access flags (see <seealso cref = "Opcodes"/>). Valid values are {@code
-        /// ACC_SYNTHETIC} and {@code ACC_MANDATED}.
-        /// </summary>
-        public int Access { get; set; }
-
-        /// <summary>
-        /// The list of modules that can access this exported package, specified with fully qualified names
-        /// (using dots). May be {@literal null}.
-        /// </summary>
-        public List<string> Modules { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "ModuleExportNode"/>.
-        /// </summary>
-        /// <param name = "packaze"> the internal name of the exported package. </param>
-        /// <param name = "access"> the package access flags, one or more of {@code ACC_SYNTHETIC} and {@code
-        ///     ACC_MANDATED}. </param>
-        /// <param name = "modules"> a list of modules that can access this exported package, specified with fully
-        ///     qualified names (using dots). </param>
-        public ModuleExportNode(string packaze, int access, List<string> modules)
-        {
-            this.Packaze = packaze;
-            this.Access = access;
-            this.Modules = modules;
-        }
-
-        /// <summary>
-        /// Makes the given module visitor visit this export declaration.
-        /// </summary>
-        /// <param name = "moduleVisitor"> a module visitor. </param>
-        public virtual void Accept(ModuleVisitor moduleVisitor)
-        {
-            moduleVisitor.VisitExport(Packaze, Access, Modules == null ? null : ((List<string>)Modules).ToArray());
-        }
+    /// <summary>
+    /// Makes the given module visitor visit this export declaration.
+    /// </summary>
+    /// <param name = "moduleVisitor"> a module visitor. </param>
+    public virtual void Accept(ModuleVisitor moduleVisitor)
+    {
+        moduleVisitor.VisitExport(Packaze, Access, Modules == null ? null : ((List<string>)Modules).ToArray());
     }
 }

@@ -1,4 +1,4 @@
-﻿// ASM: a very small and fast Java bytecode manipulation framework
+// ASM: a very small and fast Java bytecode manipulation framework
 // Copyright (c) 2000-2011 INRIA, France Telecom
 // All rights reserved.
 //
@@ -26,92 +26,89 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm
+namespace ObjectWeb.Asm;
+
+/// <summary>
+/// An <see cref="AnnotationVisitor"/> that generates a corresponding 'annotation' or 'type_annotation'
+/// structure, as defined in the Java Virtual Machine Specification (JVMS). AnnotationWriter
+/// instances can be chained in a doubly linked list, from which Runtime[In]Visible[Type]Annotations
+/// attributes can be generated with the <see cref="PutAnnotations"/> method. Similarly, arrays of such
+/// lists can be used to generate Runtime[In]VisibleParameterAnnotations attributes.
+/// </summary>
+/// <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.16">See also: JVMS 4.7.16</a>
+/// <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.20">See also: JVMS 4.7.20</a>
+/// @author Eric Bruneton
+/// @author Eugene Kuleshov </seealso>
+internal sealed class AnnotationWriter : AnnotationVisitor
 {
     /// <summary>
-    /// An <seealso cref="AnnotationVisitor"/> that generates a corresponding 'annotation' or 'type_annotation'
-    /// structure, as defined in the Java Virtual Machine Specification (JVMS). AnnotationWriter
-    /// instances can be chained in a doubly linked list, from which Runtime[In]Visible[Type]Annotations
-    /// attributes can be generated with the <seealso cref="PutAnnotations"/> method. Similarly, arrays of such
-    /// lists can be used to generate Runtime[In]VisibleParameterAnnotations attributes.
+    /// Where the constants used in this AnnotationWriter must be stored. </summary>
+    private readonly SymbolTable _symbolTable;
+
+    /// <summary>
+    /// Whether Values are named or not. AnnotationWriter instances used for annotation default and
+    /// annotation arrays use unnamed Values (i.e. they generate an 'element_value' structure for each
+    /// value, instead of an element_name_index followed by an element_value).
     /// </summary>
-    /// <seealso cref= <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.16">JVMS
-    ///     4.7.16</a> </seealso>
-    /// <seealso cref= <a href="https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.20">JVMS
-    ///     4.7.20</a>
-    /// @author Eric Bruneton
-    /// @author Eugene Kuleshov </seealso>
-    internal sealed class AnnotationWriter : AnnotationVisitor
+    private readonly bool _useNamedValues;
+
+    /// <summary>
+    /// The 'annotation' or 'type_annotation' JVMS structure corresponding to the annotation Values
+    /// visited so far. All the fields of these structures, except the last one - the
+    /// element_value_pairs array, must be set before this ByteVector is passed to the constructor
+    /// (num_element_value_pairs can be set to 0, it is reset to the correct value in <see cref="visitEnd()"/>). The element_value_pairs array is filled incrementally in the various visit()
+    /// methods.
+    /// 
+    /// <para>Note: as an exception to the above rules, for AnnotationDefault attributes (which contain a
+    /// single element_value by definition), this ByteVector is initially empty when passed to the
+    /// constructor, and <see cref="_numElementValuePairsOffset"/> is set to -1.
+    /// </para>
+    /// </summary>
+    private readonly ByteVector _annotation;
+
+    /// <summary>
+    /// The offset in <see cref="_annotation"/> where <see cref="_numElementValuePairs"/> must be stored (or -1 for
+    /// the case of AnnotationDefault attributes).
+    /// </summary>
+    private readonly int _numElementValuePairsOffset;
+
+    /// <summary>
+    /// The number of element value pairs visited so far. </summary>
+    private int _numElementValuePairs;
+
+    /// <summary>
+    /// The previous AnnotationWriter. This field is used to store the list of annotations of a
+    /// Runtime[In]Visible[Type]Annotations attribute. It is unused for nested or array annotations
+    /// (annotation Values of annotation type), or for AnnotationDefault attributes.
+    /// </summary>
+    private readonly AnnotationWriter _previousAnnotation;
+
+    /// <summary>
+    /// The next AnnotationWriter. This field is used to store the list of annotations of a
+    /// Runtime[In]Visible[Type]Annotations attribute. It is unused for nested or array annotations
+    /// (annotation Values of annotation type), or for AnnotationDefault attributes.
+    /// </summary>
+    private AnnotationWriter _nextAnnotation;
+
+    // -----------------------------------------------------------------------------------------------
+    // Constructors and factories
+    // -----------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Constructs a new <see cref="AnnotationWriter"/>.
+    /// </summary>
+    /// <param name="symbolTable"> where the constants used in this AnnotationWriter must be stored. </param>
+    /// <param name="useNamedValues"> whether Values are named or not. AnnotationDefault and annotation arrays
+    ///     use unnamed Values. </param>
+    /// <param name="annotation"> where the 'annotation' or 'type_annotation' JVMS structure corresponding to
+    ///     the visited content must be stored. This ByteVector must already contain all the fields of
+    ///     the structure except the last one (the element_value_pairs array). </param>
+    /// <param name="previousAnnotation"> the previously visited annotation of the
+    ///     Runtime[In]Visible[Type]Annotations attribute to which this annotation belongs, or
+    ///     <c>null</c> in other cases (e.g. nested or array annotations). </param>
+    public AnnotationWriter(SymbolTable symbolTable, bool useNamedValues, ByteVector annotation,
+        AnnotationWriter previousAnnotation) : base(Opcodes.Asm9)
     {
-        /// <summary>
-        /// Where the constants used in this AnnotationWriter must be stored. </summary>
-        private readonly SymbolTable _symbolTable;
-
-        /// <summary>
-        /// Whether Values are named or not. AnnotationWriter instances used for annotation default and
-        /// annotation arrays use unnamed Values (i.e. they generate an 'element_value' structure for each
-        /// value, instead of an element_name_index followed by an element_value).
-        /// </summary>
-        private readonly bool _useNamedValues;
-
-        /// <summary>
-        /// The 'annotation' or 'type_annotation' JVMS structure corresponding to the annotation Values
-        /// visited so far. All the fields of these structures, except the last one - the
-        /// element_value_pairs array, must be set before this ByteVector is passed to the constructor
-        /// (num_element_value_pairs can be set to 0, it is reset to the correct value in {@link
-        /// #visitEnd()}). The element_value_pairs array is filled incrementally in the various visit()
-        /// methods.
-        /// 
-        /// <para>Note: as an exception to the above rules, for AnnotationDefault attributes (which contain a
-        /// single element_value by definition), this ByteVector is initially empty when passed to the
-        /// constructor, and <seealso cref="_numElementValuePairsOffset"/> is set to -1.
-        /// </para>
-        /// </summary>
-        private readonly ByteVector _annotation;
-
-        /// <summary>
-        /// The offset in <seealso cref="_annotation"/> where <seealso cref="_numElementValuePairs"/> must be stored (or -1 for
-        /// the case of AnnotationDefault attributes).
-        /// </summary>
-        private readonly int _numElementValuePairsOffset;
-
-        /// <summary>
-        /// The number of element value pairs visited so far. </summary>
-        private int _numElementValuePairs;
-
-        /// <summary>
-        /// The previous AnnotationWriter. This field is used to store the list of annotations of a
-        /// Runtime[In]Visible[Type]Annotations attribute. It is unused for nested or array annotations
-        /// (annotation Values of annotation type), or for AnnotationDefault attributes.
-        /// </summary>
-        private readonly AnnotationWriter _previousAnnotation;
-
-        /// <summary>
-        /// The next AnnotationWriter. This field is used to store the list of annotations of a
-        /// Runtime[In]Visible[Type]Annotations attribute. It is unused for nested or array annotations
-        /// (annotation Values of annotation type), or for AnnotationDefault attributes.
-        /// </summary>
-        private AnnotationWriter _nextAnnotation;
-
-        // -----------------------------------------------------------------------------------------------
-        // Constructors and factories
-        // -----------------------------------------------------------------------------------------------
-
-        /// <summary>
-        /// Constructs a new <seealso cref="AnnotationWriter"/>.
-        /// </summary>
-        /// <param name="symbolTable"> where the constants used in this AnnotationWriter must be stored. </param>
-        /// <param name="useNamedValues"> whether Values are named or not. AnnotationDefault and annotation arrays
-        ///     use unnamed Values. </param>
-        /// <param name="annotation"> where the 'annotation' or 'type_annotation' JVMS structure corresponding to
-        ///     the visited content must be stored. This ByteVector must already contain all the fields of
-        ///     the structure except the last one (the element_value_pairs array). </param>
-        /// <param name="previousAnnotation"> the previously visited annotation of the
-        ///     Runtime[In]Visible[Type]Annotations attribute to which this annotation belongs, or
-        ///     {@literal null} in other cases (e.g. nested or array annotations). </param>
-        public AnnotationWriter(SymbolTable symbolTable, bool useNamedValues, ByteVector annotation,
-            AnnotationWriter previousAnnotation) : base(Opcodes.Asm9)
-        {
             this._symbolTable = symbolTable;
             this._useNamedValues = useNamedValues;
             this._annotation = annotation;
@@ -124,18 +121,18 @@ namespace ObjectWeb.Asm
             }
         }
 
-        /// <summary>
-        /// Creates a new <seealso cref="AnnotationWriter"/> using named Values.
-        /// </summary>
-        /// <param name="symbolTable"> where the constants used in this AnnotationWriter must be stored. </param>
-        /// <param name="descriptor"> the class descriptor of the annotation class. </param>
-        /// <param name="previousAnnotation"> the previously visited annotation of the
-        ///     Runtime[In]Visible[Type]Annotations attribute to which this annotation belongs, or
-        ///     {@literal null} in other cases (e.g. nested or array annotations). </param>
-        /// <returns> a new <seealso cref="AnnotationWriter"/> for the given annotation descriptor. </returns>
-        internal static AnnotationWriter Create(SymbolTable symbolTable, string descriptor,
-            AnnotationWriter previousAnnotation)
-        {
+    /// <summary>
+    /// Creates a new <see cref="AnnotationWriter"/> using named Values.
+    /// </summary>
+    /// <param name="symbolTable"> where the constants used in this AnnotationWriter must be stored. </param>
+    /// <param name="descriptor"> the class descriptor of the annotation class. </param>
+    /// <param name="previousAnnotation"> the previously visited annotation of the
+    ///     Runtime[In]Visible[Type]Annotations attribute to which this annotation belongs, or
+    ///     <c>null</c> in other cases (e.g. nested or array annotations). </param>
+    /// <returns> a new <see cref="AnnotationWriter"/> for the given annotation descriptor. </returns>
+    internal static AnnotationWriter Create(SymbolTable symbolTable, string descriptor,
+        AnnotationWriter previousAnnotation)
+    {
             // Create a ByteVector to hold an 'annotation' JVMS structure.
             // See https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.16.
             ByteVector annotation = new ByteVector();
@@ -144,25 +141,24 @@ namespace ObjectWeb.Asm
             return new AnnotationWriter(symbolTable, true, annotation, previousAnnotation);
         }
 
-        /// <summary>
-        /// Creates a new <seealso cref="AnnotationWriter"/> using named Values.
-        /// </summary>
-        /// <param name="symbolTable"> where the constants used in this AnnotationWriter must be stored. </param>
-        /// <param name="typeRef"> a reference to the annotated type. The sort of this type reference must be
-        ///     <seealso cref="TypeReference.Class_Type_Parameter"/>, {@link
-        ///     TypeReference#CLASS_TYPE_PARAMETER_BOUND} or <seealso cref="TypeReference.Class_Extends"/>. See
-        ///     <seealso cref="TypeReference"/>. </param>
-        /// <param name="typePath"> the path to the annotated type argument, wildcard bound, array element type, or
-        ///     static inner type within 'typeRef'. May be {@literal null} if the annotation targets
-        ///     'typeRef' as a whole. </param>
-        /// <param name="descriptor"> the class descriptor of the annotation class. </param>
-        /// <param name="previousAnnotation"> the previously visited annotation of the
-        ///     Runtime[In]Visible[Type]Annotations attribute to which this annotation belongs, or
-        ///     {@literal null} in other cases (e.g. nested or array annotations). </param>
-        /// <returns> a new <seealso cref="AnnotationWriter"/> for the given type annotation reference and descriptor. </returns>
-        internal static AnnotationWriter Create(SymbolTable symbolTable, int typeRef, TypePath typePath,
-            string descriptor, AnnotationWriter previousAnnotation)
-        {
+    /// <summary>
+    /// Creates a new <see cref="AnnotationWriter"/> using named Values.
+    /// </summary>
+    /// <param name="symbolTable"> where the constants used in this AnnotationWriter must be stored. </param>
+    /// <param name="typeRef"> a reference to the annotated type. The sort of this type reference must be
+    ///     <see cref="TypeReference.Class_Type_Parameter"/>, <see cref="TypeReference.Class_Type_Parameter_Bound"/> or <see cref="TypeReference.Class_Extends"/>. See
+    ///     <see cref="TypeReference"/>. </param>
+    /// <param name="typePath"> the path to the annotated type argument, wildcard bound, array element type, or
+    ///     static inner type within 'typeRef'. May be <c>null</c> if the annotation targets
+    ///     'typeRef' as a whole. </param>
+    /// <param name="descriptor"> the class descriptor of the annotation class. </param>
+    /// <param name="previousAnnotation"> the previously visited annotation of the
+    ///     Runtime[In]Visible[Type]Annotations attribute to which this annotation belongs, or
+    ///     <c>null</c> in other cases (e.g. nested or array annotations). </param>
+    /// <returns> a new <see cref="AnnotationWriter"/> for the given type annotation reference and descriptor. </returns>
+    internal static AnnotationWriter Create(SymbolTable symbolTable, int typeRef, TypePath typePath,
+        string descriptor, AnnotationWriter previousAnnotation)
+    {
             // Create a ByteVector to hold a 'type_annotation' JVMS structure.
             // See https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.20.
             ByteVector typeAnnotation = new ByteVector();
@@ -174,12 +170,12 @@ namespace ObjectWeb.Asm
             return new AnnotationWriter(symbolTable, true, typeAnnotation, previousAnnotation);
         }
 
-        // -----------------------------------------------------------------------------------------------
-        // Implementation of the AnnotationVisitor abstract class
-        // -----------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------
+    // Implementation of the AnnotationVisitor abstract class
+    // -----------------------------------------------------------------------------------------------
 
-        public override void Visit(string name, object value)
-        {
+    public override void Visit(string name, object value)
+    {
             // Case of an element_value with a const_value_index, class_info_index or array_index field.
             // See https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.16.1.
             ++_numElementValuePairs;
@@ -292,8 +288,8 @@ namespace ObjectWeb.Asm
             }
         }
 
-        public override void VisitEnum(string name, string descriptor, string value)
-        {
+    public override void VisitEnum(string name, string descriptor, string value)
+    {
             // Case of an element_value with an enum_const_value field.
             // See https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.16.1.
             ++_numElementValuePairs;
@@ -306,8 +302,8 @@ namespace ObjectWeb.Asm
                 .PutShort(_symbolTable.AddConstantUtf8(value));
         }
 
-        public override AnnotationVisitor VisitAnnotation(string name, string descriptor)
-        {
+    public override AnnotationVisitor VisitAnnotation(string name, string descriptor)
+    {
             // Case of an element_value with an annotation_value field.
             // See https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.16.1.
             ++_numElementValuePairs;
@@ -321,8 +317,8 @@ namespace ObjectWeb.Asm
             return new AnnotationWriter(_symbolTable, true, _annotation, null);
         }
 
-        public override AnnotationVisitor VisitArray(string name)
-        {
+    public override AnnotationVisitor VisitArray(string name)
+    {
             // Case of an element_value with an array_value field.
             // https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.7.16.1
             ++_numElementValuePairs;
@@ -342,31 +338,31 @@ namespace ObjectWeb.Asm
             return new AnnotationWriter(_symbolTable, false, _annotation, null);
         }
 
-        public override void VisitEnd()
-        {
+    public override void VisitEnd()
+    {
             if (_numElementValuePairsOffset != -1)
             {
                 sbyte[] data = _annotation.data;
-                data[_numElementValuePairsOffset] = (sbyte)((int)((uint)_numElementValuePairs >> 8));
+                data[_numElementValuePairsOffset] = (sbyte)(_numElementValuePairs >>> 8);
                 data[_numElementValuePairsOffset + 1] = (sbyte)_numElementValuePairs;
             }
         }
 
-        // -----------------------------------------------------------------------------------------------
-        // Utility methods
-        // -----------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------
+    // Utility methods
+    // -----------------------------------------------------------------------------------------------
 
-        /// <summary>
-        /// Returns the size of a Runtime[In]Visible[Type]Annotations attribute containing this annotation
-        /// and all its <i>predecessors</i> (see <seealso cref="_previousAnnotation"/>. Also adds the attribute name
-        /// to the constant pool of the class (if not null).
-        /// </summary>
-        /// <param name="attributeName"> one of "Runtime[In]Visible[Type]Annotations", or {@literal null}. </param>
-        /// <returns> the size in bytes of a Runtime[In]Visible[Type]Annotations attribute containing this
-        ///     annotation and all its predecessors. This includes the size of the attribute_name_index and
-        ///     attribute_length fields. </returns>
-        public int ComputeAnnotationsSize(string attributeName)
-        {
+    /// <summary>
+    /// Returns the size of a Runtime[In]Visible[Type]Annotations attribute containing this annotation
+    /// and all its <i>predecessors</i> (see <see cref="_previousAnnotation"/>. Also adds the attribute name
+    /// to the constant pool of the class (if not null).
+    /// </summary>
+    /// <param name="attributeName"> one of "Runtime[In]Visible[Type]Annotations", or <c>null</c>. </param>
+    /// <returns> the size in bytes of a Runtime[In]Visible[Type]Annotations attribute containing this
+    ///     annotation and all its predecessors. This includes the size of the attribute_name_index and
+    ///     attribute_length fields. </returns>
+    public int ComputeAnnotationsSize(string attributeName)
+    {
             if (!string.ReferenceEquals(attributeName, null))
             {
                 _symbolTable.AddConstantUtf8(attributeName);
@@ -384,30 +380,28 @@ namespace ObjectWeb.Asm
             return attributeSize;
         }
 
-        /// <summary>
-        /// Returns the size of the Runtime[In]Visible[Type]Annotations attributes containing the given
-        /// annotations and all their <i>predecessors</i> (see <seealso cref="_previousAnnotation"/>. Also adds the
-        /// attribute names to the constant pool of the class (if not null).
-        /// </summary>
-        /// <param name="lastRuntimeVisibleAnnotation"> The last runtime visible annotation of a field, method or
-        ///     class. The previous ones can be accessed with the <seealso cref="_previousAnnotation"/> field. May be
-        ///     {@literal null}. </param>
-        /// <param name="lastRuntimeInvisibleAnnotation"> The last runtime invisible annotation of this a field,
-        ///     method or class. The previous ones can be accessed with the <seealso cref="_previousAnnotation"/>
-        ///     field. May be {@literal null}. </param>
-        /// <param name="lastRuntimeVisibleTypeAnnotation"> The last runtime visible type annotation of this a
-        ///     field, method or class. The previous ones can be accessed with the {@link
-        ///     #previousAnnotation} field. May be {@literal null}. </param>
-        /// <param name="lastRuntimeInvisibleTypeAnnotation"> The last runtime invisible type annotation of a
-        ///     field, method or class field. The previous ones can be accessed with the {@link
-        ///     #previousAnnotation} field. May be {@literal null}. </param>
-        /// <returns> the size in bytes of a Runtime[In]Visible[Type]Annotations attribute containing the
-        ///     given annotations and all their predecessors. This includes the size of the
-        ///     attribute_name_index and attribute_length fields. </returns>
-        internal static int ComputeAnnotationsSize(AnnotationWriter lastRuntimeVisibleAnnotation,
-            AnnotationWriter lastRuntimeInvisibleAnnotation, AnnotationWriter lastRuntimeVisibleTypeAnnotation,
-            AnnotationWriter lastRuntimeInvisibleTypeAnnotation)
-        {
+    /// <summary>
+    /// Returns the size of the Runtime[In]Visible[Type]Annotations attributes containing the given
+    /// annotations and all their <i>predecessors</i> (see <see cref="_previousAnnotation"/>. Also adds the
+    /// attribute names to the constant pool of the class (if not null).
+    /// </summary>
+    /// <param name="lastRuntimeVisibleAnnotation"> The last runtime visible annotation of a field, method or
+    ///     class. The previous ones can be accessed with the <see cref="_previousAnnotation"/> field. May be
+    ///     <c>null</c>. </param>
+    /// <param name="lastRuntimeInvisibleAnnotation"> The last runtime invisible annotation of this a field,
+    ///     method or class. The previous ones can be accessed with the <see cref="_previousAnnotation"/>
+    ///     field. May be <c>null</c>. </param>
+    /// <param name="lastRuntimeVisibleTypeAnnotation"> The last runtime visible type annotation of this a
+    ///     field, method or class. The previous ones can be accessed with the <see cref="previousAnnotation"/> field. May be <c>null</c>. </param>
+    /// <param name="lastRuntimeInvisibleTypeAnnotation"> The last runtime invisible type annotation of a
+    ///     field, method or class field. The previous ones can be accessed with the <see cref="previousAnnotation"/> field. May be <c>null</c>. </param>
+    /// <returns> the size in bytes of a Runtime[In]Visible[Type]Annotations attribute containing the
+    ///     given annotations and all their predecessors. This includes the size of the
+    ///     attribute_name_index and attribute_length fields. </returns>
+    internal static int ComputeAnnotationsSize(AnnotationWriter lastRuntimeVisibleAnnotation,
+        AnnotationWriter lastRuntimeInvisibleAnnotation, AnnotationWriter lastRuntimeVisibleTypeAnnotation,
+        AnnotationWriter lastRuntimeInvisibleTypeAnnotation)
+    {
             int size = 0;
             if (lastRuntimeVisibleAnnotation != null)
             {
@@ -434,16 +428,16 @@ namespace ObjectWeb.Asm
             return size;
         }
 
-        /// <summary>
-        /// Puts a Runtime[In]Visible[Type]Annotations attribute containing this annotations and all its
-        /// <i>predecessors</i> (see <seealso cref="_previousAnnotation"/> in the given ByteVector. Annotations are
-        /// put in the same order they have been visited.
-        /// </summary>
-        /// <param name="attributeNameIndex"> the constant pool index of the attribute name (one of
-        ///     "Runtime[In]Visible[Type]Annotations"). </param>
-        /// <param name="output"> where the attribute must be put. </param>
-        public void PutAnnotations(int attributeNameIndex, ByteVector output)
-        {
+    /// <summary>
+    /// Puts a Runtime[In]Visible[Type]Annotations attribute containing this annotations and all its
+    /// <i>predecessors</i> (see <see cref="_previousAnnotation"/> in the given ByteVector. Annotations are
+    /// put in the same order they have been visited.
+    /// </summary>
+    /// <param name="attributeNameIndex"> the constant pool index of the attribute name (one of
+    ///     "Runtime[In]Visible[Type]Annotations"). </param>
+    /// <param name="output"> where the attribute must be put. </param>
+    public void PutAnnotations(int attributeNameIndex, ByteVector output)
+    {
             int attributeLength = 2; // For num_annotations.
             int numAnnotations = 0;
             AnnotationWriter annotationWriter = this;
@@ -469,29 +463,27 @@ namespace ObjectWeb.Asm
             }
         }
 
-        /// <summary>
-        /// Puts the Runtime[In]Visible[Type]Annotations attributes containing the given annotations and
-        /// all their <i>predecessors</i> (see <seealso cref="_previousAnnotation"/> in the given ByteVector.
-        /// Annotations are put in the same order they have been visited.
-        /// </summary>
-        /// <param name="symbolTable"> where the constants used in the AnnotationWriter instances are stored. </param>
-        /// <param name="lastRuntimeVisibleAnnotation"> The last runtime visible annotation of a field, method or
-        ///     class. The previous ones can be accessed with the <seealso cref="_previousAnnotation"/> field. May be
-        ///     {@literal null}. </param>
-        /// <param name="lastRuntimeInvisibleAnnotation"> The last runtime invisible annotation of this a field,
-        ///     method or class. The previous ones can be accessed with the <seealso cref="_previousAnnotation"/>
-        ///     field. May be {@literal null}. </param>
-        /// <param name="lastRuntimeVisibleTypeAnnotation"> The last runtime visible type annotation of this a
-        ///     field, method or class. The previous ones can be accessed with the {@link
-        ///     #previousAnnotation} field. May be {@literal null}. </param>
-        /// <param name="lastRuntimeInvisibleTypeAnnotation"> The last runtime invisible type annotation of a
-        ///     field, method or class field. The previous ones can be accessed with the {@link
-        ///     #previousAnnotation} field. May be {@literal null}. </param>
-        /// <param name="output"> where the attributes must be put. </param>
-        internal static void PutAnnotations(SymbolTable symbolTable, AnnotationWriter lastRuntimeVisibleAnnotation,
-            AnnotationWriter lastRuntimeInvisibleAnnotation, AnnotationWriter lastRuntimeVisibleTypeAnnotation,
-            AnnotationWriter lastRuntimeInvisibleTypeAnnotation, ByteVector output)
-        {
+    /// <summary>
+    /// Puts the Runtime[In]Visible[Type]Annotations attributes containing the given annotations and
+    /// all their <i>predecessors</i> (see <see cref="_previousAnnotation"/> in the given ByteVector.
+    /// Annotations are put in the same order they have been visited.
+    /// </summary>
+    /// <param name="symbolTable"> where the constants used in the AnnotationWriter instances are stored. </param>
+    /// <param name="lastRuntimeVisibleAnnotation"> The last runtime visible annotation of a field, method or
+    ///     class. The previous ones can be accessed with the <see cref="_previousAnnotation"/> field. May be
+    ///     <c>null</c>. </param>
+    /// <param name="lastRuntimeInvisibleAnnotation"> The last runtime invisible annotation of this a field,
+    ///     method or class. The previous ones can be accessed with the <see cref="_previousAnnotation"/>
+    ///     field. May be <c>null</c>. </param>
+    /// <param name="lastRuntimeVisibleTypeAnnotation"> The last runtime visible type annotation of this a
+    ///     field, method or class. The previous ones can be accessed with the <see cref="previousAnnotation"/> field. May be <c>null</c>. </param>
+    /// <param name="lastRuntimeInvisibleTypeAnnotation"> The last runtime invisible type annotation of a
+    ///     field, method or class field. The previous ones can be accessed with the <see cref="previousAnnotation"/> field. May be <c>null</c>. </param>
+    /// <param name="output"> where the attributes must be put. </param>
+    internal static void PutAnnotations(SymbolTable symbolTable, AnnotationWriter lastRuntimeVisibleAnnotation,
+        AnnotationWriter lastRuntimeInvisibleAnnotation, AnnotationWriter lastRuntimeVisibleTypeAnnotation,
+        AnnotationWriter lastRuntimeInvisibleTypeAnnotation, ByteVector output)
+    {
             if (lastRuntimeVisibleAnnotation != null)
             {
                 lastRuntimeVisibleAnnotation.PutAnnotations(
@@ -517,22 +509,22 @@ namespace ObjectWeb.Asm
             }
         }
 
-        /// <summary>
-        /// Returns the size of a Runtime[In]VisibleParameterAnnotations attribute containing all the
-        /// annotation lists from the given AnnotationWriter sub-array. Also adds the attribute name to the
-        /// constant pool of the class.
-        /// </summary>
-        /// <param name="attributeName"> one of "Runtime[In]VisibleParameterAnnotations". </param>
-        /// <param name="annotationWriters"> an array of AnnotationWriter lists (designated by their <i>last</i>
-        ///     element). </param>
-        /// <param name="annotableParameterCount"> the number of elements in annotationWriters to take into account
-        ///     (elements [0..annotableParameterCount[ are taken into account). </param>
-        /// <returns> the size in bytes of a Runtime[In]VisibleParameterAnnotations attribute corresponding
-        ///     to the given sub-array of AnnotationWriter lists. This includes the size of the
-        ///     attribute_name_index and attribute_length fields. </returns>
-        internal static int ComputeParameterAnnotationsSize(string attributeName, AnnotationWriter[] annotationWriters,
-            int annotableParameterCount)
-        {
+    /// <summary>
+    /// Returns the size of a Runtime[In]VisibleParameterAnnotations attribute containing all the
+    /// annotation lists from the given AnnotationWriter sub-array. Also adds the attribute name to the
+    /// constant pool of the class.
+    /// </summary>
+    /// <param name="attributeName"> one of "Runtime[In]VisibleParameterAnnotations". </param>
+    /// <param name="annotationWriters"> an array of AnnotationWriter lists (designated by their <i>last</i>
+    ///     element). </param>
+    /// <param name="annotableParameterCount"> the number of elements in annotationWriters to take into account
+    ///     (elements [0..annotableParameterCount[ are taken into account). </param>
+    /// <returns> the size in bytes of a Runtime[In]VisibleParameterAnnotations attribute corresponding
+    ///     to the given sub-array of AnnotationWriter lists. This includes the size of the
+    ///     attribute_name_index and attribute_length fields. </returns>
+    internal static int ComputeParameterAnnotationsSize(string attributeName, AnnotationWriter[] annotationWriters,
+        int annotableParameterCount)
+    {
             // Note: attributeName is added to the constant pool by the call to computeAnnotationsSize
             // below. This assumes that there is at least one non-null element in the annotationWriters
             // sub-array (which is ensured by the lazy instantiation of this array in MethodWriter).
@@ -550,20 +542,20 @@ namespace ObjectWeb.Asm
             return attributeSize;
         }
 
-        /// <summary>
-        /// Puts a Runtime[In]VisibleParameterAnnotations attribute containing all the annotation lists
-        /// from the given AnnotationWriter sub-array in the given ByteVector.
-        /// </summary>
-        /// <param name="attributeNameIndex"> constant pool index of the attribute name (one of
-        ///     Runtime[In]VisibleParameterAnnotations). </param>
-        /// <param name="annotationWriters"> an array of AnnotationWriter lists (designated by their <i>last</i>
-        ///     element). </param>
-        /// <param name="annotableParameterCount"> the number of elements in annotationWriters to put (elements
-        ///     [0..annotableParameterCount[ are put). </param>
-        /// <param name="output"> where the attribute must be put. </param>
-        internal static void PutParameterAnnotations(int attributeNameIndex, AnnotationWriter[] annotationWriters,
-            int annotableParameterCount, ByteVector output)
-        {
+    /// <summary>
+    /// Puts a Runtime[In]VisibleParameterAnnotations attribute containing all the annotation lists
+    /// from the given AnnotationWriter sub-array in the given ByteVector.
+    /// </summary>
+    /// <param name="attributeNameIndex"> constant pool index of the attribute name (one of
+    ///     Runtime[In]VisibleParameterAnnotations). </param>
+    /// <param name="annotationWriters"> an array of AnnotationWriter lists (designated by their <i>last</i>
+    ///     element). </param>
+    /// <param name="annotableParameterCount"> the number of elements in annotationWriters to put (elements
+    ///     [0..annotableParameterCount[ are put). </param>
+    /// <param name="output"> where the attribute must be put. </param>
+    internal static void PutParameterAnnotations(int attributeNameIndex, AnnotationWriter[] annotationWriters,
+        int annotableParameterCount, ByteVector output)
+    {
             // The num_parameters field uses 1 byte, and each element of the parameter_annotations array
             // uses 2 bytes for its num_annotations field.
             int attributeLength = 1 + 2 * annotableParameterCount;
@@ -599,5 +591,4 @@ namespace ObjectWeb.Asm
                 }
             }
         }
-    }
 }

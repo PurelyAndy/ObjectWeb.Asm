@@ -26,42 +26,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm
+namespace ObjectWeb.Asm;
+
+/// <summary>
+/// Exception thrown when the constant pool of a class produced by a <see cref="ClassWriter"/> is too
+/// large.
+/// 
+/// @author Jason Zaugg
+/// </summary>
+public sealed class ClassTooLargeException : System.Exception
 {
+    private const long SerialVersionUid = 160715609518896765L;
+
     /// <summary>
-    /// Exception thrown when the constant pool of a class produced by a <seealso cref="ClassWriter"/> is too
-    /// large.
-    /// 
-    /// @author Jason Zaugg
+    /// Constructs a new <see cref="ClassTooLargeException"/>.
     /// </summary>
-    public sealed class ClassTooLargeException : System.Exception
+    /// <param name="className"> the internal name of the class (see
+    /// <see cref="JType.InternalName"/>). </param>
+    /// <param name="constantPoolCount"> the number of constant pool items of the class. </param>
+    public ClassTooLargeException(string className, int constantPoolCount) : base("Class too large: " + className)
     {
-        private const long SerialVersionUid = 160715609518896765L;
-
-        private readonly string _className;
-        private readonly int _constantPoolCount;
-
-        /// <summary>
-        /// Constructs a new <seealso cref="ClassTooLargeException"/>.
-        /// </summary>
-        /// <param name="className"> the internal name of the class. </param>
-        /// <param name="constantPoolCount"> the number of constant pool items of the class. </param>
-        public ClassTooLargeException(string className, int constantPoolCount) : base("Class too large: " + className)
-        {
-            this._className = className;
-            this._constantPoolCount = constantPoolCount;
-        }
-
-        /// <summary>
-        /// Returns the internal name of the class.
-        /// </summary>
-        /// <returns> the internal name of the class. </returns>
-        public string ClassName => _className;
-
-        /// <summary>
-        /// Returns the number of constant pool items of the class.
-        /// </summary>
-        /// <returns> the number of constant pool items of the class. </returns>
-        public int ConstantPoolCount => _constantPoolCount;
+        this.ClassName = className;
+        this.ConstantPoolCount = constantPoolCount;
     }
+
+    /// <summary>
+    /// Returns the internal name of the class (see <see cref="JType.InternalName"/>).
+    /// </summary>
+    /// <returns> the internal name of the class. </returns>
+    public string ClassName { get; }
+
+    /// <summary>
+    /// Returns the number of constant pool items of the class.
+    /// </summary>
+    /// <returns> the number of constant pool items of the class. </returns>
+    public int ConstantPoolCount { get; }
 }

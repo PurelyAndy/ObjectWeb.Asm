@@ -27,53 +27,50 @@ using System.Collections.Generic;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Tree
+namespace ObjectWeb.Asm.Tree;
+
+/// <summary>
+/// A node that represents an opened package with its name and the module that can access it.
+/// 
+/// @author Remi Forax
+/// </summary>
+public class ModuleOpenNode
 {
     /// <summary>
-    /// A node that represents an opened package with its name and the module that can access it.
-    /// 
-    /// @author Remi Forax
+    /// The internal name of the opened package (see <see cref="JType.InternalName"/>). </summary>
+    public string Packaze { get; set; }
+
+    /// <summary>
+    /// The access flag of the opened package, valid values are among <c>ACC_SYNTHETIC</c> and <c>ACC_MANDATED</c>.
     /// </summary>
-    public class ModuleOpenNode
+    public int Access { get; set; }
+
+    /// <summary>
+    /// The fully qualified names (using dots) of the modules that can use deep reflection to the
+    /// classes of the open package, or <c>null</c>.
+    /// </summary>
+    public List<string> Modules { get; set; }
+
+    /// <summary>
+    /// Constructs a new <seealso cref = "ModuleOpenNode"/>.
+    /// </summary>
+    /// <param name = "packaze"> the internal name of the opened package (see <see cref="JType.InternalName"/>). </param>
+    /// <param name = "access"> the access flag of the opened package, valid values are among <c>ACC_SYNTHETIC</c> and <c>ACC_MANDATED</c>. </param>
+    /// <param name = "modules"> the fully qualified names (using dots) of the modules that can use deep
+    ///     reflection to the classes of the open package, or <c>null</c>. </param>
+    public ModuleOpenNode(string packaze, int access, List<string> modules)
     {
-        /// <summary>
-        /// The internal name of the opened package. </summary>
-        public string Packaze { get; set; }
+        this.Packaze = packaze;
+        this.Access = access;
+        this.Modules = modules;
+    }
 
-        /// <summary>
-        /// The access flag of the opened package, valid values are among {@code ACC_SYNTHETIC} and {@code
-        /// ACC_MANDATED}.
-        /// </summary>
-        public int Access { get; set; }
-
-        /// <summary>
-        /// The fully qualified names (using dots) of the modules that can use deep reflection to the
-        /// classes of the open package, or {@literal null}.
-        /// </summary>
-        public List<string> Modules { get; set; }
-
-        /// <summary>
-        /// Constructs a new <seealso cref = "ModuleOpenNode"/>.
-        /// </summary>
-        /// <param name = "packaze"> the internal name of the opened package. </param>
-        /// <param name = "access"> the access flag of the opened package, valid values are among {@code
-        ///     ACC_SYNTHETIC} and {@code ACC_MANDATED}. </param>
-        /// <param name = "modules"> the fully qualified names (using dots) of the modules that can use deep
-        ///     reflection to the classes of the open package, or {@literal null}. </param>
-        public ModuleOpenNode(string packaze, int access, List<string> modules)
-        {
-            this.Packaze = packaze;
-            this.Access = access;
-            this.Modules = modules;
-        }
-
-        /// <summary>
-        /// Makes the given module visitor visit this opened package.
-        /// </summary>
-        /// <param name = "moduleVisitor"> a module visitor. </param>
-        public virtual void Accept(ModuleVisitor moduleVisitor)
-        {
-            moduleVisitor.VisitOpen(Packaze, Access, Modules == null ? null : ((List<string>)Modules).ToArray());
-        }
+    /// <summary>
+    /// Makes the given module visitor visit this opened package.
+    /// </summary>
+    /// <param name = "moduleVisitor"> a module visitor. </param>
+    public virtual void Accept(ModuleVisitor moduleVisitor)
+    {
+        moduleVisitor.VisitOpen(Packaze, Access, Modules == null ? null : ((List<string>)Modules).ToArray());
     }
 }

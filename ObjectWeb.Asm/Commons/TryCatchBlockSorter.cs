@@ -28,88 +28,86 @@ using TryCatchBlockNode = ObjectWeb.Asm.Tree.TryCatchBlockNode;
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+/// A <seealso cref = "MethodVisitor"/> adapter to sort the exception handlers. The handlers are sorted in a
+/// method innermost-to-outermost. This allows the programmer to add handlers without worrying about
+/// ordering them correctly with respect to existing, in-code handlers.
+/// 
+/// <para>Behavior is only defined for properly-nested handlers. If any "try" blocks overlap (something
+/// that isn't possible in Java code) then this may not do what you want. In fact, this adapter just
+/// sorts by the length of the "try" block, taking advantage of the fact that a given try block must
+/// be larger than any block it contains).
+/// 
+/// @author Adrian Sampson
+/// </para>
+/// </summary>
+public class TryCatchBlockSorter : Tree.MethodNode
 {
     /// <summary>
-    /// A <seealso cref = "MethodVisitor"/> adapter to sort the exception handlers. The handlers are sorted in a
-    /// method innermost-to-outermost. This allows the programmer to add handlers without worrying about
-    /// ordering them correctly with respect to existing, in-code handlers.
-    /// 
-    /// <para>Behavior is only defined for properly-nested handlers. If any "try" blocks overlap (something
-    /// that isn't possible in Java code) then this may not do what you want. In fact, this adapter just
-    /// sorts by the length of the "try" block, taking advantage of the fact that a given try block must
-    /// be larger than any block it contains).
-    /// 
-    /// @author Adrian Sampson
-    /// </para>
+    /// Constructs a new <seealso cref = "TryCatchBlockSorter"/>.
     /// </summary>
-    public class TryCatchBlockSorter : Tree.MethodNode
+    /// <param name = "methodVisitor"> the method visitor to which this visitor must delegate method calls. May
+    ///     be <c>null</c>. </param>
+    /// <param name = "access"> the method's access flags (see <seealso cref = "Opcodes"/>). This parameter also indicates if
+    ///     the method is synthetic and/or deprecated. </param>
+    /// <param name = "name"> the method's name. </param>
+    /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "org.objectweb.asm.JType"/>). </param>
+    /// <param name = "signature"> the method's signature. May be <c>null</c> if the method parameters,
+    ///     return type and exceptions do not use generic types. </param>
+    /// <param name = "exceptions"> the internal names of the method's exception classes (see <see cref="org.objectweb.asm.JType"/>). May be <c>null</c>. </param>
+    public TryCatchBlockSorter(MethodVisitor methodVisitor, int access, string name, string descriptor,
+        string signature, string[] exceptions) : this(Opcodes.Asm9, methodVisitor, access, name, descriptor,
+        signature, exceptions)
     {
-        /// <summary>
-        /// Constructs a new <seealso cref = "TryCatchBlockSorter"/>.
-        /// </summary>
-        /// <param name = "methodVisitor"> the method visitor to which this visitor must delegate method calls. May
-        ///     be {@literal null}. </param>
-        /// <param name = "access"> the method's access flags (see <seealso cref = "Opcodes"/>). This parameter also indicates if
-        ///     the method is synthetic and/or deprecated. </param>
-        /// <param name = "name"> the method's name. </param>
-        /// <param name = "descriptor"> the method's descriptor (see <seealso cref = "org.objectweb.asm.Type"/>). </param>
-        /// <param name = "signature"> the method's signature. May be {@literal null} if the method parameters,
-        ///     return type and exceptions do not use generic types. </param>
-        /// <param name = "exceptions"> the internal names of the method's exception classes (see {@link
-        ///     org.objectweb.asm.Type#getInternalName()}). May be {@literal null}. </param>
-        public TryCatchBlockSorter(MethodVisitor methodVisitor, int access, string name, string descriptor,
-            string signature, string[] exceptions) : this(Opcodes.Asm9, methodVisitor, access, name, descriptor,
-            signature, exceptions)
+        if (this.GetType() != typeof(TryCatchBlockSorter))
         {
-            if (this.GetType() != typeof(TryCatchBlockSorter))
-            {
-                throw new System.InvalidOperationException();
-            }
+            throw new System.InvalidOperationException();
+        }
+    }
+
+    public TryCatchBlockSorter(int api, MethodVisitor methodVisitor, int access, string name, string descriptor,
+        string signature, string[] exceptions) : base(api, access, name, descriptor, signature, exceptions)
+    {
+        this.mv = methodVisitor;
+    }
+
+    public override void VisitEnd()
+    {
+        // Sort the TryCatchBlockNode elements by the length of their "try" block.
+        TryCatchBlocks.Sort(new ComparatorAnonymousInnerClass(this));
+        // Update the 'target' of each try catch block annotation.
+        for (int i = 0; i < TryCatchBlocks.Count; ++i)
+        {
+            TryCatchBlocks[i].UpdateIndex(i);
         }
 
-        public TryCatchBlockSorter(int api, MethodVisitor methodVisitor, int access, string name, string descriptor,
-            string signature, string[] exceptions) : base(api, access, name, descriptor, signature, exceptions)
+        if (mv != null)
         {
-            this.mv = methodVisitor;
+            Accept(mv);
+        }
+    }
+
+    private class ComparatorAnonymousInnerClass : IComparer<Tree.TryCatchBlockNode>
+    {
+        private readonly TryCatchBlockSorter _outerInstance;
+
+        public ComparatorAnonymousInnerClass(TryCatchBlockSorter outerInstance)
+        {
+            this._outerInstance = outerInstance;
         }
 
-        public override void VisitEnd()
+        public int Compare(TryCatchBlockNode tryCatchBlockNode1, TryCatchBlockNode tryCatchBlockNode2)
         {
-            // Sort the TryCatchBlockNode elements by the length of their "try" block.
-            TryCatchBlocks.Sort(new ComparatorAnonymousInnerClass(this));
-            // Update the 'target' of each try catch block annotation.
-            for (int i = 0; i < TryCatchBlocks.Count; ++i)
-            {
-                TryCatchBlocks[i].UpdateIndex(i);
-            }
-
-            if (mv != null)
-            {
-                Accept(mv);
-            }
+            return BlockLength(tryCatchBlockNode1) - BlockLength(tryCatchBlockNode2);
         }
 
-        private class ComparatorAnonymousInnerClass : IComparer<Tree.TryCatchBlockNode>
+        private int BlockLength(TryCatchBlockNode tryCatchBlockNode)
         {
-            private readonly TryCatchBlockSorter _outerInstance;
-
-            public ComparatorAnonymousInnerClass(TryCatchBlockSorter outerInstance)
-            {
-                this._outerInstance = outerInstance;
-            }
-
-            public int Compare(TryCatchBlockNode tryCatchBlockNode1, TryCatchBlockNode tryCatchBlockNode2)
-            {
-                return BlockLength(tryCatchBlockNode1) - BlockLength(tryCatchBlockNode2);
-            }
-
-            private int BlockLength(TryCatchBlockNode tryCatchBlockNode)
-            {
-                int startIndex = _outerInstance.Instructions.IndexOf(tryCatchBlockNode.Start);
-                int endIndex = _outerInstance.Instructions.IndexOf(tryCatchBlockNode.End);
-                return endIndex - startIndex;
-            }
+            int startIndex = _outerInstance.Instructions.IndexOf(tryCatchBlockNode.Start);
+            int endIndex = _outerInstance.Instructions.IndexOf(tryCatchBlockNode.End);
+            return endIndex - startIndex;
         }
     }
 }

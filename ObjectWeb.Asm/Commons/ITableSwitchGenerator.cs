@@ -26,26 +26,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm.Commons
+namespace ObjectWeb.Asm.Commons;
+
+/// <summary>
+/// A code generator for switch statements.
+/// 
+/// @author Juozas Baliuka
+/// @author Chris Nokleberg
+/// @author Eric Bruneton
+/// </summary>
+public interface ITableSwitchGenerator
 {
     /// <summary>
-    /// A code generator for switch statements.
-    /// 
-    /// @author Juozas Baliuka
-    /// @author Chris Nokleberg
-    /// @author Eric Bruneton
+    /// Generates the code for a switch case.
     /// </summary>
-    public interface ITableSwitchGenerator
-    {
-        /// <summary>
-        /// Generates the code for a switch case.
-        /// </summary>
-        /// <param name="key"> the switch case key. </param>
-        /// <param name="end"> a label that corresponds to the end of the switch statement. </param>
-        void GenerateCase(int key, Label end);
+    /// <param name="key"> the switch case key. </param>
+    /// <param name="end"> a label that corresponds to the end of the switch statement. </param>
+    void GenerateCase(int key, Label end);
 
-        /// <summary>
-        /// Generates the code for the default switch case. </summary>
-        void GenerateDefault();
-    }
+    /// <summary>
+    /// Generates the code for the default switch case. </summary>
+    void GenerateDefault();
 }

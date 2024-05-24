@@ -26,31 +26,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace ObjectWeb.Asm
-{
-    /// <summary>
-    /// Information about the input stack map frame at the "current" instruction of a method. This is
-    /// implemented as a Frame subclass for a "basic block" containing only one instruction.
-    /// 
-    /// @author Eric Bruneton
-    /// </summary>
-    internal sealed class CurrentFrame : Frame
-    {
-        public CurrentFrame(Label owner) : base(owner)
-        {
-        }
+namespace ObjectWeb.Asm;
 
-        /// <summary>
-        /// Sets this CurrentFrame to the input stack map frame of the next "current" instruction, i.e. the
-        /// instruction just after the given one. It is assumed that the value of this object when this
-        /// method is called is the stack map frame status just before the given instruction is executed.
-        /// </summary>
-        public override void Execute(int opcode, int arg, Symbol symbolArg, SymbolTable symbolTable)
-        {
-            base.Execute(opcode, arg, symbolArg, symbolTable);
-            Frame successor = new Frame(null);
-            Merge(symbolTable, successor, 0);
-            CopyFrom(successor);
-        }
+/// <summary>
+/// Information about the input stack map frame at the "current" instruction of a method. This is
+/// implemented as a Frame subclass for a "basic block" containing only one instruction.
+/// 
+/// @author Eric Bruneton
+/// </summary>
+internal sealed class CurrentFrame : Frame
+{
+    public CurrentFrame(Label owner) : base(owner)
+    {
+    }
+
+    /// <summary>
+    /// Sets this CurrentFrame to the input stack map frame of the next "current" instruction, i.e. the
+    /// instruction just after the given one. It is assumed that the value of this object when this
+    /// method is called is the stack map frame status just before the given instruction is executed.
+    /// </summary>
+    public override void Execute(int opcode, int arg, Symbol symbolArg, SymbolTable symbolTable)
+    {
+        base.Execute(opcode, arg, symbolArg, symbolTable);
+        Frame successor = new Frame(null);
+        Merge(symbolTable, successor, 0);
+        CopyFrom(successor);
     }
 }
