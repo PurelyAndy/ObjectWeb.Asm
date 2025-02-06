@@ -239,7 +239,8 @@ public sealed class SymbolTable
                     AddConstantMethodHandle(itemIndex, classReader.ReadByte(itemOffset),
                         classReader.ReadClass(memberRefItemOffset, charBuffer),
                         classReader.ReadUtf8(nameAndTypeItemOffset, charBuffer),
-                        classReader.ReadUtf8(nameAndTypeItemOffset + 2, charBuffer));
+                        classReader.ReadUtf8(nameAndTypeItemOffset + 2, charBuffer),
+                        classReader.ReadByte(memberRefItemOffset - 1) == Symbol.Constant_Interface_Methodref_Tag);
                     break;
                 case Symbol.Constant_Dynamic_Tag:
                 case Symbol.Constant_Invoke_Dynamic_Tag:
@@ -835,24 +836,30 @@ public sealed class SymbolTable
         bool isInterface)
     {
         const int tag = Symbol.Constant_Method_Handle_Tag;
+        int data = GetConstantMethodHandleSymbolData(referenceKind, isInterface);
         // Note that we don't need to include isInterface in the hash computation, because it is
         // redundant with owner (we can't have the same owner with different isInterface values).
-        int hashCode = Hash(tag, owner, name, descriptor, referenceKind);
+        int hashCode = Hash(tag, owner, name, descriptor, data);
         Entry entry = Get(hashCode);
         while (entry != null)
         {
-            if (entry.tag == tag && entry.hashCode == hashCode && entry.data == referenceKind &&
-                entry.owner.Equals(owner) && entry.name.Equals(name) &&
-                entry.value.Equals(descriptor)) return entry;
+            if (entry.tag == tag
+                && entry.hashCode == hashCode
+                && entry.data == data
+                && entry.owner.Equals(owner)
+                && entry.name.Equals(name)
+                && entry.value.Equals(descriptor))
+                return entry;
+            
             entry = entry.next;
         }
 
         if (referenceKind <= Opcodes.H_Putstatic)
             _constantPool.Put112(tag, referenceKind, AddConstantFieldref(owner, name, descriptor).index);
         else
-            _constantPool.Put112(tag, referenceKind,
-                AddConstantMethodref(owner, name, descriptor, isInterface).index);
-        return Put(new Entry(_constantPoolCount++, tag, owner, name, descriptor, referenceKind, hashCode));
+            _constantPool.Put112(tag, referenceKind, AddConstantMethodref(owner, name, descriptor, isInterface).index);
+        
+        return Put(new Entry(_constantPoolCount++, tag, owner, name, descriptor, data, hashCode));
     }
 
     /// <summary>
@@ -865,11 +872,28 @@ public sealed class SymbolTable
     /// <param name="owner"> the internal name of a class of interface. </param>
     /// <param name="name"> a field or method name. </param>
     /// <param name="descriptor"> a field or method descriptor. </param>
-    private void AddConstantMethodHandle(int index, int referenceKind, string owner, string name, string descriptor)
+    /// <param name="isInterface"> whether owner is an interface or not. </param>
+    private void AddConstantMethodHandle(int index, int referenceKind, string owner, string name, string descriptor, bool isInterface)
     {
         const int tag = Symbol.Constant_Method_Handle_Tag;
-        int hashCode = Hash(tag, owner, name, descriptor, referenceKind);
-        Add(new Entry(index, tag, owner, name, descriptor, referenceKind, hashCode));
+        int data = GetConstantMethodHandleSymbolData(referenceKind, isInterface);
+        int hashCode = Hash(tag, owner, name, descriptor, data);
+        Add(new Entry(index, tag, owner, name, descriptor, data, hashCode));
+    }
+    
+    /// <summary>
+    /// Returns the <see cref="Symbol.data" /> field for a CONSTANT_MethodHandle_info Symbol.
+    /// </summary>
+    /// <param name="referenceKind"> one of <see cref="Opcodes.H_Getfield" />, <see cref="Opcodes.H_Getstatic" />,
+    ///     <see cref="Opcodes.H_Putfield"/>, <see cref="Opcodes.H_Putstatic" />, <see cref="Opcodes.H_Invokevirtual" />,
+    ///     <see cref="Opcodes.H_Invokestatic" />, <see cref="Opcodes.H_Invokespecial" />,
+    ///     <see cref="Opcodes.H_Newinvokespecial"/> or <see cref="Opcodes.H_Invokeinterface" />. </param>
+    /// <param name="isInterface"> whether owner is an interface or not. </param>
+    private static int GetConstantMethodHandleSymbolData(int referenceKind, bool isInterface)
+    {
+        if (referenceKind > Opcodes.H_Putstatic && isInterface)
+            return referenceKind << 8;
+        return referenceKind;
     }
 
     /// <summary>

@@ -221,7 +221,7 @@ internal sealed class Constants
             if (minorVersion != -1)
             {
                 throw new InvalidOperationException(
-                    "ASM9_EXPERIMENTAL can only be used by classes compiled with --enable-preview");
+                    "ASM10_EXPERIMENTAL can only be used by classes compiled with --enable-preview");
             }
         }
     }

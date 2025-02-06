@@ -33,13 +33,13 @@ namespace ObjectWeb.Asm;
 ///     A visitor to visit a Java method. The methods of this class must be called in the following
 ///     order: ( <c>visitParameter</c> )* [ <c>visitAnnotationDefault</c> ] ( <c>visitAnnotation</c> |
 ///     <c>visitAnnotableParameterCount</c> | <c>visitParameterAnnotation</c> | <c>visitTypeAnnotation</c> | <c>visitAttribute</c> )* [ <c>visitCode</c> ( <c>visitFrame</c> |
-///     <c>visit<i>X</i>Insn</c> | <c>visitLabel</c> | <c>visitInsnAnnotation</c> | <c>visitTryCatchBlock</c> | <c>visitTryCatchAnnotation</c> | <c>visitLocalVariable</c> | <c>visitLocalVariableAnnotation</c> | <c>visitLineNumber</c> )* <c>visitMaxs</c> ] <c>visitEnd</c>.
+///     <c>visit<i>X</i>Insn</c> | <c>visitLabel</c> | <c>visitInsnAnnotation</c> | <c>visitTryCatchBlock</c> | <c>visitTryCatchAnnotation</c> | <c>visitLocalVariable</c> | <c>visitLocalVariableAnnotation</c> | <c>visitLineNumber</c> | <c>visitAttribute</c> )* <c>visitMaxs</c> ] <c>visitEnd</c>.
 ///     In addition, the <c>visit<i>X</i>Insn</c> and <c>visitLabel</c> methods must be called in the
 ///     sequential order of the bytecode instructions of the visited code, <c>visitInsnAnnotation</c>
 ///     must be called <i>after</i> the annotated instruction, <c>visitTryCatchBlock</c> must be called
 ///     <i>before</i> the labels passed as arguments have been visited, <c>visitTryCatchBlockAnnotation</c> must be called <i>after</i> the corresponding try catch block has
 ///     been visited, and the <c>visitLocalVariable</c>, <c>visitLocalVariableAnnotation</c> and <c>visitLineNumber</c> methods must be called <i>after</i> the labels passed as arguments have been
-///     visited.
+///     visited. Finally, the <c>visitAttribute</c> method must be called before <c>visitCode</c> for non-code attributes, and after it for code attributes.
 ///     @author Eric Bruneton
 /// </summary>
 public abstract class MethodVisitor
@@ -593,7 +593,7 @@ public abstract class MethodVisitor
     ///     Visits a LOOKUPSWITCH instruction.
     /// </summary>
     /// <param name="dflt"> beginning of the default handler block. </param>
-    /// <param name="keys"> the values of the keys. </param>
+    /// <param name="keys"> the values of the keys. Keys must be sorted in increasing order. </param>
     /// <param name="labels">
     ///     beginnings of the handler blocks. <c>labels[i]</c> is the beginning of the
     ///     handler block for the <c>keys[i]</c> key.

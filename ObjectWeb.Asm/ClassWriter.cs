@@ -270,18 +270,7 @@ public class ClassWriter : ClassVisitor
     {
         this.flags = flags;
         _symbolTable = classReader == null ? new SymbolTable(this) : new SymbolTable(this, classReader);
-        if ((flags & Compute_Frames) != 0)
-        {
-            this._compute = MethodWriter.Compute_All_Frames;
-        }
-        else if ((flags & Compute_Maxs) != 0)
-        {
-            this._compute = MethodWriter.Compute_Max_Stack_And_Local;
-        }
-        else
-        {
-            this._compute = MethodWriter.Compute_Nothing;
-        }
+        SetFlags(flags);
     }
 
     // -----------------------------------------------------------------------------------------------
@@ -1072,6 +1061,28 @@ public class ClassWriter : ClassVisitor
     public virtual int NewNameType(string name, string descriptor)
     {
         return _symbolTable.AddConstantNameAndType(name, descriptor);
+    }
+
+    /// <summary>
+    /// Changes the computation strategy of method properties like max stack size, max number of local
+    /// variables, and frames.
+    /// <p><b>WARNING</b>: <see cref="SetFlags(int)"/> method changes the behavior of new method visitors
+    /// returned from <see cref="VisitMethod(int, string, string, string, string[])"/>. The behavior will be
+    /// changed only after the next method visitor is returned. All the previously returned method
+    /// visitors keep their previous behavior.
+    /// </p>
+    /// </summary>
+    /// <param name="flags"> option flags that can be used to modify the default behavior of this class. Must
+    ///     be zero or more of <see cref="Compute_Maxs"/> and <see cref="Compute_Frames"/>. </param>
+    public void SetFlags(int flags)
+    {
+        if ((flags & ClassWriter.Compute_Frames) != 0) {
+            _compute = MethodWriter.Compute_All_Frames;
+        } else if ((flags & ClassWriter.Compute_Maxs) != 0) {
+            _compute = MethodWriter.Compute_Max_Stack_And_Local;
+        } else {
+            _compute = MethodWriter.Compute_Nothing;
+        }
     }
 
     // -----------------------------------------------------------------------------------------------

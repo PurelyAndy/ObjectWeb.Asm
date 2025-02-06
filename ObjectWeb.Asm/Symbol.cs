@@ -178,7 +178,9 @@ public abstract class Symbol
     ///             the symbol's value for <see cref="Constant_Integer_Tag" />,<see cref="Constant_Float_Tag" />,
     ///             <see cref="Constant_Long_Tag"/>, <see cref="Constant_Double_Tag" />,
     ///             </li><li>
-    ///                 the CONSTANT_MethodHandle_info reference_kind field value for <see cref="Constant_Method_Handle_Tag"/> symbols,
+    ///                 the CONSTANT_MethodHandle_info reference_kind field value for <see cref="Constant_Method_Handle_Tag"/> symbols (or this value left shifted by 8 bits for
+    ///       reference_kind values larger than or equal to H_INVOKEVIRTUAL and if the method owner is
+    ///       an interface),
     ///                 </li><li>
     ///                     the CONSTANT_InvokeDynamic_info bootstrap_method_attr_index field value for <see cref="Constant_Invoke_Dynamic_Tag"/> symbols,
     ///                     </li><li>
@@ -191,7 +193,7 @@ public abstract class Symbol
     ///                             </li><li>
     ///                                 the indices (in the class' type table) of two <see cref="Type_Tag" /> source types
     ///                                 for <see cref="Merged_Type_Tag"/> symbols,
-    ///                                 </li><li>0 for the other types of symbol.
+    ///                                 </li><li>0 for the other types of symbol.</li>
     ///     </ul>
     /// </summary>
     internal readonly long data;
@@ -248,13 +250,13 @@ public abstract class Symbol
     ///     <ul>
     ///         <li>
     ///             the <see cref="Type.getArgumentsAndReturnSizes" /> of the symbol's method descriptor for <see cref="Constant_Methodref_Tag"/>, <see cref="Constant_Interface_Methodref_Tag" /> and <see cref="Constant_Invoke_Dynamic_Tag"/> symbols,
-    ///             <li>
+    ///             </li><li>
     ///                 the index in the InnerClasses_attribute 'classes' array (plus one) corresponding to this
     ///                 class, for <see cref="Constant_Class_Tag" /> symbols,
-    ///                 <li>
+    ///                 </li><li>
     ///                     the index (in the class' type table) of the merged type of the two source types for
     ///                     <see cref="Merged_Type_Tag" /> symbols,
-    ///                     <li>0 for the other types of symbol, or if this field has not been computed yet.
+    ///                     </li><li>0 for the other types of symbol, or if this field has not been computed yet.</li>
     ///     </ul>
     /// </summary>
     internal int info;
@@ -285,10 +287,10 @@ public abstract class Symbol
     }
 
     /// <summary>
-    ///     Returns the result <see cref="Type.getArgumentsAndReturnSizes" /> on <see cref="value" />.
+    ///     Returns the result <see cref="JType.GetArgumentsAndReturnSizes" /> on <see cref="value" />.
     /// </summary>
     /// <returns>
-    ///     the result <see cref="Type.getArgumentsAndReturnSizes" /> on <see cref="value" /> (memoized in
+    ///     the result <see cref="JType.GetArgumentsAndReturnSizes" /> on <see cref="value" /> (memoized in
     ///     <see cref="info" /> for efficiency). This should only be used for <see cref="Constant_Methodref_Tag"/>, <see cref="Constant_Interface_Methodref_Tag" /> and <see cref="Constant_Invoke_Dynamic_Tag"/> symbols.
     /// </returns>
     public virtual int ArgumentsAndReturnSizes

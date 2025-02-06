@@ -293,6 +293,8 @@ public class Opcodes
     public const int V21 = (0 << 16) | 65;
     public const int V22 = (0 << 16) | 66;
     public const int V23 = (0 << 16) | 67;
+    public const int V24 = (0 << 16) | 68;
+    public const int V25 = (0 << 16) | 69;
         
 
     /// <summary>

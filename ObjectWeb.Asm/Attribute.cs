@@ -46,11 +46,11 @@ public class Attribute
     public readonly string type;
 
     /// <summary>
-    /// The raw content of this attribute, only used for unknown attributes (see <see cref="isUnknown()"/>).
+    /// The raw content of this attribute, as returned by see <see cref="Write"/>.
     /// The 6 header bytes of the attribute (attribute_name_index and attribute_length) are <i>not</i>
     /// included.
     /// </summary>
-    private sbyte[] _content;
+    private ByteVector _cachedContent;
 
     /// <summary>
     /// The next attribute in this attribute list (Attribute instances can be linked via this field to
@@ -89,6 +89,7 @@ public class Attribute
     /// </summary>
     /// <returns> the labels corresponding to this attribute, or <c>null</c> if this attribute is not
     ///     a Code attribute that contains labels. </returns>
+    [Obsolete("no longer used by ASM.")]
     public virtual Label[] Labels => new Label[0];
 
     /// <summary>
@@ -108,21 +109,96 @@ public class Attribute
     ///     attribute header bytes (attribute_name_index and attribute_length) are not taken into
     ///     account here. </param>
     /// <param name="labels"> the labels of the method's code, or <c>null</c> if the attribute to be read
-    ///     is not a Code attribute. </param>
+    ///     is not a Code attribute. Labels defined in the attribute must be created and added to this
+    ///     array, if not already present, by calling the <see cref="ReadLabel"/> method. (do not create
+    ///     <see cref="Label"/> instances directly). </param>
     /// <returns> a <i>new</i> <see cref="Attribute"/> object corresponding to the specified bytes. </returns>
     public virtual Attribute Read(ClassReader classReader, int offset, int length, char[] charBuffer,
         int codeAttributeOffset, Label[] labels)
     {
         Attribute attribute = new Attribute(type);
-        attribute._content = new sbyte[length];
-        Array.Copy(classReader.classFileBuffer, offset, attribute._content, 0, length);
+        attribute._cachedContent = new ByteVector(classReader.ReadBytes(offset, length));
         return attribute;
+    }
+    
+    /// <summary>
+    /// Reads an attribute with the same <see cref="type"/> as the given attribute. This method returns a
+    /// new <see cref="Attribute"/> object, corresponding to the 'length' bytes starting at 'offset', in the
+    /// given <see cref="ClassReader"/>.
+    /// </summary>
+    /// <param name="attribute"> the attribute prototype that is used for reading. </param>
+    /// <param name="classReader"> the class that contains the attribute to be read. </param>
+    /// <param name="offset"> index of the first byte of the attribute's content in <see cref="ClassReader"/>. The 6
+    ///     attribute header bytes (attribute_name_index and attribute_length) are not taken into
+    ///     account here. </param>
+    /// <param name="length"> the length of the attribute's content (excluding the 6 attribute header bytes). </param>
+    /// <param name="charBuffer"> the buffer to be used to call the ClassReader methods requiring a
+    ///     'charBuffer' parameter. </param>
+    /// <param name="codeAttributeOffset"> index of the first byte of content of the enclosing Code attribute
+    ///     in <see cref="ClassReader"/>, or -1 if the attribute to be read is not a Code attribute. The 6
+    ///     attribute header bytes (attribute_name_index and attribute_length) are not taken into
+    ///     account here. </param>
+    /// <param name="labels"> the labels of the method's code, or <c>null</c> if the attribute to be read
+    ///     is not a Code attribute. Labels defined in the attribute are added to this array, if not
+    ///     already present. </param>
+    /// <returns> a new <see cref="Attribute"/> object corresponding to the specified bytes. </returns>
+    public static Attribute Read(Attribute attribute, ClassReader classReader, int offset, int length,
+        char[] charBuffer, int codeAttributeOffset, Label[] labels)
+    {
+        return attribute.Read(classReader, offset, length, charBuffer, codeAttributeOffset, labels);
+    }
+
+    /// <summary>
+    /// Returns the label corresponding to the given bytecode offset by calling
+    /// <see cref="ClassReader.ReadLabel"/>. This creates and adds the label to the given array if it is not
+    /// already present. Note that this created label may be a <see cref="Label"/> subclass instance, if
+    /// the given <see cref="ClassReader"/> overrides <see cref="ClassReader.ReadLabel"/>. Hence
+    /// <see cref="Read(ClassReader, int, int, char[], int, Label[])"/> must not manually create <see cref="Label"/>
+    /// </summary>
+    /// <param name="bytecodeOffset"> a bytecode offset in a method. </param>
+    /// <param name="labels"> the already created labels, indexed by their offset. If a label already exists
+    ///     for <see cref="bytecodeOffset"/> this method does not create a new one. Otherwise it stores the new label
+    ///     in this array. </param>
+    /// <returns> a label for the given bytecode offset. </returns>
+    public static Label ReadLabel(ClassReader classReader, int bytecodeOffset, Label[] labels)
+    {
+        return classReader.ReadLabel(bytecodeOffset, labels);
+    }
+    
+    /// <summary>
+    /// Calls <see cref="Write(ClassWriter,byte[],int,int,int)"/> if it has not already been called and
+    /// returns its result or its (cached) previous result.
+    /// </summary>
+    /// <param name="classWriter"> the class to which this attribute must be added. This parameter can be used
+    ///     to add the items that corresponds to this attribute to the constant pool of this class. </param>
+    /// <param name="code"> the bytecode of the method corresponding to this Code attribute, or <c>null</c>
+    ///     if this attribute is not a Code attribute. Corresponds to the 'code' field of the Code
+    ///     attribute. </param>
+    /// <param name="codeLength"> the length of the bytecode of the method corresponding to this code
+    ///     attribute, or 0 if this attribute is not a Code attribute. Corresponds to the 'code_length'
+    ///     field of the Code attribute. </param>
+    /// <param name="maxStack"> the maximum stack size of the method corresponding to this Code attribute, or
+    ///     -1 if this attribute is not a Code attribute. </param>
+    /// <param name="maxLocals"> the maximum number of local variables of the method corresponding to this code
+    ///     attribute, or -1 if this attribute is not a Code attribute. </param>
+    /// <returns> the byte array form of this attribute. </returns>
+    private ByteVector MaybeWrite(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack, int maxLocals)
+    {
+        if (_cachedContent == null)
+        {
+            _cachedContent = Write(classWriter, code, codeLength, maxStack, maxLocals);
+        }
+
+        return _cachedContent;
     }
 
     /// <summary>
     /// Returns the byte array form of the content of this attribute. The 6 header bytes
     /// (attribute_name_index and attribute_length) must <i>not</i> be added in the returned
     /// ByteVector.
+    ///
+    /// This method is only invoked once to compute the binary form of this attribute. Subsequent
+    /// changes to this attribute after it was written for the first time will not be considered.
     /// </summary>
     /// <param name="classWriter"> the class to which this attribute must be added. This parameter can be used
     ///     to add the items that corresponds to this attribute to the constant pool of this class. </param>
@@ -140,7 +216,34 @@ public class Attribute
     public virtual ByteVector Write(ClassWriter classWriter, sbyte[] code, int codeLength, int maxStack,
         int maxLocals)
     {
-        return new ByteVector(_content);
+        return _cachedContent;
+    }
+    
+    /// <summary>
+    /// Returns the byte array form of the content of the given attribute. The 6 header bytes
+    /// (attribute_name_index and attribute_length) are <i>not</i> added in the returned byte array.
+    /// </summary>
+    /// <param name="attribute"> the attribute that should be written. </param>
+    /// <param name="classWriter"> the class to which this attribute must be added. This parameter can be used
+    ///     to add the items that corresponds to this attribute to the constant pool of this class. </param>
+    /// <param name="code"> the bytecode of the method corresponding to this Code attribute, or <c>null</c>
+    ///     if this attribute is not a Code attribute. Corresponds to the 'code' field of the Code
+    ///     attribute. </param>
+    /// <param name="codeLength"> the length of the bytecode of the method corresponding to this code
+    ///     attribute, or 0 if this attribute is not a Code attribute. Corresponds to the 'code_length'
+    ///     field of the Code attribute. </param>
+    /// <param name="maxStack"> the maximum stack size of the method corresponding to this Code attribute, or
+    ///     -1 if this attribute is not a Code attribute. </param>
+    /// <param name="maxLocals"> the maximum number of local variables of the method corresponding to this code
+    ///     attribute, or -1 if this attribute is not a Code attribute. </param>
+    /// <returns> the byte array form of this attribute. </returns>
+    public static sbyte[] Write(Attribute attribute, ClassWriter classWriter, sbyte[] code, int codeLength,
+        int maxStack, int maxLocals)
+    {
+        ByteVector content = attribute.MaybeWrite(classWriter, code, codeLength, maxStack, maxLocals);
+        sbyte[] result = new sbyte[content.length];
+        Array.Copy(content.data, 0, result, 0, content.length);
+        return result;
     }
 
     /// <summary>
@@ -206,7 +309,7 @@ public class Attribute
         while (attribute != null)
         {
             symbolTable.AddConstantUtf8(attribute.type);
-            size += 6 + attribute.Write(classWriter, code, codeLength, maxStack, maxLocals).length;
+            size += 6 + attribute.MaybeWrite(classWriter, code, codeLength, maxStack, maxLocals).length;
             attribute = attribute.nextAttribute;
         }
 
@@ -292,7 +395,7 @@ public class Attribute
         Attribute attribute = this;
         while (attribute != null)
         {
-            ByteVector attributeContent = attribute.Write(classWriter, code, codeLength, maxStack, maxLocals);
+            ByteVector attributeContent = attribute.MaybeWrite(classWriter, code, codeLength, maxStack, maxLocals);
             // Put attribute_name_index and attribute_length.
             output.PutShort(symbolTable.AddConstantUtf8(attribute.type)).PutInt(attributeContent.length);
             output.PutByteArray(attributeContent.data, 0, attributeContent.length);

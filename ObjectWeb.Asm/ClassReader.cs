@@ -192,7 +192,7 @@ public class ClassReader
         this.b = classFileBuffer;
         // Check the class' major_version. This field is after the magic and minor_version fields, which
         // use 4 and 2 bytes respectively.
-        if (checkClassVersion && ReadShort(classFileOffset + 6) > Opcodes.V23)
+        if (checkClassVersion && ReadShort(classFileOffset + 6) > Opcodes.V25)
         {
             throw new System.ArgumentException("Unsupported class file major version " +
                                                ReadShort(classFileOffset + 6));
@@ -3748,6 +3748,20 @@ public class ClassReader
     public virtual int ReadByte(int offset)
     {
         return classFileBuffer[offset] & 0xFF;
+    }
+    
+    /// <summary>
+    /// Reads several bytes in this <see cref="ClassReader"/>. <i>This method is intended for
+    /// <see cref="Attribute"/> sub classes, and is normally not needed by class generators or adapters.</i>
+    /// </summary>
+    /// <param name="offset"> the start offset of the bytes to be read in this <see cref="ClassReader"/>. </param>
+    /// <param name="length"> the number of bytes to read. </param>
+    /// <returns> the read bytes. </returns>
+    public virtual sbyte[] ReadBytes(int offset, int length)
+    {
+        sbyte[] result = new sbyte[length];
+        Array.Copy(classFileBuffer, offset, result, 0, length);
+        return result;
     }
 
     /// <summary>

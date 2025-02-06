@@ -395,6 +395,9 @@ public class GeneratorAdapter : LocalVariablesSorter
         else
             switch (value.Sort)
             {
+                case JType.Void:
+                    mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Void", "TYPE", ClassDescriptor);
+                    break;
                 case JType.Boolean:
                     mv.VisitFieldInsn(Opcodes.Getstatic, "java/lang/Boolean", "TYPE", ClassDescriptor);
                     break;
